@@ -2,4 +2,9 @@ import Mathlib
 import HQIVLEAN.Basic
 import Hqiv.Geometry.OctonionicLightCone
 import Hqiv.Geometry.AuxiliaryField
-import Hqiv.Geometry.HQVMMetric
+import Hqiv.Geometry.HQVMetric
+import Hqiv.Generators
+import Hqiv.GeneratorsFromAxioms
+import Hqiv.GeneratorsLieClosureData
+import Hqiv.GeneratorsLieClosure
+import Hqiv.Conservations
