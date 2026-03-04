@@ -1,0 +1,46 @@
+MIT License with Government Use Restriction
+
+Copyright (c) 2026-present Steven Ettinger steven@disregardfiat.tech
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+ADDITIONAL GOVERNMENT RESTRICTION:
+
+No government entity (including but not limited to federal, state, provincial,
+municipal, or any agency, department, or instrumentality thereof, in any
+jurisdiction worldwide) may use, modify, distribute, or create derivative works
+of this Software unless it has first purchased a paid "Government Seat" from
+the copyright holder. The copyright holder (Steven Ettinger) has sole and
+absolute discretion to grant or deny any such seat and to set the price and
+terms. Use by any government without an explicit paid seat is strictly prohibited
+and constitutes a material breach of this license.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------
+
+ADDITIONAL ACADEMIC REQUEST (NOT a legal condition of the MIT License):
+
+Any research, publication, or derivative work that uses pyhqiv or any
+part of the HQIV framework is kindly but strongly requested to cite the
+original paper:
+
+Steven Ettinger. (2026). Horizon-Quantized Informational Vacuum (HQIV)
+Framework. Zenodo. https://doi.org/10.5281/zenodo.18794889
+
+This helps the research community track impact and supports further
+development of the framework.
