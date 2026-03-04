@@ -1,4 +1,8 @@
 import Hqiv.Generators
+import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Algebra.BigOperators.Fin
+
+open Matrix BigOperators
 
 namespace Hqiv
 
@@ -804,8 +808,10 @@ def upperTriangleIdx (p : Fin 28) : Fin 8 × Fin 8 :=
   | 27 => (6, 7)
   end
 
-/-- **Numeric fact (verified by scripts/print_linear_independence.py):** det(so8CoordMatrix) = -1.
-A structural proof (block decomposition / permutation) would remove this axiom. -/
-axiom so8CoordMatrix_det_eq_neg_one : so8CoordMatrix.det = -1
+/-- **Columns of so8CoordMatrix are orthonormal:** Mᵀ * M = 1 (28×28 identity).
+So det(so8CoordMatrix)² = 1 and so8CoordMatrix.det ≠ 0. -/
+theorem so8CoordMatrix_transpose_mul_self : so8CoordMatrixᵀ * so8CoordMatrix = 1 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> norm_num [Matrix.mul_apply, transpose_apply, so8CoordMatrix, one_apply]
 
 end Hqiv

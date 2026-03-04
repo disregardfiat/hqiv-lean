@@ -58,10 +58,19 @@ by showing that the 28×28 matrix of upper-triangle coordinates (`so8CoordMatrix
 nonzero determinant (script: `scripts/print_linear_independence.py` gives det = -1).
 -/
 
-/-- **Coordinate matrix has nonzero determinant.** Follows from `so8CoordMatrix_det_eq_neg_one`. -/
+/-- **det(so8CoordMatrix)² = 1** (columns orthonormal ⇒ Mᵀ M = 1 ⇒ det(Mᵀ M) = 1). -/
+theorem so8CoordMatrix_det_sq_eq_one : so8CoordMatrix.det ^ 2 = 1 := by
+  calc so8CoordMatrix.det ^ 2 = so8CoordMatrix.det * so8CoordMatrix.det := sq _
+    _ = (so8CoordMatrixᵀ).det * so8CoordMatrix.det := by rw [det_transpose]
+    _ = det (so8CoordMatrixᵀ * so8CoordMatrix) := by rw [det_mul]
+    _ = det (1 : Matrix (Fin 28) (Fin 28) ℝ) := by rw [So8CoordMatrix.so8CoordMatrix_transpose_mul_self]
+    _ = 1 := det_one
+
+/-- **Coordinate matrix has nonzero determinant.** Follows from so8CoordMatrix_transpose_mul_self (det² = 1). -/
 theorem so8CoordMatrix_det_ne_zero : so8CoordMatrix.det ≠ 0 := by
-  rw [so8CoordMatrix_det_eq_neg_one]
-  norm_num
+  intro h
+  rw [h, sq, zero_mul] at so8CoordMatrix_det_sq_eq_one
+  norm_num at so8CoordMatrix_det_sq_eq_one
 
 /-- Extract the p-th upper-triangle coordinate of an 8×8 matrix (same order as so8CoordMatrix). -/
 def coordVec (M : Matrix (Fin 8) (Fin 8) ℝ) (p : Fin 28) : ℝ :=
@@ -84,9 +93,10 @@ theorem coordVec_linearCombination (c : Fin 28 → ℝ) (p : Fin 28) :
   simp only [coordVec, Finset.sum_apply, Pi.smul_apply, mulVec_apply, so8CoordMatrix_eq_coord]
   rfl
 
-/-- so8CoordMatrix is invertible (det = -1). -/
+/-- so8CoordMatrix is invertible (Mᵀ * M = 1 ⇒ M has a left inverse ⇒ det invertible). -/
 instance so8CoordMatrix_invertible : Invertible so8CoordMatrix := by
-  have : Invertible so8CoordMatrix.det := by rw [so8CoordMatrix_det_eq_neg_one]; infer_instance
+  have : Invertible so8CoordMatrix.det :=
+    Matrix.detInvertibleOfLeftInverse so8CoordMatrix so8CoordMatrixᵀ So8CoordMatrix.so8CoordMatrix_transpose_mul_self
   exact Matrix.invertibleOfDetInvertible so8CoordMatrix
 
 /-- If so8CoordMatrix.mulVec c = 0 then c = 0 (matrix is invertible, so kernel trivial). -/

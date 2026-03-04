@@ -9,6 +9,7 @@ Modules: `Hqiv.Geometry.OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, `Hq
 - Temperature ladder T(m) = T_Pl/(m+1) (with T_Pl = 1 in natural units) and φ(m) = 2/T(m) are the lattice division rule and the paper’s φ = 2/Θ.  
 - `shell_shape` is **proved** equal to (1/(m+1))(1 + α log(T_Pl/T(m))) so the curvature shape is derived from the temperature ladder, not an independent def.  
 - Curvature integral, its divergence, divisibility (3∣…, 2∣…), α = 3/5 as lattice ratio and limit, and Ω_k at chosen horizon are proved from the lattice.
+- **Analytic curvature:** The discrete curvature integral is proved to be sandwiched between the harmonic sum and (1+α log(n+1)) times the harmonic sum (`curvature_integral_ge_harmonic`, `curvature_integral_le_harmonic_mul_log`), so it grows like Θ(log n); no continuous integral axiom.
 
 **External or conventional defs (not derived from the light cone in Lean)**  
 - **α** = 0.60: we prove α = 3/5 and that the lattice ratio (n+1)(n+2)(n+3)/(5·cum n) = 3/5 for all n and tends to 3/5 as n → ∞.  

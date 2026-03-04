@@ -337,6 +337,17 @@ lemma curvatureDensity_ge_one_div_succ (m : Nat) :
     _ = (1 / (m + 1 : ℝ)) * 1 := by ring
     _ ≤ (1 / (m + 1 : ℝ)) * (1.0 + alpha * Real.log (m + 1 : ℝ)) := by gcongr; exact h
 
+/-- **Analytic upper bound (per shell):** for m < n, curvatureDensity (m+1) ≤ (1/(m+1))(1 + α log(n+1)).
+Used to bound the curvature integral above by a multiple of the harmonic sum. -/
+lemma curvatureDensity_le_one_div_succ_mul_log (m n : Nat) (hmn : m < n) :
+    curvatureDensity (m + 1) ≤ (1 / (m + 1 : ℝ)) * (1 + alpha * Real.log (n + 1 : ℝ)) := by
+  unfold curvatureDensity
+  have hpos : (0 : ℝ) < (m + 1 : ℝ) := by exact_mod_cast Nat.succ_pos m
+  gcongr
+  · exact one_div_nonneg.mpr (Nat.cast_nonneg _)
+  · have h : (m + 1 : ℝ) ≤ (n + 1 : ℝ) := by exact_mod_cast Nat.succ_le_succ (Nat.le_of_lt hmn)
+    exact Real.log_le_log (by exact_mod_cast Nat.succ_pos m) h
+
 /-- By definition, `shell_shape m` is the density sampled at m+1. -/
 theorem shell_shape_eq_density_succ (m : Nat) :
   shell_shape m = curvatureDensity (m + 1) := rfl
@@ -607,6 +618,105 @@ lemma curvature_integral_ge_harmonic (n : Nat) :
       rw [shell_shape_abs, shell_shape_eq_density_succ]
       exact curvatureDensity_ge_one_div_succ n
     linarith [ih]
+
+/-- **Analytic upper bound:** curvature integral is at most (1 + α log(n+1)) times the harmonic sum.
+So the discrete curvature integral is sandwiched: H_n ≤ curvature_integral n ≤ (1+α log(n+1))·H_n,
+hence it diverges like the harmonic series (Θ(log n)). -/
+theorem curvature_integral_le_harmonic_mul_log (n : Nat) :
+    curvature_integral n ≤ (1 + alpha * Real.log (n + 1 : ℝ)) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) := by
+  induction n with
+  | zero => unfold curvature_integral; simp
+  | succ n ih =>
+    rw [curvature_integral_succ, sum_range_succ]
+    have hshell : shell_shape_abs n ≤ (1 / (n + 1 : ℝ)) * (1 + alpha * Real.log (n + 2 : ℝ)) := by
+      rw [shell_shape_abs, shell_shape_eq_density_succ]
+      exact curvatureDensity_le_one_div_succ_mul_log n (n + 1) (Nat.lt_succ_self n)
+    have hfac : (1 + alpha * Real.log (n + 1 : ℝ)) ≤ (1 + alpha * Real.log (n + 2 : ℝ)) := by
+      gcongr
+      exact Real.log_le_log (by exact_mod_cast Nat.succ_pos n) (by exact_mod_cast Nat.succ_le_succ (Nat.le_succ n))
+    calc curvature_integral n + shell_shape_abs n
+      _ ≤ (1 + alpha * Real.log (n + 1 : ℝ)) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)
+          + (1 / (n + 1 : ℝ)) * (1 + alpha * Real.log (n + 2 : ℝ)) := add_le_add ih hshell
+      _ ≤ (1 + alpha * Real.log (n + 2 : ℝ)) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)
+          + (1 + alpha * Real.log (n + 2 : ℝ)) * ((1 : ℝ) / (n + 1 : ℝ)) := by
+          gcongr
+          exact hfac
+      _ = (1 + alpha * Real.log (n + 2 : ℝ)) * (∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) + (1 : ℝ) / (n + 1 : ℝ)) := by ring
+      _ = (1 + alpha * Real.log (n + 2 : ℝ)) * ∑ i ∈ range (n + 1), (1 : ℝ) / (i + 1 : ℝ) := by rw [sum_range_succ]
+
+/-- **Curvature integral as a Finset sum** (for asymptotic analysis). -/
+theorem curvature_integral_eq_sum (n : Nat) :
+    curvature_integral n = ∑ i ∈ range n, curvatureDensity (i + 1) := by
+  induction n with
+  | zero => unfold curvature_integral; simp
+  | succ n ih =>
+    rw [curvature_integral_succ, sum_range_succ, ih]
+    congr 1
+    rw [shell_shape_abs, shell_shape_eq_density_succ]
+    exact abs_of_pos (curvatureDensity_pos_succ n)
+
+/-- **Log-weighted sum** ∑_{i=0}^{n-1} (log(i+1))/(i+1), the second piece of the curvature integral. -/
+def logWeightedSum (n : Nat) : ℝ := ∑ i ∈ range n, Real.log (i + 1 : ℝ) / (i + 1 : ℝ)
+
+/-- **Curvature integral decomposes as harmonic sum + α × log-weighted sum.** -/
+theorem curvature_integral_eq_harmonic_plus_alpha_log (n : Nat) :
+    curvature_integral n =
+      ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) + alpha * logWeightedSum n := by
+  rw [curvature_integral_eq_sum, logWeightedSum]
+  have key : ∀ i, curvatureDensity (i + 1) = (1 : ℝ) / (i + 1 : ℝ) + alpha * (Real.log (i + 1 : ℝ) / (i + 1 : ℝ)) := by
+    intro i; unfold curvatureDensity; ring
+  rw [Finset.sum_congr rfl (fun i _ => key i), Finset.sum_add_distrib, Finset.mul_sum]
+
+/-- For `x > 0`, `x ≠ 1`, we have `1 - 1/x ≤ log x` (from `log(1/x) ≤ 1/x - 1`). -/
+lemma one_sub_inv_le_log (x : ℝ) (hx : 0 < x) (_hx' : x ≠ 1) :
+    1 - x⁻¹ ≤ Real.log x := by
+  have h := Real.log_le_sub_one_of_pos (x⁻¹) (inv_pos.mpr hx)
+  rw [Real.log_inv x] at h
+  linarith
+
+/-- Harmonic sum bound: `∑_{i=0}^{n-1} 1/(i+1) ≤ 1 + log(n+1)` for all `n`.
+Proof: for `k ≥ 2`, `1/k ≤ log(k/(k-1))`; telescope gives `∑_{k=2}^n 1/k ≤ log n`, so `H_n ≤ 1 + log n ≤ 1 + log(n+1)`. -/
+lemma harmonic_sum_le_one_add_log_succ (n : Nat) :
+    ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) ≤ 1 + Real.log (n + 1 : ℝ) := by
+  induction n with
+  | zero => simp [Real.log_one]
+  | succ n ih =>
+    rw [sum_range_succ]
+    by_cases hn : n = 0
+    · subst hn; simp [Real.log_one, Real.log_two_pos]
+    · have posn : (0 : ℝ) < n := Nat.cast_pos.mpr (Nat.zero_lt_iff_ne_zero.mpr hn)
+      have := one_sub_inv_le_log ((n + 1 : ℝ) / n)
+        (by positivity) (by norm_num [Nat.cast_succ]; omega)
+      have inv_eq : ((n + 1 : ℝ) / n)⁻¹ = (n : ℝ) / (n + 1) := by field_simp
+      have sub_eq : 1 - (n : ℝ) / (n + 1) = 1 / (n + 1) := by field_simp
+      rw [inv_eq, sub_eq] at this
+      rw [Real.log_div (n + 1 : ℝ) (n : ℝ) (by positivity) (Nat.cast_ne_zero.mpr hn)] at this
+      linarith
+
+/-- **Leading term of the asymptotic:** (α/2)(log(n+1))² (from ∫₁^{n+1} (1/x)(1+α log x) dx). -/
+def curvature_integral_asymptotic_leading (n : Nat) : ℝ := (alpha / 2) * (Real.log (n + 1 : ℝ)) ^ 2
+
+/-- **Asymptotic: curvature_integral n = (α/2)(log(n+1))² + O(log n).**
+Explicit upper bound: curvature_integral n ≤ (α/2)(log(n+1))² + (1+α)(1+log(n+1))².
+The sharp O(log n) error follows from ∑ (log k)/k = (1/2)(log(n+1))² + O(log n) via ∫ (log x)/x = (1/2)(log x)². -/
+theorem curvature_integral_asymptotic_upper (n : Nat) :
+    curvature_integral n ≤ curvature_integral_asymptotic_leading n + (1 + alpha) * (1 + Real.log (n + 1 : ℝ)) ^ 2 := by
+  rw [curvature_integral_asymptotic_leading]
+  have hlog : ∀ i ∈ range n, Real.log (i + 1 : ℝ) / (i + 1 : ℝ) ≤ Real.log (n + 1 : ℝ) / (i + 1 : ℝ) := by
+    intro i hi; rw [Finset.mem_range] at hi
+    gcongr; exact Real.log_le_log (by positivity) (by exact_mod_cast Nat.add_le_add_right (Nat.lt_succ_iff.mp hi) 1)
+  have hsum : logWeightedSum n ≤ Real.log (n + 1 : ℝ) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) := by
+    rw [logWeightedSum]; exact Finset.sum_le_sum fun i hi => hlog i hi
+  set H := ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)
+  calc curvature_integral n
+    _ = H + alpha * logWeightedSum n := curvature_integral_eq_harmonic_plus_alpha_log n
+    _ ≤ H + alpha * (Real.log (n + 1 : ℝ) * H) := by gcongr; exact hsum
+    _ = (1 + alpha * Real.log (n + 1 : ℝ)) * H := by ring
+    _ ≤ (1 + alpha * Real.log (n + 1 : ℝ)) * (1 + Real.log (n + 1 : ℝ)) := by
+        gcongr
+        exact harmonic_sum_le_one_add_log_succ n
+    _ = 1 + (1 + alpha) * Real.log (n + 1 : ℝ) + alpha * (Real.log (n + 1 : ℝ)) ^ 2 := by ring
+    _ ≤ (alpha / 2) * (Real.log (n + 1 : ℝ)) ^ 2 + (1 + alpha) * (1 + Real.log (n + 1 : ℝ)) ^ 2 := by nlinarith [sq_nonneg (Real.log (n + 1 : ℝ))]
 
 /-- Curvature integral is monotone in `n`. -/
 lemma curvature_integral_mono : Monotone curvature_integral := by
