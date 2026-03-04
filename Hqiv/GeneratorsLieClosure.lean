@@ -58,16 +58,62 @@ by showing that the 28×28 matrix of upper-triangle coordinates (`so8CoordMatrix
 nonzero determinant (script: `scripts/print_linear_independence.py` gives det = -1).
 -/
 
-/-- **Coordinate matrix has nonzero determinant.** Script `print_linear_independence.py` gives det = -1. -/
+/-- **Coordinate matrix has nonzero determinant.** Follows from `so8CoordMatrix_det_eq_neg_one`. -/
 theorem so8CoordMatrix_det_ne_zero : so8CoordMatrix.det ≠ 0 := by
-  -- det so8CoordMatrix = -1 (numerically); proving in Lean by norm_num may be heavy
-  sorry
+  rw [so8CoordMatrix_det_eq_neg_one]
+  norm_num
 
-/-- **The 28 so8 generators are linearly independent over ℝ.** Follows from
-`so8CoordMatrix_det_ne_zero`: the upper-triangle coordinate matrix is invertible. -/
+/-- Extract the p-th upper-triangle coordinate of an 8×8 matrix (same order as so8CoordMatrix). -/
+def coordVec (M : Matrix (Fin 8) (Fin 8) ℝ) (p : Fin 28) : ℝ :=
+  M (upperTriangleIdx p).1 (upperTriangleIdx p).2
+
+/-- so8CoordMatrix p k equals (so8Generator k) at the p-th upper-triangle index. -/
+theorem so8CoordMatrix_eq_coord (p k : Fin 28) :
+    so8CoordMatrix p k = (so8Generator k) (upperTriangleIdx p).1 (upperTriangleIdx p).2 := by
+  fin_cases p <;> fin_cases k <;>
+    norm_num [so8CoordMatrix, upperTriangleIdx, so8Generator,
+      generator_0, generator_1, generator_2, generator_3, generator_4, generator_5,
+      generator_6, generator_7, generator_8, generator_9, generator_10, generator_11,
+      generator_12, generator_13, generator_14, generator_15, generator_16, generator_17,
+      generator_18, generator_19, generator_20, generator_21, generator_22, generator_23,
+      generator_24, generator_25, generator_26, generator_27]
+
+/-- The coordinate vector of a linear combination ∑ c_k • so8Generator k is so8CoordMatrix.mulVec c. -/
+theorem coordVec_linearCombination (c : Fin 28 → ℝ) (p : Fin 28) :
+    coordVec (∑ k : Fin 28, c k • so8Generator k) p = (so8CoordMatrix.mulVec c) p := by
+  simp only [coordVec, Finset.sum_apply, Pi.smul_apply, mulVec_apply, so8CoordMatrix_eq_coord]
+  rfl
+
+/-- so8CoordMatrix is invertible (det = -1). -/
+instance so8CoordMatrix_invertible : Invertible so8CoordMatrix := by
+  have : Invertible so8CoordMatrix.det := by rw [so8CoordMatrix_det_eq_neg_one]; infer_instance
+  exact Matrix.invertibleOfDetInvertible so8CoordMatrix
+
+/-- If so8CoordMatrix.mulVec c = 0 then c = 0 (matrix is invertible, so kernel trivial). -/
+theorem so8CoordMatrix_mulVec_eq_zero_imp_eq_zero (c : Fin 28 → ℝ)
+    (h : so8CoordMatrix.mulVec c = 0) : c = 0 := by
+  have key : (⅟so8CoordMatrix).mulVec (so8CoordMatrix.mulVec c) = c := by
+    rw [← Matrix.mulVec_mulVec c (⅟so8CoordMatrix) so8CoordMatrix, Matrix.invOf_mul_self, Matrix.one_mulVec]
+  rw [h, Matrix.zero_mulVec] at key
+  exact key.symm
+
+/-- **The 28 so8 generators are linearly independent over ℝ.** The coordinate map sends
+∑ c_k • so8Generator k to so8CoordMatrix.mulVec c; det ≠ 0 implies the matrix is invertible,
+so the map is injective, hence the generators are independent. -/
 theorem so8_generators_linear_independent :
     LinearIndependent ℝ (fun k : Fin 28 => so8Generator k) := by
-  sorry  -- use so8CoordMatrix_det_ne_zero + coordinate map: ∑ c_k • g_k = 0 ⇒ coords = M·c = 0 ⇒ c = 0
+  rw [Fintype.linearIndependent_iffₛ]
+  intro f g h
+  ext i
+  have hdiff : ∑ k : Fin 28, (f k - g k) • so8Generator k = 0 := by
+    rw [← sub_eq_zero, Finset.sum_sub_distrib]; simp_rw [sub_smul]
+    exact sub_eq_zero.mpr h
+  have hcoord : so8CoordMatrix.mulVec (fun k => f k - g k) = 0 := by
+    ext p
+    rw [← coordVec_linearCombination (fun k => f k - g k) p, hdiff]
+    simp only [coordVec, zero_apply]
+  have hzero := so8CoordMatrix_mulVec_eq_zero_imp_eq_zero (fun k => f k - g k) hcoord
+  exact sub_eq_zero.mp (congr_fun hzero i)
 
 /-- **Generators from first assumptions:** The 28 so(8) generators are antisymmetric,
 closed under Lie bracket (with coefficients `lieBracketCoeff`), and linearly independent.

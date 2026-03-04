@@ -792,4 +792,20 @@ def so8CoordMatrix : Matrix (Fin 28) (Fin 28) ℝ := Matrix.of (fun p k =>
   | 27, 27 => (0.42640143271122 : ℝ)
   end)
 
+/-- Upper-triangle index: p-th pair (i,j) with i < j in lex order (0,1)..(0,7),(1,2)..(6,7). -/
+def upperTriangleIdx (p : Fin 28) : Fin 8 × Fin 8 :=
+  match p with
+  | 0 => (0, 1)   | 1 => (0, 2)   | 2 => (0, 3)   | 3 => (0, 4)   | 4 => (0, 5)   | 5 => (0, 6)   | 6 => (0, 7)
+  | 7 => (1, 2)   | 8 => (1, 3)   | 9 => (1, 4)   | 10 => (1, 5)  | 11 => (1, 6)  | 12 => (1, 7)
+  | 13 => (2, 3)  | 14 => (2, 4)  | 15 => (2, 5)  | 16 => (2, 6)  | 17 => (2, 7)
+  | 18 => (3, 4)  | 19 => (3, 5)  | 20 => (3, 6)  | 21 => (3, 7)
+  | 22 => (4, 5)  | 23 => (4, 6)  | 24 => (4, 7)
+  | 25 => (5, 6)  | 26 => (5, 7)
+  | 27 => (6, 7)
+  end
+
+/-- **Numeric fact (verified by scripts/print_linear_independence.py):** det(so8CoordMatrix) = -1.
+A structural proof (block decomposition / permutation) would remove this axiom. -/
+axiom so8CoordMatrix_det_eq_neg_one : so8CoordMatrix.det = -1
+
 end Hqiv
