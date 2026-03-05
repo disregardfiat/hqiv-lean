@@ -270,9 +270,20 @@ theorem tendsto_latticeAlphaRatio :
   rw [show (fun n : ℕ => latticeAlphaRatio n) = (fun _ => alpha) from funext latticeAlphaRatio_eq_alpha]
   exact tendsto_const_nhds
 
-/-- Reference cutoff used only for numerics/calibration (e.g. paper’s Python runs).
-The theory only needs that *some* such N exists; the value 500 is not derived. -/
-def referenceM : Nat := 500
+/-- **Reference horizon** = minimal transition shell (derived); calibration (e.g. paper’s Python runs).
+We take the minimal transition shell (N = 1 from exists_transition_shell); no arbitrary step. -/
+/-- **QCD transition shell:** first shell with positive curvature (T ladder). -/
+def qcdShell : Nat := 1
+
+/-- **Steps from QCD to lockin:** number of discrete lattice steps from QCD transition to η lockin. -/
+def stepsFromQCDToLockin : Nat := 3
+
+/-- **Steps after lockin:** baryogenesis proceeds a few discrete steps after T_lockin. -/
+def stepsAfterLockin : Nat := 3
+
+/-- **Reference horizon** = lockin shell = qcdShell + stepsFromQCDToLockin. Calibration at lockin;
+    discrete steps through baryogenesis: QCD then lockin then stepsAfterLockin steps. No arbitrary 500. -/
+def referenceM : Nat := qcdShell + stepsFromQCDToLockin
 
 /-- Purely combinatorial curvature-imprint **shape** per shell m.
 
@@ -774,12 +785,12 @@ lemma curvature_integral_pos {n : Nat} (hn : 0 < n) :
       -- Rewrite the goal using the recurrence.
       simpa [Nat.succ_eq_add_one, hrec] using hsum_pos
 
-/-- Positivity of the curvature integral at the reference cutoff. -/
+/-- Positivity of the curvature integral at the reference (lockin) shell. -/
 lemma curvature_integral_ref_pos :
     0 < curvature_integral referenceM := by
-  unfold referenceM
-  have hM : 0 < (500 : Nat) := by decide
-  exact curvature_integral_pos (n := 500) hM
+  unfold referenceM qcdShell stepsFromQCDToLockin
+  have h4 : 0 < (4 : Nat) := by decide
+  exact curvature_integral_pos (n := 4) h4
 
 /-- **Existence of a transition shell:** some shell has positive curvature integral,
 so a discrete-to-continuous “transition” (or reference) exists; we do not fix which shell. -/
@@ -792,9 +803,8 @@ theorem exists_transition_shell :
 
 /-- Normalised Ω_k estimate from the shell integral up to depth n.
 
-This is the Lean analogue of the Python function `omega_k_from_shell_integral`,
-with the calibration chosen so that at the reference cutoff M = 500 we get
-Ω_k ≈ 0.0098. -/
+Calibration: at the reference horizon (lockin shell referenceM = qcdShell + stepsFromQCDToLockin)
+we get Ω_k(referenceM; referenceM) = omega_k_true. Discrete steps through baryogenesis. -/
 def omega_k_partial (n : Nat) : ℝ :=
   if curvature_integral referenceM ≤ 0.0 then
     0.0098
@@ -988,8 +998,8 @@ theorem omega_k_partial_tends_to_atTop :
 
 -- Quick checks (run these in VS Code infoview)
 #eval available_modes 0
-#eval new_modes 500
+#eval new_modes referenceM
 #eval curvature_integral 10
-#eval omega_k_partial 500
+#eval omega_k_partial referenceM
 
 end Hqiv

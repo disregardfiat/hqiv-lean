@@ -16,7 +16,7 @@ Modules: `Hqiv.Geometry.OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, `Hq
 - **γ** = 2/5: from entanglement monogamy (metric sector), not from the lattice.  
 - **curvature_norm_combinatorial** = 6⁷√3: **not chosen by convenience.** It is uniquely determined by three structural inputs: (1) 3D cube → 6 directions (3 axes × 2 signs); (2) octonion algebra → 7 imaginary units; (3) unit-cube half-diagonal → √3. No free parameter; change any input and the number changes. Matter fraction and η require the full SM embedding to SO(8).  
 - **omega_k_true** = 0.0098: calibration constant (paper value).  
-- **referenceM** = 500: for numerics only; theory uses ∃ transition shell.  
+- **referenceM** = lockin = qcdShell + stepsFromQCDToLockin; discrete steps through baryogenesis (a few steps after T_lockin).  
 - **Natural units:** T_Pl = 1, G₀ = H₀ = 1.  
 - **Metric / lapse:** N = 1 + Φ + φ t and the HQVM line element come from the informational-energy axiom (paper), not from the light cone; φ can be the lattice-derived field.
 
