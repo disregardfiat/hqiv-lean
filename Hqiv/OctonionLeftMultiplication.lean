@@ -1,6 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
-import Mathlib.LinearAlgebra.Matrix.Basic
+import Mathlib.LinearAlgebra.Matrix.Defs
 import Mathlib.LinearAlgebra.Matrix.Notation
 
 namespace Hqiv

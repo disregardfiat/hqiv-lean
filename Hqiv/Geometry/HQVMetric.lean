@@ -1,5 +1,5 @@
 import Mathlib.Data.Real.Basic
-import Mathlib.Data.Real.Pi
+import Mathlib.Analysis.Real.Pi.Bounds
 
 import Hqiv.Geometry.AuxiliaryField
 

@@ -1,12 +1,13 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Basic
-import Mathlib.Algebra.BigOperators.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.PSeries
-import Mathlib.Topology.Algebra.Order
+import Mathlib.Topology.Algebra.Order.Group
 import Mathlib.Order.Filter.AtTopBot.Tendsto
 import Mathlib.Order.Filter.AtTopBot.Field
-import Mathlib.Data.Real.Pi
+import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Tactic
 
 open Filter Finset BigOperators

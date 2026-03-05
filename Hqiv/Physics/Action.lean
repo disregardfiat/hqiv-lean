@@ -5,7 +5,8 @@ import Hqiv.Geometry.AuxiliaryField
 import Hqiv.Geometry.OctonionicLightCone
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Basic
-import Mathlib.Algebra.BigOperators.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Algebra.BigOperators.Ring.Finset
 
 namespace Hqiv
 
