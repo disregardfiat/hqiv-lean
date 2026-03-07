@@ -2,7 +2,8 @@ import Hqiv.Generators
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Algebra.BigOperators.Fin
 
-set_option maxHeartbeats 40000000
+-- CI needs high limits for the 28×28 matrix proof (784 cases, heavy norm_num)
+set_option maxHeartbeats 200000000
 
 open Matrix BigOperators
 
@@ -51,15 +52,15 @@ def coordVec (M : Matrix (Fin 8) (Fin 8) ℝ) (p : Fin 28) : ℝ :=
 
 /-- **Columns of so8CoordMatrix are orthonormal:** Mᵀ * M = 1 (28×28 identity).
 So det(so8CoordMatrix)² = 1 and so8CoordMatrix.det ≠ 0. -/
-theorem so8CoordMatrix_transpose_mul_self : so8CoordMatrixᵀ * so8CoordMatrix = 1 :=
-  set_option maxHeartbeats 80000000 in by
+theorem so8CoordMatrix_transpose_mul_self : so8CoordMatrixᵀ * so8CoordMatrix = 1 := by
   ext i j
   fin_cases i <;> fin_cases j <;>
-    norm_num [Matrix.mul_apply, transpose_apply, so8CoordMatrix, upperTriangleIdx, one_apply,
+    simp (maxSteps := 500000) only [Matrix.mul_apply, transpose_apply, so8CoordMatrix, upperTriangleIdx, one_apply,
       so8Generator, generator_0, generator_1, generator_2, generator_3, generator_4, generator_5,
       generator_6, generator_7, generator_8, generator_9, generator_10, generator_11,
       generator_12, generator_13, generator_14, generator_15, generator_16, generator_17,
       generator_18, generator_19, generator_20, generator_21, generator_22, generator_23,
-      generator_24, generator_25, generator_26, generator_27]
+      generator_24, generator_25, generator_26, generator_27] <;>
+    norm_num
 
 end Hqiv
