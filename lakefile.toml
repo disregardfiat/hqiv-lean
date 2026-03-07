@@ -1,6 +1,9 @@
 name = "hqiv-lean"
 version = "0.1.0"
 
+# Used by leanprover-community/docgen-action to build HQIVLEAN:docs
+defaultTargets = ["HQIVLEAN"]
+
 [[lean_lib]]
 name = "HQIVLEAN"
 # Core + generators (left mult, so(8) coord, Lie closure).
