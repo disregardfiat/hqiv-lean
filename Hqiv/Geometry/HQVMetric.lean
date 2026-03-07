@@ -267,16 +267,22 @@ theorem HQVM_g_tt_neg_of_lapse_pos (Φ φ t : ℝ) (hN : 0 < HQVM_lapse Φ φ t)
     HQVM_g_tt (HQVM_lapse Φ φ t) < 0 :=
   HQVM_g_tt_neg (HQVM_lapse Φ φ t) (ne_of_gt hN)
 
-/-- **γ** (determined by **entanglement monogamy**): overlap coefficient in the
-metric sector; paper value 0.40. We prove γ = 2/5; (3−γ) = 13/5 and α+γ = 1
-follow from the lattice + monogamy split. Not a free parameter. -/
-def gamma_HQIV : ℝ := 0.40
+/-- **γ** (entanglement monogamy / overlap coefficient): defined as the **complement of α**
+in the unit horizon split, i.e. γ = 1 − α. So γ is **derived** from the same structural
+split that gives α from the lattice (α + γ = 1); no separate free parameter. -/
+def gamma_HQIV : ℝ := 1 - alpha
 
-/-- **γ = 2/5 exactly** (like α = 3/5; paper 0.40). -/
-theorem gamma_eq_2_5 : gamma_HQIV = 2/5 := by unfold gamma_HQIV; norm_num
+/-- **γ = 2/5** — derived from α = 3/5 and the split α + γ = 1 (so γ = 1 − 3/5 = 2/5). -/
+theorem gamma_eq_2_5 : gamma_HQIV = 2/5 := by
+  unfold gamma_HQIV; rw [alpha_eq_3_5]; norm_num
 
-/-- **Coefficient (3 − γ) in the Friedmann equation** equals 13/5.
-This value is fixed by monogamy (γ = 2/5); no free parameter. -/
+/-- **γ equals the paper value 0.40** (2/5 = 0.40). -/
+theorem gamma_eq_paper : gamma_HQIV = 0.40 := by rw [gamma_eq_2_5]; norm_num
+
+/-- **Division of the horizon:** α (lattice) + γ (monogamy) = 1. Holds by definition of γ = 1 − α. -/
+theorem alpha_add_gamma : alpha + gamma_HQIV = 1 := by unfold gamma_HQIV; ring
+
+/-- **Coefficient (3 − γ) in the Friedmann equation** equals 13/5. Derived from γ = 2/5. -/
 theorem three_minus_gamma_eq : (3 : ℝ) - gamma_HQIV = 13/5 := by
   rw [gamma_eq_2_5]; norm_num
 
@@ -284,11 +290,6 @@ theorem three_minus_gamma_eq : (3 : ℝ) - gamma_HQIV = 13/5 := by
 has the correct sign for an expanding universe. -/
 theorem three_minus_gamma_pos : 0 < (3 : ℝ) - gamma_HQIV := by
   rw [three_minus_gamma_eq]; norm_num
-
-/-- **Division of the horizon:** α (growth from lattice) + γ (overlap from monogamy) = 1.
-So 3/5 + 2/5 = 1; the theory is built from this rational split. -/
-theorem alpha_add_gamma : alpha + gamma_HQIV = 1 := by
-  rw [alpha_eq_3_5, gamma_eq_2_5]; norm_num
 
 /-- **G₀** (natural units): reference Newton coupling = 1. Convention: we set G₀ = 1,
 so all couplings are relative to it; no free parameter. -/
