@@ -30,6 +30,6 @@ jobs:
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: leanprover-community/docgen-action@v1
         with:
-          deploy: true
-          build-page: true
-          api-docs: true
+          api_docs: true
+          lake_package_directory: .
+          build_args: --log-level=warning
