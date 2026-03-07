@@ -52,31 +52,31 @@ not free inputs.
 def M_Pl_natural : ℝ := 1.0
 
 /-- **GUT scale (natural units):** M_GUT / M_Pl. Paper: M_GUT ≈ 1.2×10¹⁶ GeV. -/
-def M_GUT_over_M_Pl : ℝ := 1.2e16 / 1.2209e19
+noncomputable def M_GUT_over_M_Pl : ℝ := 1.2e16 / 1.2209e19
 
 /-- **Z mass scale (natural units):** M_Z in Planck units. M_Z ≈ 91.1876 GeV. -/
-def M_Z_natural : ℝ := 91.1876 / 1.2209e19
+noncomputable def M_Z_natural : ℝ := 91.1876 / 1.2209e19
 
 /-- **α_GUT:** GUT coupling. Paper: α_GUT ≈ 1/42. -/
-def alpha_GUT : ℝ := 1.0 / 42.0
+noncomputable def alpha_GUT : ℝ := 1.0 / 42.0
 
 /-- **One-loop β coefficients** (SM: b₁ = 41/10, b₂ = -19/6, b₃ = -7). -/
-def beta_1 : ℝ := 41.0 / 10.0
-def beta_2 : ℝ := -19.0 / 6.0
-def beta_3 : ℝ := -7.0
+noncomputable def beta_1 : ℝ := 41.0 / 10.0
+noncomputable def beta_2 : ℝ := -19.0 / 6.0
+noncomputable def beta_3 : ℝ := -7.0
 
 /-- **Fine-structure constant at M_Z** (derived from β-running with horizon factor).
     α_EM(M_Z) ≈ 1/127.9 (CODATA range). -/
-def alpha_EM_at_MZ : ℝ := 1.0 / 127.9
+noncomputable def alpha_EM_at_MZ : ℝ := 1.0 / 127.9
 
 /-- **sin²θ_W at M_Z** (weak mixing angle; from β-running). -/
-def sin2thetaW_at_MZ : ℝ := 0.23122
+noncomputable def sin2thetaW_at_MZ : ℝ := 0.23122
 
 /-- **Strong coupling at M_Z:** α_s(M_Z). -/
-def alpha_s_at_MZ : ℝ := 0.1180
+noncomputable def alpha_s_at_MZ : ℝ := 0.1180
 
 /-- **Higgs mass reference (natural units):** m_H ≈ 125.11 GeV in Planck units. -/
-def m_H_natural : ℝ := 125.11 / 1.2209e19
+noncomputable def m_H_natural : ℝ := 125.11 / 1.2209e19
 
 /-- **SM constants at "now" (bundle).** All evaluated at the observer's "now" (H = H₀). -/
 structure SM_constants_at_now where
@@ -93,7 +93,7 @@ structure SM_constants_at_now where
   beta3 : ℝ := beta_3
 
 /-- **Default SM constants at "now".** -/
-def sm_constants_now : SM_constants_at_now := {}
+noncomputable def sm_constants_now : SM_constants_at_now := {}
 
 /-- **α_EM at "now" is positive.** -/
 theorem alpha_EM_at_MZ_pos : 0 < alpha_EM_at_MZ := by unfold alpha_EM_at_MZ; norm_num
@@ -140,7 +140,7 @@ def YangMills_SM_GR_Unification_statement : Prop :=
   structure_from_O_dim = 28 ∧
   (∀ φ rho_m rho_r, 0 ≤ φ → (S_HQVM_grav φ rho_m rho_r = 0 ↔ HQVM_Friedmann_eq φ rho_m rho_r)) ∧
   (∀ φ, nowCondition φ ↔ φ = 1) ∧
-  (∀ a, conservations_in_structure_from_O) ∧
+  conservations_in_structure_from_O ∧
   alpha = 3/5 ∧ gamma_HQIV = 2/5
 
 /-- **The HQIV framework satisfies the Yang–Mills / SM–GR unification statement.**
@@ -152,13 +152,11 @@ def YangMills_SM_GR_Unification_statement : Prop :=
 theorem HQIV_satisfies_YangMills_SM_GR_Unification :
     YangMills_SM_GR_Unification_statement := by
   unfold YangMills_SM_GR_Unification_statement
-  refine ⟨structure_from_O_dim_eq, ?_, ?_, ?_, alpha_eq_3_5, gamma_eq_2_5⟩
-  · intro φ rho_m rho_r hφ
+  refine ⟨structure_from_O_dim_eq, ?_, ?_, conservations_in_structure_from_O_holds, alpha_eq_3_5, gamma_eq_2_5⟩
+  · intro φ rho_m rho_r _hφ
     exact S_HQVM_grav_zero_iff_Friedmann φ rho_m rho_r
   · intro φ
     exact nowCondition_iff_phi_one φ
-  · intro a
-    exact conservations_in_structure_from_O
 
 /-- **SM constants at "now" are the derived bundle.** -/
 theorem sm_constants_at_now_derived :
@@ -167,7 +165,7 @@ theorem sm_constants_at_now_derived :
     sm_constants_now.alpha_s = alpha_s_at_MZ ∧
     sm_constants_now.M_Z = M_Z_natural ∧
     sm_constants_now.M_Pl = M_Pl_natural := by
-  unfold sm_constants_now SM_constants_at_now; simp
+  refine ⟨rfl, ⟨rfl, ⟨rfl, ⟨rfl, rfl⟩⟩⟩⟩
 
 /-- **Unification: same φ and α in gauge and GR** (from GRFromMaxwell). -/
 theorem unification_same_phi_alpha :
@@ -177,8 +175,8 @@ theorem unification_same_phi_alpha :
 /-- **O-Maxwell action yields the emergent equation** (from Action). -/
 theorem unification_action_yields_O_Maxwell (φ_val : ℝ) (hφ : φ_val + 1 > 0)
     (A : Fin 8 → Fin 4 → ℝ) (a : Fin 8) (ν : Fin 4) :
-    EL_O A φ_val a ν = (∑ μ : Fin 4, F_from_A A a μ ν) - 4 * π * J_O a ν -
-      (if a = 0 then alpha * Real.log (φ_val + 1) * ∂φ ν else 0) := by
+    EL_O A φ_val a ν = (∑ μ : Fin 4, F_from_A A a μ ν) - 4 * Real.pi * J_O a ν -
+      (if a = 0 then alpha * Real.log (φ_val + 1) * grad_phi ν else 0) := by
   exact action_O_Maxwell_EL_eq_emergent a ν φ_val hφ A
 
 /-- **Force assignment: EM sector is component 0** (from Forces). -/

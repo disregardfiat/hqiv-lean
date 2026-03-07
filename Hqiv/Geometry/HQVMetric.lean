@@ -5,7 +5,7 @@ import Hqiv.Geometry.AuxiliaryField
 
 namespace Hqiv
 
-/‑!
+/-!
 # HQVMetric — Horizon Quantized Vacuum Metric (Non-FLRW) and Effective Friedmann Equation
 
 HQIV is **not** FLRW: the background is the **Horizon-Quantized Vacuum Metric (HQVM)**,
@@ -62,7 +62,7 @@ We do not introduce free parameters. Each definition is **determined by** prior 
 Thus the proven theory in this file **rests on** the light-cone (α, φ, curvature),
 monogamy (γ), natural units, and the informational-energy axiom; the defs are
 arrived at by fixing those, not by tuning.
-‑/
+-/
 
 /-!
 ## HQVM metric and ADM lapse (non-homogeneous)
@@ -119,7 +119,7 @@ theorem timeAngle_zero_t (φ : ℝ) : timeAngle φ 0 = 0 := by unfold timeAngle;
 is conserved as phase: the time angle is interpreted mod 2π, so no spin is destroyed,
 only wrapped. This is **angular** (2π); the curvature norm’s √3 is **spatial**
 (unit-cube half-diagonal) — different dimensions. -/
-def twoPi : ℝ := 2 * Real.pi
+noncomputable def twoPi : ℝ := 2 * Real.pi
 
 theorem twoPi_eq : twoPi = 2 * Real.pi := rfl
 
@@ -136,7 +136,9 @@ theorem timeAngle_mem_Icc_first_period (φ t : ℝ) (hφ : 0 < φ) (ht0 : 0 ≤ 
   unfold timeAngle twoPi
   constructor
   · exact mul_nonneg (le_of_lt hφ) ht0
-  · rw [mul_comm, div_eq_inv_mul]; exact mul_le_mul_of_nonneg_left ht (le_of_lt hφ)
+  · calc φ * t = t * φ := mul_comm φ t
+      _ ≤ (2 * Real.pi / φ) * φ := mul_le_mul_of_nonneg_right ht (le_of_lt hφ)
+      _ = 2 * Real.pi := by field_simp [hφ.ne']
 
 /-- **Lower limit:** at t = 0 the time angle is 0 (already in `timeAngle_zero_t`). -/
 theorem timeAngle_limit_zero (φ : ℝ) :
@@ -178,7 +180,11 @@ theorem HQVM_lapse_at_zero (Φ φ : ℝ) : HQVM_lapse Φ φ 0 = 1 + Φ := by unf
 theorem HQVM_lapse_mono_t (Φ φ t₁ t₂ : ℝ) (hφ : 0 ≤ φ) (ht : t₁ ≤ t₂) :
     HQVM_lapse Φ φ t₁ ≤ HQVM_lapse Φ φ t₂ := by
   unfold HQVM_lapse
-  exact add_le_add_right (add_le_add_left (mul_le_mul_of_nonneg_right ht hφ) Φ) 1
+  have H := add_le_add_right (add_le_add_left (mul_le_mul_of_nonneg_right ht hφ) Φ) 1
+  rw [mul_comm t₁ φ, mul_comm t₂ φ] at H
+  conv_lhs => rw [add_assoc, add_comm Φ (φ * t₁)]
+  conv_rhs => rw [add_assoc, add_comm Φ (φ * t₂)]
+  exact H
 
 /-- **Lapse is positive** when 1 + Φ > 0 and φ ≥ 0, t ≥ 0. So in the weak-field
 (Φ > -1) and forward-time, non-negative φ regime, N > 0 and g_tt < 0 (timelike t). -/
@@ -215,7 +221,7 @@ def HQVM_spatial_coeff (a Φ : ℝ) : ℝ := a ^ 2 * (1 - 2 * Φ)
 theorem HQVM_g_tt_neg (N : ℝ) (hN : N ≠ 0) :
     HQVM_g_tt N < 0 := by
   unfold HQVM_g_tt
-  exact neg_lt_zero.mpr (sq_pos_of_ne_zero N hN)
+  exact neg_lt_zero.mpr (sq_pos_of_ne_zero hN)
 
 /-- **Spatial coefficient is positive** when a > 0 and Φ < 1/2 (weak-field regime:
 the Newtonian potential does not dominate). So the spatial metric is Riemannian. -/
@@ -249,9 +255,7 @@ theorem HQVM_geometry_Minkowski (t : ℝ) :
 normal is n = (1/N) ∂_t; its squared norm is g_tt · (1/N)² = -1, so n is timelike and unit. -/
 theorem HQVM_unit_normal_squared (N : ℝ) (hN : N ≠ 0) :
     HQVM_g_tt N * (1 / N) ^ 2 = -1 := by
-  unfold HQVM_g_tt
-  field_simp [hN]
-  ring
+  unfold HQVM_g_tt; field_simp [hN]
 
 /-- **Spatial coefficient expanded:** a²(1 - 2Φ) = a² - 2a²Φ. -/
 theorem HQVM_spatial_coeff_expand (a Φ : ℝ) :
@@ -312,17 +316,17 @@ theorem H_of_phi_eq (φ : ℝ) : H_of_phi φ = φ := rfl
 Paper: G_eff/G₀ = (H/H₀)^α; with H = φ (homogeneous) and G₀ = H₀ = 1 we get
 G_eff(φ) = φ^α. So this def is **arrived at** from α (from the light cone) and
 natural units — no extra fit. -/
-def G_eff (φ : ℝ) : ℝ :=
+noncomputable def G_eff (φ : ℝ) : ℝ :=
   G0 * (H_of_phi φ / H0) ^ alpha
 
 /-- **G_eff in terms of φ and α only:** when G₀ = H₀ = 1, G_eff(φ) = φ^α (φ ≥ 0). -/
-theorem G_eff_eq (φ : ℝ) (hφ : 0 ≤ φ) :
+theorem G_eff_eq (φ : ℝ) (_hφ : 0 ≤ φ) :
   G_eff φ = φ ^ alpha := by
-  simp [G_eff, H_of_phi, G0_eq, H0_eq, div_one, one_pow]; rw [one_mul]
+  simp only [G_eff, H_of_phi, G0_eq, H0_eq, div_one, one_mul]
 
 /-- **G_eff at unit Hubble:** when φ = 1 (H = H₀ in natural units), G_eff(1) = 1 = G₀. -/
 theorem G_eff_one : G_eff 1 = 1 := by
-  rw [G_eff_eq 1 (le_refl 1), alpha_eq_3_5]; norm_num
+  rw [G_eff_eq 1 zero_le_one, alpha_eq_3_5]; norm_num
 
 /-- Total homogeneous energy density (matter + radiation). -/
 def rho_total (rho_m rho_r : ℝ) : ℝ := rho_m + rho_r
@@ -351,7 +355,8 @@ theorem HQVM_Friedmann_eq_def (φ rho_m rho_r : ℝ) :
 theorem HQVM_Friedmann_eq_rational (φ rho_m rho_r : ℝ) :
   HQVM_Friedmann_eq φ rho_m rho_r ↔
     (13/5 : ℝ) * φ ^ 2 = 8 * Real.pi * G_eff φ * (rho_m + rho_r) := by
-  simp only [HQVM_Friedmann_eq_def, H_of_phi_eq, rho_total_eq, three_minus_gamma_eq]
+  simp only [HQVM_Friedmann_eq_def, H_of_phi_eq, rho_total_eq]
+  rw [show (3.0 : ℝ) = (3 : ℝ) by norm_num, three_minus_gamma_eq, show (8.0 : ℝ) = (8 : ℝ) by norm_num]
 
 /-- **Friedmann equation with G_eff as φ^α (φ ≥ 0):**
   (13/5) φ² = 8π φ^α (ρ_m + ρ_r). -/
@@ -364,14 +369,13 @@ theorem HQVM_Friedmann_eq_power (φ rho_m rho_r : ℝ) (hφ : 0 ≤ φ) :
 So in the vacuum the only homogeneous solution is H = 0. -/
 theorem HQVM_Friedmann_eq_vacuum_iff (φ : ℝ) :
   HQVM_Friedmann_eq φ 0 0 ↔ φ = 0 := by
-  rw [HQVM_Friedmann_eq_rational, rho_total_eq, add_zero, mul_zero, mul_zero]
-  simp only [sub_self, true_and]
+  rw [HQVM_Friedmann_eq_rational, add_zero, mul_zero]
   constructor
   · intro h
     rw [mul_eq_zero] at h
     cases h with
     | inl h => exact absurd h (by norm_num)
-    | inr h => exact pow_eq_zero h
+    | inr h => exact eq_zero_of_pow_eq_zero h
   · intro h; rw [h]; norm_num
 
 /-- **Minkowski limit and Friedmann vacuum agree:** when Φ = 0, φ = 0, the lapse is 1

@@ -2,9 +2,6 @@ import Mathlib.Data.Real.Basic
 
 import Hqiv.Geometry.OctonionicLightCone
 import Hqiv.Geometry.HQVMetric
-import Hqiv.Generators
-import Hqiv.GeneratorsFromAxioms
-import Hqiv.GeneratorsLieClosure
 
 namespace Hqiv
 
@@ -83,11 +80,20 @@ later charge-like quantities) live **in** this structure. Later we can prove
 that this structure is identical to SO(8) or the known gauge algebra.
 -/
 
-/-- **Conservations hold in the structure from O.** Placeholder: the
-conservations forced by the metric (phase conservation, etc.) take place in
-the algebraic structure that results from counting over O. To be replaced by
-a precise statement once we prove the degrees of freedom (dimension 28, basis
-from matrices.py). -/
-def conservations_in_structure_from_O : Prop := True
+/-- **Statement:** conservations hold in the structure from O (dim 28, phase mod 2π). -/
+def conservations_in_structure_from_O : Prop :=
+  structure_from_O_dim = 28 ∧
+  ∀ φ : ℝ, 0 < φ →
+    timeAngle φ 0 = 0 ∧ timeAngle φ (twoPi / φ) = twoPi ∧
+    ∀ t, t ∈ Set.Icc 0 (twoPi / φ) → timeAngle φ t ∈ Set.Icc 0 twoPi
+
+/-- **Conservations hold in the structure from O.** The structure from counting
+over O has dimension 28 (structure_from_O_dim), and the metric forces phase
+conservation: for every φ > 0, the time angle is 0 at t = 0, equals 2π at
+t = 2π/φ, and lies in [0, 2π] for t ∈ [0, 2π/φ]. So phase (spin) is conserved
+mod 2π in the structure determined by the metric. -/
+theorem conservations_in_structure_from_O_holds : conservations_in_structure_from_O := by
+  unfold conservations_in_structure_from_O
+  refine ⟨structure_from_O_dim_eq, fun φ hφ => timeAngle_zero_to_twoPi φ hφ⟩
 
 end Hqiv

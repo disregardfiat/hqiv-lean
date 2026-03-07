@@ -54,7 +54,23 @@ def matrix_to_lean(M) -> str:
     return "!![\n" + ";\n".join(rows) + "\n  ]"
 
 
+def matrix_to_lean_match(M) -> str:
+    """Format an 8x8 matrix as Matrix.of (fun i j => match i, j with ...) so (M i j) reduces for all i, j."""
+    lines = ["  match i, j with"]
+    for i in range(8):
+        row_vals = [to_lean_real(float(M[i][j])) for j in range(8)]
+        line = f"  | {i}, 0 => {row_vals[0]} | {i}, 1 => {row_vals[1]} | {i}, 2 => {row_vals[2]} | {i}, 3 => {row_vals[3]} | {i}, 4 => {row_vals[4]} | {i}, 5 => {row_vals[5]} | {i}, 6 => {row_vals[6]} | {i}, 7 => {row_vals[7]}"
+        lines.append(line)
+    lines.append("  )")
+    return "Matrix.of (fun i j =>\n" + "\n".join(lines)
+
+
 def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="Print so(8) generators as Lean 4 definitions.")
+    parser.add_argument("--match", action="store_true", help="Use Matrix.of + match form so (M i j) reduces (fixes antisymm proof).")
+    args = parser.parse_args()
+    use_match = args.match
     try:
         import numpy as np
     except ImportError:
@@ -94,17 +110,22 @@ def main() -> None:
         print(f"-- Warning: expected 28 generators, got {len(basis)}", file=sys.stderr)
 
     print("-- Paste the following into Hqiv/Generators.lean (replace the placeholder defs).")
-    print("-- Generated from matrices.py lie_closure_basis.")
+    print("-- Generated from matrices.py lie_closure_basis." + (" Match form for reduction." if use_match else ""))
     print()
     for k, B in enumerate(basis):
         if k >= 28:
             break
         M = B.tolist() if hasattr(B, "tolist") else list(B)
         print(f"/-- Generator {k} (from matrices.py lie_closure_basis). -/")
-        print(f"def generator_{k} : Matrix (Fin 8) (Fin 8) ℝ := {matrix_to_lean(M)}")
+        if use_match:
+            print(f"def generator_{k} : Matrix (Fin 8) (Fin 8) ℝ := {matrix_to_lean_match(M)}")
+        else:
+            print(f"def generator_{k} : Matrix (Fin 8) (Fin 8) ℝ := {matrix_to_lean(M)}")
         print()
     print("-- Then define so8Generator (k : Fin 28) by matching k to generator_0 .. generator_27")
     print("-- and add theorems generator_k_eq : so8Generator k = generator_k := rfl.")
+    if use_match:
+        print("-- Antisymm proofs: use simp only [generator_K, Matrix.of_apply, add_apply, transpose_apply, zero_apply]; all_goals norm_num")
 
 
 if __name__ == "__main__":

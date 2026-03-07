@@ -2,15 +2,19 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Algebra.Ring.Parity
+import Mathlib.Algebra.Group.Nat.Even
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.PSeries
 import Mathlib.Topology.Algebra.Order.Group
 import Mathlib.Order.Filter.AtTopBot.Tendsto
 import Mathlib.Order.Filter.AtTopBot.Field
 import Mathlib.Analysis.Real.Pi.Bounds
+import Mathlib.NumberTheory.Harmonic.Bounds
 import Mathlib.Tactic
 
 open Filter Finset BigOperators
+open scoped Topology
 
 namespace Hqiv
 
@@ -50,18 +54,18 @@ theorem latticeSimplexCount_eq (m : Nat) :
 
 /-- Lattice count is positive (every shell has at least one mode). -/
 theorem latticeSimplexCount_pos (m : Nat) : 0 < latticeSimplexCount m := by
-  simp [latticeSimplexCount_eq]; omega
+  rw [latticeSimplexCount_eq]; positivity
 
 /-- **Division in the lattice:** the stars-and-bars numerator (m+2)(m+1) is even
 (one of two consecutive naturals is even), so 2 ∣ latticeSimplexCount m. -/
 theorem two_dvd_latticeSimplexCount (m : Nat) : 2 ∣ latticeSimplexCount m := by
   rw [latticeSimplexCount_eq, mul_comm]
-  exact Nat.even_iff_two_dvd.mp (Nat.even_mul_succ_self (m + 1))
+  exact even_iff_two_dvd.mp (Nat.even_mul_succ_self (m + 1))
 
 /-- Cast to ℝ: `(latticeSimplexCount m : ℝ) = (m+2)(m+1)`. -/
 theorem latticeSimplexCount_cast (m : Nat) :
   (latticeSimplexCount m : ℝ) = ((m : ℝ) + 2) * ((m : ℝ) + 1) := by
-  simp [latticeSimplexCount_eq]; exact Nat.cast_mul (m + 2) (m + 1)
+  simp [latticeSimplexCount_eq, Nat.cast_mul]
 
 -- Quick theorem checks (visible in infoview)
 #check latticeSimplexCount_zero
@@ -103,10 +107,10 @@ theorem cumLatticeSimplexCount_hockey_stick (n : Nat) :
   induction n with
   | zero => simp [cumLatticeSimplexCount, latticeSimplexCount]
   | succ n ih =>
-    simp only [cumLatticeSimplexCount, latticeSimplexCount, Nat.succ_eq_add_one]
+    simp only [cumLatticeSimplexCount, latticeSimplexCount]
     rw [Nat.mul_add 3, ih]
     ring_nf
-    ring
+    try ring
 
 /-- **Closed form (arrived at from hockey-stick):** cum = (n+1)(n+2)(n+3)/3.
 So the cumulative count is determined by the binomial, not just the recurrence. -/
@@ -114,7 +118,6 @@ theorem cumLatticeSimplexCount_closed (n : Nat) :
   cumLatticeSimplexCount n = ((n + 1) * (n + 2) * (n + 3)) / 3 := by
   symm
   apply Nat.div_eq_of_eq_mul_right (by norm_num)
-  rw [Nat.mul_comm]
   exact (cumLatticeSimplexCount_hockey_stick n).symm
 
 /-- **Division in the lattice:** the binomial numerator (n+1)(n+2)(n+3) is divisible by 3.
@@ -134,11 +137,7 @@ theorem cumLatticeSimplexCount_succ_ge (n : Nat) :
   cumLatticeSimplexCount n ≤ cumLatticeSimplexCount (n + 1) := by
   -- `cumLatticeSimplexCount (n+1) = cumLatticeSimplexCount n + latticeSimplexCount (n+1)`
   -- and `a ≤ a + b` for natural numbers.
-  have h :
-      cumLatticeSimplexCount n ≤
-        cumLatticeSimplexCount n + latticeSimplexCount (n + 1) :=
-    Nat.le_add_right _ _
-  simpa [cumLatticeSimplexCount, Nat.succ_eq_add_one] using h
+  exact Nat.le_add_right (cumLatticeSimplexCount n) (latticeSimplexCount (n + 1))
 
 /-- Inequality across multiple shells: for all `k`,  
 `cumLatticeSimplexCount m ≤ cumLatticeSimplexCount (m + k)`. -/
@@ -147,7 +146,7 @@ theorem cumLatticeSimplexCount_le_add (m k : Nat) :
   induction k with
   | zero =>
       -- `m + 0 = m`
-      simpa using (Nat.le_refl (cumLatticeSimplexCount m))
+      simp
   | succ k ih =>
       -- Step from `m + k` to `m + (k+1)` using the one-step lemma.
       have step := cumLatticeSimplexCount_succ_ge (m + k)
@@ -170,7 +169,7 @@ theorem cumLatticeSimplexCount_pos (n : Nat) :
   | zero => simp [cumLatticeSimplexCount]; exact latticeSimplexCount_pos 0
   | succ n ih =>
     rw [cumLatticeSimplexCount]
-    exact Nat.add_pos_right ih (latticeSimplexCount_pos (n + 1))
+    exact Nat.add_pos_right (cumLatticeSimplexCount n) (latticeSimplexCount_pos (n + 1))
 
 -- Quick checks for monotonicity lemmas
 #check cumLatticeSimplexCount_succ_ge
@@ -178,7 +177,7 @@ theorem cumLatticeSimplexCount_pos (n : Nat) :
 #check cumLatticeSimplexCount_monotone
 
 /-- **The single axiom of HQIV**  
-At each discrete radial step m in the observer’s past light-cone,  
+At each discrete radial step m in the observer's past light-cone,  
 the number of newly available modes is exactly the stars-and-bars count  
 for x + y + z = m (3D null lattice) multiplied by the octonion factor 8.  
 
@@ -192,18 +191,23 @@ the permanent positive curvature limit Ω_k^true = 0.0098
 In the Lean development we tie the numeric mode count directly to the
 Nat-level lattice simplex count via a simple Float cast. -/
 def available_modes (m : Nat) : ℝ :=
-  4.0 * (latticeSimplexCount m : ℝ)
+  (4 : ℝ) * (latticeSimplexCount m : ℝ)
 
 /-- Available modes in closed form (ℝ): 4(m+2)(m+1). -/
 theorem available_modes_eq (m : Nat) :
-  available_modes m = 4 * ((m : ℝ) + 2) * ((m : ℝ) + 1) := by
-  simp [available_modes, latticeSimplexCount_eq]; ring_nf; ring
+  available_modes m = (4 : ℝ) * ((m : ℝ) + 2) * ((m : ℝ) + 1) := by
+  unfold available_modes latticeSimplexCount
+  norm_num
+  ring
 
 /-- **Factor 4 from octonion × binomial:** available_modes = 8 × (stars-and-bars count in ℝ).
 Paper: new modes = 8 × C(m+2,2); we have 2·C(m+2,2) = (m+2)(m+1), so 8·C = 4·(m+2)(m+1). -/
 theorem available_modes_octonion (m : Nat) :
-  available_modes m = 8 * ((latticeSimplexCount m : ℝ) / 2) := by
-  simp [available_modes]; ring
+  available_modes m = (8 : ℝ) * ((latticeSimplexCount m : ℝ) / 2) := by
+  rw [available_modes_eq, latticeSimplexCount_eq]
+  simp only [Nat.cast_mul, Nat.cast_add]
+  field_simp
+  ring
 
 /-- **New modes** added at shell m (incremental growth from the axiom).
 These are the **newly unlocked horizon modes** the observer interacts with via
@@ -222,8 +226,11 @@ theorem new_modes_zero : new_modes 0 = available_modes 0 := by simp [new_modes]
 Follows from available_modes (m+1) - available_modes m and latticeSimplexCount difference. -/
 theorem new_modes_succ (m : Nat) :
   new_modes (m + 1) = 8 * (m + 2 : ℝ) := by
-  simp only [new_modes, available_modes, latticeSimplexCount, Nat.succ_eq_add_one,
-    Nat.add_sub_cancel, ne_eq, Nat.succ_ne_zero, not_false_eq_true, ite_false]
+  unfold new_modes available_modes
+  simp only [Nat.succ_ne_zero, ite_false, Nat.add_sub_cancel]
+  rw [latticeSimplexCount_eq (m + 1), latticeSimplexCount_eq m]
+  rw [show (m + 1 : Nat) + 2 = m + 3 by omega, show (m + 1 : Nat) + 1 = m + 2 by omega]
+  simp only [Nat.cast_mul, Nat.cast_add, Nat.cast_one]
   push_cast
   ring
 
@@ -237,7 +244,7 @@ scales with the shell temperature. In the full development, α will be shown
 (hockey-stick); the limit as shells grow is therefore 3/5 (no free parameter). -/
 def alpha : ℝ := 0.60
 
-/-- **α equals 3/5 exactly.** The paper’s 0.60 is the rational 3/5 (proved). -/
+/-- **α equals 3/5 exactly.** The paper's 0.60 is the rational 3/5 (proved). -/
 theorem alpha_eq_3_5 : alpha = 3/5 := by unfold alpha; norm_num
 
 /-- **α as lattice rational (step toward proving 0.6):** α = 3/(3+2) = 3/5.
@@ -251,7 +258,7 @@ theorem alpha_eq_lattice_rational :
 
 /-- **Lattice-derived ratio:** (n+1)(n+2)(n+3) / (5 · cum n) in ℝ.
 By the hockey-stick identity 3·cum n = (n+1)(n+2)(n+3), this equals 3/5 for every n. -/
-def latticeAlphaRatio (n : Nat) : ℝ :=
+noncomputable def latticeAlphaRatio (n : Nat) : ℝ :=
   (n + 1 : ℝ) * (n + 2) * (n + 3) / (5 * (cumLatticeSimplexCount n : ℝ))
 
 /-- **α in the lattice:** the lattice ratio equals α for every shell count n. -/
@@ -259,11 +266,14 @@ theorem latticeAlphaRatio_eq_alpha (n : Nat) :
   latticeAlphaRatio n = alpha := by
   unfold latticeAlphaRatio alpha
   have h := cumLatticeSimplexCount_hockey_stick n
-  have hpos : (cumLatticeSimplexCount n : ℝ) ≠ 0 :=
-    Nat.cast_ne_zero.mpr (cumLatticeSimplexCount_pos n).ne'
-  push_cast at h
-  field_simp
-  nlinarith
+  have hpos : (cumLatticeSimplexCount n : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (cumLatticeSimplexCount_pos n).ne'
+  have cast_eq : (↑n + 1) * (↑n + 2) * (↑n + 3) = (↑((n + 1) * (n + 2) * (n + 3)) : ℝ) := by push_cast; ring
+  have hR : (3 : ℝ) * ↑(cumLatticeSimplexCount n) = ↑((n + 1) * (n + 2) * (n + 3)) := by
+    rw [show (3 : ℝ) = Nat.cast (3 : Nat) from by norm_num, ← Nat.cast_mul]; exact congr_arg (Nat.cast : Nat → ℝ) h
+  field_simp [hpos]
+  rw [cast_eq, ← hR, mul_comm (5 : ℝ) _, mul_assoc]
+  norm_num
+  ring
 
 /-- **α as limit:** as more shells are included, the lattice ratio tends to α = 3/5. -/
 theorem tendsto_latticeAlphaRatio :
@@ -271,9 +281,9 @@ theorem tendsto_latticeAlphaRatio :
   rw [show (fun n : ℕ => latticeAlphaRatio n) = (fun _ => alpha) from funext latticeAlphaRatio_eq_alpha]
   exact tendsto_const_nhds
 
-/-- **Reference horizon** = minimal transition shell (derived); calibration (e.g. paper’s Python runs).
-We take the minimal transition shell (N = 1 from exists_transition_shell); no arbitrary step. -/
-/-- **QCD transition shell:** first shell with positive curvature (T ladder). -/
+/-- **Reference horizon** = minimal transition shell (derived); calibration (e.g. paper's Python runs).
+We take the minimal transition shell (N = 1 from exists_transition_shell); no arbitrary step.
+**QCD transition shell:** first shell with positive curvature (T ladder). -/
 def qcdShell : Nat := 1
 
 /-- **Steps from QCD to lockin:** number of discrete lattice steps from QCD transition to η lockin. -/
@@ -286,15 +296,15 @@ def stepsAfterLockin : Nat := 3
     discrete steps through baryogenesis: QCD then lockin then stepsAfterLockin steps. No arbitrary 500. -/
 def referenceM : Nat := qcdShell + stepsFromQCDToLockin
 
+/-- Continuous curvature-imprint density on ℝ⁺, matching `shell_shape` on integers. -/
+noncomputable def curvatureDensity (x : ℝ) : ℝ :=
+  (1 / x) * (1 + alpha * Real.log x)
+
 /-- Purely combinatorial curvature-imprint **shape** per shell m.
 
 Given by the continuous density at x = m+1 (paper: (1/(m+1)) * (1 + α log(m+1))). -/
-def shell_shape (m : Nat) : ℝ :=
+noncomputable def shell_shape (m : Nat) : ℝ :=
   curvatureDensity (m + 1)
-
-/-- Continuous curvature-imprint density on ℝ⁺, matching `shell_shape` on integers. -/
-def curvatureDensity (x : ℝ) : ℝ :=
-  (1.0 / x) * (1.0 + alpha * Real.log x)
 
 /-- Positivity of the curvature-imprint density for `x ≥ 1`.
 
@@ -305,24 +315,15 @@ lemma curvatureDensity_pos {x : ℝ} (hx : 1 ≤ x) :
   unfold curvatureDensity
   -- First, `x > 0` so `1/x > 0`.
   have hx0 : 0 < x := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) hx
-  have hfrac_pos : 0 < (1.0 / x) := one_div_pos.mpr hx0
+  have hfrac_pos : 0 < (1 / x) := one_div_pos.mpr hx0
   -- Next, `log x ≥ 0` for `x ≥ 1`, so `1 + α log x ≥ 1`.
   have hlog_nonneg : 0 ≤ Real.log x := Real.log_nonneg hx
-  have h_alpha_nonneg : 0 ≤ alpha := by
-    unfold alpha
-    norm_num
-  have h_alpha_log_nonneg :
-      0 ≤ alpha * Real.log x :=
-    mul_nonneg h_alpha_nonneg hlog_nonneg
-  have hone_le :
-      (1 : ℝ) ≤ 1.0 + alpha * Real.log x := by
-    have : 0 ≤ alpha * Real.log x := h_alpha_log_nonneg
-    have : 0 + (1 : ℝ) ≤ alpha * Real.log x + 1 := add_le_add_right this 1
-    simpa [add_comm] using this
+  have h_alpha_nonneg : 0 ≤ alpha := by unfold alpha; norm_num
+  have h_alpha_log_nonneg : 0 ≤ alpha * Real.log x := mul_nonneg h_alpha_nonneg hlog_nonneg
+  have hone_le : (1 : ℝ) ≤ 1 + alpha * Real.log x := by
+    simpa [add_comm] using add_le_add_right h_alpha_log_nonneg 1
   -- Hence the second factor is strictly positive.
-  have hsecond_pos :
-      0 < 1.0 + alpha * Real.log x :=
-    lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) hone_le
+  have hsecond_pos : 0 < 1 + alpha * Real.log x := lt_of_lt_of_le zero_lt_one hone_le
   -- Product of two positive reals is positive.
   exact mul_pos hfrac_pos hsecond_pos
 
@@ -347,7 +348,9 @@ lemma curvatureDensity_ge_one_div_succ (m : Nat) :
   have hpos : (0 : ℝ) < (m + 1 : ℝ) := by exact_mod_cast Nat.succ_pos m
   calc (1 : ℝ) / (m + 1 : ℝ)
     _ = (1 / (m + 1 : ℝ)) * 1 := by ring
-    _ ≤ (1 / (m + 1 : ℝ)) * (1.0 + alpha * Real.log (m + 1 : ℝ)) := by gcongr; exact h
+    _ ≤ (1 / (m + 1 : ℝ)) * (1 + alpha * Real.log (m + 1 : ℝ)) := by
+      apply mul_le_mul_of_nonneg_left h
+      positivity
 
 /-- **Analytic upper bound (per shell):** for m < n, curvatureDensity (m+1) ≤ (1/(m+1))(1 + α log(n+1)).
 Used to bound the curvature integral above by a multiple of the harmonic sum. -/
@@ -356,28 +359,18 @@ lemma curvatureDensity_le_one_div_succ_mul_log (m n : Nat) (hmn : m < n) :
   unfold curvatureDensity
   have hpos : (0 : ℝ) < (m + 1 : ℝ) := by exact_mod_cast Nat.succ_pos m
   gcongr
-  · exact one_div_nonneg.mpr (Nat.cast_nonneg _)
-  · have h : (m + 1 : ℝ) ≤ (n + 1 : ℝ) := by exact_mod_cast Nat.succ_le_succ (Nat.le_of_lt hmn)
-    exact Real.log_le_log (by exact_mod_cast Nat.succ_pos m) h
+  first | unfold alpha; norm_num | exact Real.log_le_log (Nat.cast_pos.mpr (Nat.succ_pos m)) (Nat.cast_le.mpr (Nat.succ_le_succ (Nat.le_of_lt hmn)))
 
 /-- By definition, `shell_shape m` is the density sampled at m+1. -/
 theorem shell_shape_eq_density_succ (m : Nat) :
-  shell_shape m = curvatureDensity (m + 1) := rfl
+  shell_shape m = curvatureDensity (m + 1) := by
+  unfold shell_shape
+  rfl
 
 /-- Explicit shape formula from the paper (proved, not defined): (1/(m+1))(1 + α ln(m+1)). -/
 theorem shell_shape_formula (m : Nat) :
   shell_shape m = (1 / (m + 1 : ℝ)) * (1 + alpha * Real.log (m + 1 : ℝ)) := by
-  simp [shell_shape, curvatureDensity, Nat.cast_add, Nat.cast_one]
-
-/-- Per-shell δE in terms of density only. -/
-theorem deltaE_eq (m : Nat) :
-  deltaE m = curvature_norm_combinatorial * curvatureDensity (m + 1) := by
-  simp [deltaE, shell_shape_eq_density_succ]
-
-/-- **δE using the exact combinatorial norm:** δE(m) = 279936 · √3 · curvatureDensity(m+1). -/
-theorem deltaE_exact_norm (m : Nat) :
-  deltaE m = (279_936 : ℝ) * Real.sqrt 3 * curvatureDensity (m + 1) := by
-  rw [deltaE_eq, curvature_norm_combinatorial_exact]
+  rw [shell_shape_eq_density_succ, curvatureDensity]
 
 -- Quick check for the bridge lemma
 #check shell_shape_eq_density_succ
@@ -413,7 +406,7 @@ Distance from center to vertex = √(1²+1²+1²) = √3. This is the "inscribed
 factor in the curvature norm (rapidity lattice / equilateral triangle on the hyperboloid).
 **√3 is spatial** (a length); the time phase in the metric uses **2π** (angle). Different
 dimensions — no conflict. -/
-def unitCubeHalfDiagonal : ℝ := Real.sqrt ((1 : ℝ) ^ 2 + 1 ^ 2 + 1 ^ 2)
+noncomputable def unitCubeHalfDiagonal : ℝ := Real.sqrt ((1 : ℝ) ^ 2 + 1 ^ 2 + 1 ^ 2)
 
 theorem unitCubeHalfDiagonal_eq_sqrt3 : unitCubeHalfDiagonal = Real.sqrt (3 : ℝ) := by
   unfold unitCubeHalfDiagonal
@@ -431,8 +424,8 @@ In 3D, if you take a sphere of radius R and "lift" its surface outward by 1
 (same idea: new radius R+1), the surface area goes from 4πR² to 4π(R+1)². The
 **added** area is 4π((R+1)² − R²) = 8πR + 4π, which **depends on R**. So the
 "constant increment" property does **not** hold for the sphere — it is special
-to the circle (1D boundary). The curvature norm’s √3 is tied to the 3D cube
-(half-diagonal); the belt’s 2π is a 1D phenomenon.
+to the circle (1D boundary). The curvature norm's √3 is tied to the 3D cube
+(half-diagonal); the belt's 2π is a 1D phenomenon.
 -/
 
 /-- **Belt fact (1D):** Lifting a circle of radius R outward by h gives new
@@ -487,7 +480,7 @@ shape to give δE(m); Ω\_k is calibrated from it. Matter fraction and η requir
 the full SM embedding to SO(8). The factor **√3** here is spatial (unit-cube
 half-diagonal); the time angle in HQVMetric uses **2π** (angular period). So
 curvature norm = spatial geometry, time phase = angle — different roles. -/
-def curvature_norm_combinatorial : ℝ :=
+noncomputable def curvature_norm_combinatorial : ℝ :=
   (curvatureNormBase : ℝ) ^ curvatureNormExponent * Real.sqrt (3 : ℝ)
 
 /-- **Curvature norm from base and exponent:** \(6^7\sqrt{3}\) in ℝ. -/
@@ -507,7 +500,9 @@ theorem curvature_norm_from_cube :
 /-- Same formula with octonion dimension explicit: (cube directions)^(octonion dim) × half-diagonal. -/
 theorem curvature_norm_from_cube_octonionDim :
   curvature_norm_combinatorial = (cubeDirections : ℝ) ^ octonionImaginaryDim * unitCubeHalfDiagonal := by
-  rw [curvatureNormExponent_eq_octonionDim]; exact curvature_norm_from_cube
+  have := curvature_norm_from_cube
+  rw [curvatureNormExponent_eq_octonionDim] at this
+  exact this
 
 /-!
 ### Not chosen by convenience: the norm is determined by three structural inputs
@@ -560,21 +555,26 @@ theorem curvature_norm_combinatorial_pos : 0 < curvature_norm_combinatorial := b
   have h2 : 0 < Real.sqrt (3 : ℝ) := Real.sqrt_pos.mpr (by norm_num)
   exact mul_pos h1 h2
 
-/-- Per-shell curvature imprint δE(m) = \(6^7\sqrt{3}\)\*shape(m).
-
-This mirrors the Python `curvature_imprint_energy` in the regime where the
-amplitude is set purely by the combinatorial invariant (no Ω\_k fed back in).
-The *shape* carries the radial 1/(m+1) weighting and the α·log term; the
-overall amplitude is fixed by the single HQIV invariant \(6^7\sqrt{3}\). -/
-def deltaE (m : Nat) : ℝ :=
+/-- Per-shell curvature imprint δE(m) = (6^7√3) * shape(m). -/
+noncomputable def deltaE (m : Nat) : ℝ :=
   curvature_norm_combinatorial * shell_shape m
 
+/-- Per-shell δE in terms of density only. -/
+theorem deltaE_eq (m : Nat) :
+  deltaE m = curvature_norm_combinatorial * curvatureDensity (m + 1) := by
+  simp only [deltaE, shell_shape_eq_density_succ]
+
+/-- **δE using the exact combinatorial norm:** δE(m) = 279936 · √3 · curvatureDensity(m+1). -/
+theorem deltaE_exact_norm (m : Nat) :
+  deltaE m = (279_936 : ℝ) * Real.sqrt 3 * curvatureDensity (m + 1) := by
+  rw [deltaE_eq, curvature_norm_combinatorial_exact]
+
 /-- Absolute value of the curvature-imprint shape: |shape(m)|, no separate helper def. -/
-def shell_shape_abs (m : Nat) : ℝ :=
+noncomputable def shell_shape_abs (m : Nat) : ℝ :=
   |shell_shape m|
 
 /-- Unnormalised curvature imprint integral over shells 0..n-1. -/
-def curvature_integral (n : Nat) : ℝ :=
+noncomputable def curvature_integral (n : Nat) : ℝ :=
   let shells := List.range n
   shells.foldl (fun acc m => acc + shell_shape_abs m) 0.0
 
@@ -589,12 +589,9 @@ It makes transparent that the discrete object we are summing is exactly
 the continuous density sampled on integer shells. -/
 theorem curvature_integral_eq_sum_density (n : Nat) :
   curvature_integral n
-    = (List.range n).foldl
-        (fun acc m => acc + |curvatureDensity (m + 1)|) 0.0 := by
-  -- Unfold `curvature_integral` and `shell_shape_abs`, then use the bridge lemma.
+    = (List.range n).foldl (fun (acc : ℝ) (m : Nat) => acc + |curvatureDensity (↑m + 1)|) 0.0 := by
   unfold curvature_integral
-  -- `simp` under the fold using `shell_shape_eq_density_succ`.
-  simp [shell_shape_abs, curvatureDensity, shell_shape_eq_density_succ]
+  simp only [shell_shape_abs, shell_shape_eq_density_succ, curvatureDensity_pos_succ, abs_of_pos]
 
 /-- Positivity of the absolute shell shape `shell_shape_abs m`. -/
 lemma shell_shape_abs_pos (m : Nat) :
@@ -607,8 +604,8 @@ lemma shell_shape_abs_pos (m : Nat) :
   have habs :
       |curvatureDensity (m + 1)| = curvatureDensity (m + 1) :=
     abs_of_pos hpos
-  -- Rewrite and conclude.
-  simpa [shell_shape_eq_density_succ, curvatureDensity, habs] using hpos
+  rw [shell_shape_eq_density_succ, habs]
+  exact hpos
 
 /-- Recurrence relation for the discrete curvature integral:
 `curvature_integral (n+1) = curvature_integral n + shell_shape_abs n`. -/
@@ -623,13 +620,14 @@ lemma curvature_integral_succ (n : Nat) :
 lemma curvature_integral_ge_harmonic (n : Nat) :
     curvature_integral n ≥ ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) := by
   induction n with
-  | zero => unfold curvature_integral; simp
+  | zero => unfold curvature_integral; simp; norm_num
   | succ n ih =>
     rw [curvature_integral_succ, sum_range_succ]
     have hshell : shell_shape_abs n ≥ (1 : ℝ) / (n + 1 : ℝ) := by
-      rw [shell_shape_abs, shell_shape_eq_density_succ]
+      rw [shell_shape_abs, shell_shape_eq_density_succ, abs_of_pos (curvatureDensity_pos_succ n)]
       exact curvatureDensity_ge_one_div_succ n
-    linarith [ih]
+    -- Both pieces dominate their harmonic counterparts.
+    exact add_le_add ih hshell
 
 /-- **Analytic upper bound:** curvature integral is at most (1 + α log(n+1)) times the harmonic sum.
 So the discrete curvature integral is sandwiched: H_n ≤ curvature_integral n ≤ (1+α log(n+1))·H_n,
@@ -637,30 +635,46 @@ hence it diverges like the harmonic series (Θ(log n)). -/
 theorem curvature_integral_le_harmonic_mul_log (n : Nat) :
     curvature_integral n ≤ (1 + alpha * Real.log (n + 1 : ℝ)) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) := by
   induction n with
-  | zero => unfold curvature_integral; simp
+  | zero => unfold curvature_integral; simp; norm_num
   | succ n ih =>
-    rw [curvature_integral_succ, sum_range_succ]
+    rw [curvature_integral_succ]
     have hshell : shell_shape_abs n ≤ (1 / (n + 1 : ℝ)) * (1 + alpha * Real.log (n + 2 : ℝ)) := by
-      rw [shell_shape_abs, shell_shape_eq_density_succ]
-      exact curvatureDensity_le_one_div_succ_mul_log n (n + 1) (Nat.lt_succ_self n)
+      rw [shell_shape_abs, shell_shape_eq_density_succ, abs_of_pos (curvatureDensity_pos_succ n)]
+      have H := curvatureDensity_le_one_div_succ_mul_log n (n + 1) (Nat.lt_succ_self n)
+      rw [show (↑(n + 1) : ℝ) + 1 = (↑n + 2 : ℝ) from by push_cast; ring] at H
+      exact H
     have hfac : (1 + alpha * Real.log (n + 1 : ℝ)) ≤ (1 + alpha * Real.log (n + 2 : ℝ)) := by
-      gcongr
-      exact Real.log_le_log (by exact_mod_cast Nat.succ_pos n) (by exact_mod_cast Nat.succ_le_succ (Nat.le_succ n))
+      have ha : 0 ≤ alpha := by unfold alpha; norm_num
+      have hlog : Real.log (n + 1 : ℝ) ≤ Real.log (n + 2 : ℝ) := by
+        refine Real.log_le_log ?_ ?_
+        · positivity
+        · have : (n + 1 : ℝ) ≤ (n + 2 : ℝ) := by nlinarith
+          exact this
+      have hmul : alpha * Real.log (n + 1 : ℝ) ≤ alpha * Real.log (n + 2 : ℝ) :=
+        mul_le_mul_of_nonneg_left hlog ha
+      linarith
     calc curvature_integral n + shell_shape_abs n
       _ ≤ (1 + alpha * Real.log (n + 1 : ℝ)) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)
           + (1 / (n + 1 : ℝ)) * (1 + alpha * Real.log (n + 2 : ℝ)) := add_le_add ih hshell
       _ ≤ (1 + alpha * Real.log (n + 2 : ℝ)) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)
-          + (1 + alpha * Real.log (n + 2 : ℝ)) * ((1 : ℝ) / (n + 1 : ℝ)) := by
-          gcongr
-          exact hfac
-      _ = (1 + alpha * Real.log (n + 2 : ℝ)) * (∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) + (1 : ℝ) / (n + 1 : ℝ)) := by ring
-      _ = (1 + alpha * Real.log (n + 2 : ℝ)) * ∑ i ∈ range (n + 1), (1 : ℝ) / (i + 1 : ℝ) := by rw [sum_range_succ]
+          + (1 + alpha * Real.log (n + 2 : ℝ)) * ((1 : ℝ) / (n + 1 : ℝ)) :=
+          add_le_add
+            (mul_le_mul_of_nonneg_right hfac
+              (sum_nonneg fun i _ => by
+                refine div_nonneg zero_le_one ?_
+                have hi : (0 : ℝ) ≤ (i : ℝ) := Nat.cast_nonneg i
+                linarith))
+            (le_of_eq (mul_comm _ _))
+      _ ≤ (1 + alpha * Real.log (↑(n + 1) + 1)) * (∑ i ∈ range n, (1 : ℝ) / (↑i + 1) + (1 : ℝ) / (↑n + 1)) := by
+        rw [show (↑(n + 1) : ℝ) + 1 = ↑n + 2 by push_cast; ring]
+        rw [mul_add]
+      _ = (1 + alpha * Real.log (↑(n + 1) + 1 : ℝ)) * ∑ i ∈ range (n + 1), (1 : ℝ) / (i + 1 : ℝ) := by rw [sum_range_succ]
 
 /-- **Curvature integral as a Finset sum** (for asymptotic analysis). -/
 theorem curvature_integral_eq_sum (n : Nat) :
     curvature_integral n = ∑ i ∈ range n, curvatureDensity (i + 1) := by
   induction n with
-  | zero => unfold curvature_integral; simp
+  | zero => unfold curvature_integral; simp; norm_num
   | succ n ih =>
     rw [curvature_integral_succ, sum_range_succ, ih]
     congr 1
@@ -668,45 +682,47 @@ theorem curvature_integral_eq_sum (n : Nat) :
     exact abs_of_pos (curvatureDensity_pos_succ n)
 
 /-- **Log-weighted sum** ∑_{i=0}^{n-1} (log(i+1))/(i+1), the second piece of the curvature integral. -/
-def logWeightedSum (n : Nat) : ℝ := ∑ i ∈ range n, Real.log (i + 1 : ℝ) / (i + 1 : ℝ)
+noncomputable def logWeightedSum (n : Nat) : ℝ := ∑ i ∈ range n, Real.log (i + 1 : ℝ) / (i + 1 : ℝ)
 
 /-- **Curvature integral decomposes as harmonic sum + α × log-weighted sum.** -/
 theorem curvature_integral_eq_harmonic_plus_alpha_log (n : Nat) :
     curvature_integral n =
       ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) + alpha * logWeightedSum n := by
   rw [curvature_integral_eq_sum, logWeightedSum]
-  have key : ∀ i, curvatureDensity (i + 1) = (1 : ℝ) / (i + 1 : ℝ) + alpha * (Real.log (i + 1 : ℝ) / (i + 1 : ℝ)) := by
+  have key : ∀ i : ℕ, curvatureDensity (↑i + 1) = (1 : ℝ) / (↑i + 1) + alpha * (Real.log (↑i + 1) / (↑i + 1)) := by
     intro i; unfold curvatureDensity; ring
-  rw [Finset.sum_congr rfl (fun i _ => key i), Finset.sum_add_distrib, Finset.mul_sum]
+  trans ∑ i ∈ range n, (1 / (↑i + 1) + alpha * (Real.log (↑i + 1) / (↑i + 1)))
+  · congr 1; funext i; exact key i
+  · rw [Finset.sum_add_distrib, Finset.mul_sum]
 
 /-- For `x > 0`, `x ≠ 1`, we have `1 - 1/x ≤ log x` (from `log(1/x) ≤ 1/x - 1`). -/
 lemma one_sub_inv_le_log (x : ℝ) (hx : 0 < x) (_hx' : x ≠ 1) :
-    1 - x⁻¹ ≤ Real.log x := by
-  have h := Real.log_le_sub_one_of_pos (x⁻¹) (inv_pos.mpr hx)
-  rw [Real.log_inv x] at h
-  linarith
+    1 - x⁻¹ ≤ Real.log x :=
+  Real.one_sub_inv_le_log_of_pos hx
 
 /-- Harmonic sum bound: `∑_{i=0}^{n-1} 1/(i+1) ≤ 1 + log(n+1)` for all `n`.
 Proof: for `k ≥ 2`, `1/k ≤ log(k/(k-1))`; telescope gives `∑_{k=2}^n 1/k ≤ log n`, so `H_n ≤ 1 + log n ≤ 1 + log(n+1)`. -/
 lemma harmonic_sum_le_one_add_log_succ (n : Nat) :
     ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) ≤ 1 + Real.log (n + 1 : ℝ) := by
-  induction n with
-  | zero => simp [Real.log_one]
-  | succ n ih =>
-    rw [sum_range_succ]
-    by_cases hn : n = 0
-    · subst hn; simp [Real.log_one, Real.log_two_pos]
-    · have posn : (0 : ℝ) < n := Nat.cast_pos.mpr (Nat.zero_lt_iff_ne_zero.mpr hn)
-      have := one_sub_inv_le_log ((n + 1 : ℝ) / n)
-        (by positivity) (by norm_num [Nat.cast_succ]; omega)
-      have inv_eq : ((n + 1 : ℝ) / n)⁻¹ = (n : ℝ) / (n + 1) := by field_simp
-      have sub_eq : 1 - (n : ℝ) / (n + 1) = 1 / (n + 1) := by field_simp
-      rw [inv_eq, sub_eq] at this
-      rw [Real.log_div (n + 1 : ℝ) (n : ℝ) (by positivity) (Nat.cast_ne_zero.mpr hn)] at this
-      linarith
+  -- Rewrite the real Finset sum as the real-cast harmonic number.
+  have hsum : (∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)) = (harmonic n : ℝ) := by
+    -- `harmonic` is a ℚ-valued sum; coercing to ℝ matches `1/(i+1)` after simp.
+    simp [harmonic, one_div, div_eq_mul_inv]
+  -- Use the known bound on `harmonic (n + 1)` and monotonicity `harmonic n ≤ harmonic (n+1)`.
+  have hmono : (harmonic n : ℝ) ≤ (harmonic (n + 1) : ℝ) := by
+    -- `harmonic_succ` is in ℚ; after casting to ℝ it's `harmonic (n+1) = harmonic n + 1/(n+1)`.
+    have hs : (harmonic (n + 1) : ℝ) = (harmonic n : ℝ) + ((n + 1 : ℝ)⁻¹) := by
+      simpa [harmonic_succ, one_div] using congrArg (fun q : ℚ => (q : ℝ)) (harmonic_succ n)
+    -- Rearrange.
+    have hpos : 0 ≤ (n + 1 : ℝ)⁻¹ := by positivity
+    linarith [hs, hpos]
+  have hbound : (harmonic (n + 1) : ℝ) ≤ 1 + Real.log (n + 1 : ℝ) := by
+    simpa using (harmonic_le_one_add_log (n + 1))
+  -- Put it together.
+  linarith [hsum, hmono, hbound]
 
 /-- **Leading term of the asymptotic:** (α/2)(log(n+1))² (from ∫₁^{n+1} (1/x)(1+α log x) dx). -/
-def curvature_integral_asymptotic_leading (n : Nat) : ℝ := (alpha / 2) * (Real.log (n + 1 : ℝ)) ^ 2
+noncomputable def curvature_integral_asymptotic_leading (n : Nat) : ℝ := (alpha / 2) * (Real.log (n + 1 : ℝ)) ^ 2
 
 /-- **Asymptotic: curvature_integral n = (α/2)(log(n+1))² + O(log n).**
 Explicit upper bound: curvature_integral n ≤ (α/2)(log(n+1))² + (1+α)(1+log(n+1))².
@@ -714,21 +730,40 @@ The sharp O(log n) error follows from ∑ (log k)/k = (1/2)(log(n+1))² + O(log 
 theorem curvature_integral_asymptotic_upper (n : Nat) :
     curvature_integral n ≤ curvature_integral_asymptotic_leading n + (1 + alpha) * (1 + Real.log (n + 1 : ℝ)) ^ 2 := by
   rw [curvature_integral_asymptotic_leading]
+  set H := ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) with hH
   have hlog : ∀ i ∈ range n, Real.log (i + 1 : ℝ) / (i + 1 : ℝ) ≤ Real.log (n + 1 : ℝ) / (i + 1 : ℝ) := by
     intro i hi; rw [Finset.mem_range] at hi
-    gcongr; exact Real.log_le_log (by positivity) (by exact_mod_cast Nat.add_le_add_right (Nat.lt_succ_iff.mp hi) 1)
-  have hsum : logWeightedSum n ≤ Real.log (n + 1 : ℝ) * ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ) := by
-    rw [logWeightedSum]; exact Finset.sum_le_sum fun i hi => hlog i hi
-  set H := ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)
+    refine div_le_div_of_nonneg_right ?_ (by positivity)
+    refine Real.log_le_log (by positivity) ?_
+    exact_mod_cast Nat.succ_le_succ (Nat.le_of_lt hi)
+  have hsum : logWeightedSum n ≤ Real.log (n + 1 : ℝ) * H := by
+    rw [logWeightedSum]; trans ∑ i ∈ range n, Real.log (n + 1 : ℝ) / (i + 1 : ℝ)
+    · exact Finset.sum_le_sum fun i hi => hlog i hi
+    ·
+      -- Turn the RHS product into a sum and simplify termwise.
+      rw [hH, Finset.mul_sum]
+      exact le_of_eq (by
+        simp [div_eq_mul_inv, one_div, mul_assoc, mul_left_comm, mul_comm])
   calc curvature_integral n
     _ = H + alpha * logWeightedSum n := curvature_integral_eq_harmonic_plus_alpha_log n
-    _ ≤ H + alpha * (Real.log (n + 1 : ℝ) * H) := by gcongr; exact hsum
+    _ ≤ H + alpha * (Real.log (n + 1 : ℝ) * H) := by
+        have ha : 0 ≤ alpha := by unfold alpha; norm_num
+        rw [add_comm H, add_comm H (alpha * _)]
+        exact add_le_add_left (mul_le_mul_of_nonneg_left hsum ha) H
     _ = (1 + alpha * Real.log (n + 1 : ℝ)) * H := by ring
     _ ≤ (1 + alpha * Real.log (n + 1 : ℝ)) * (1 + Real.log (n + 1 : ℝ)) := by
-        gcongr
-        exact harmonic_sum_le_one_add_log_succ n
+        have hHle : H ≤ 1 + Real.log (n + 1 : ℝ) := by rw [hH]; exact harmonic_sum_le_one_add_log_succ n
+        have ha : 0 ≤ alpha := by unfold alpha; norm_num
+        have hlog_nonneg : 0 ≤ Real.log (n + 1 : ℝ) :=
+          Real.log_nonneg (by rw [← Nat.cast_succ]; exact Nat.one_le_cast.mpr (Nat.succ_le_succ (Nat.zero_le n)))
+        have hmul_nonneg : 0 ≤ (1 + alpha * Real.log (n + 1 : ℝ)) := by nlinarith [mul_nonneg ha hlog_nonneg]
+        exact mul_le_mul_of_nonneg_left hHle hmul_nonneg
     _ = 1 + (1 + alpha) * Real.log (n + 1 : ℝ) + alpha * (Real.log (n + 1 : ℝ)) ^ 2 := by ring
-    _ ≤ (alpha / 2) * (Real.log (n + 1 : ℝ)) ^ 2 + (1 + alpha) * (1 + Real.log (n + 1 : ℝ)) ^ 2 := by nlinarith [sq_nonneg (Real.log (n + 1 : ℝ))]
+    _ ≤ (alpha / 2) * (Real.log (n + 1 : ℝ)) ^ 2 + (1 + alpha) * (1 + Real.log (n + 1 : ℝ)) ^ 2 := by
+      have ha : 0 ≤ alpha := by unfold alpha; norm_num
+      have hlog : 0 ≤ Real.log (n + 1 : ℝ) :=
+        Real.log_nonneg (by rw [← Nat.cast_succ]; exact Nat.one_le_cast.mpr (Nat.succ_le_succ (Nat.zero_le n)))
+      nlinarith [sq_nonneg (Real.log (n + 1 : ℝ))]
 
 /-- Curvature integral is monotone in `n`. -/
 lemma curvature_integral_mono : Monotone curvature_integral := by
@@ -741,7 +776,11 @@ lemma curvature_integral_mono : Monotone curvature_integral := by
     have hrec := curvature_integral_succ (a + k)
     rw [hrec]
     have hpos : 0 ≤ shell_shape_abs (a + k) := le_of_lt (shell_shape_abs_pos (a + k))
-    linarith
+    have h2 := add_le_add_left hpos (curvature_integral (a + k))
+    conv_lhs at h2 => rw [zero_add]
+    conv_rhs at h2 => rw [add_comm]
+    have hak : a ≤ a + k := (Nat.le_add_left a k).trans (le_of_eq (Nat.add_comm k a))
+    exact le_trans (ih hak) h2
 
 /-- Non-negativity of the curvature integral for all `n`. -/
 lemma curvature_integral_nonneg (n : Nat) :
@@ -751,6 +790,7 @@ lemma curvature_integral_nonneg (n : Nat) :
       -- Empty sum is zero.
       unfold curvature_integral
       simp
+      norm_num
   | succ n ih =>
       -- Use the recurrence and that each shell contribution is non-negative.
       have hrec := curvature_integral_succ n
@@ -758,9 +798,8 @@ lemma curvature_integral_nonneg (n : Nat) :
         le_of_lt (shell_shape_abs_pos n)
       -- Rewrite with the recurrence and apply `add_nonneg`.
       have : 0 ≤ curvature_integral (n + 1) := by
-        simpa [Nat.succ_eq_add_one, hrec] using
-          add_nonneg ih hshell_nonneg
-      simpa [Nat.succ_eq_add_one] using this
+        rw [hrec]; exact add_nonneg ih hshell_nonneg
+      rw [congr_arg curvature_integral (Nat.succ_eq_add_one n)]; exact this
 
 /-- Strict positivity of the curvature integral as soon as we include at least
 one shell (`n > 0`). -/
@@ -784,7 +823,7 @@ lemma curvature_integral_pos {n : Nat} (hn : 0 < n) :
           0 < curvature_integral m + shell_shape_abs m :=
         add_pos_of_nonneg_of_pos hbase hshell_pos
       -- Rewrite the goal using the recurrence.
-      simpa [Nat.succ_eq_add_one, hrec] using hsum_pos
+      rw [congr_arg curvature_integral (Nat.succ_eq_add_one m), hrec]; exact hsum_pos
 
 /-- Positivity of the curvature integral at the reference (lockin) shell. -/
 lemma curvature_integral_ref_pos :
@@ -802,79 +841,55 @@ theorem exists_transition_shell :
 -- Quick check for the curvature-integral bridge lemma
 #check curvature_integral_eq_sum_density
 
-/-- Normalised Ω_k estimate from the shell integral up to depth n.
+/-!
+## First-principles spatial curvature from the shell integral (dynamic, horizon-dependent Ω_k)
 
-Calibration: at the reference horizon (lockin shell referenceM = qcdShell + stepsFromQCDToLockin)
-we get Ω_k(referenceM; referenceM) = omega_k_true. Discrete steps through baryogenesis. -/
-def omega_k_partial (n : Nat) : ℝ :=
-  if curvature_integral referenceM ≤ 0.0 then
-    0.0098
-  else
-    0.0098 * curvature_integral n / curvature_integral referenceM
+Spatial curvature **depends on the horizon**. Between any two horizons it is
+different — curvature between quarks (QCD horizon) and curvature at the CMB
+last-scattering surface are different even at the same time "now". There is no
+single "Ω_k at now" without specifying which horizon.
 
-/-- Target true spatial curvature (calibrated value at the reference cutoff). -/
-def omega_k_true : ℝ := 0.0098
+Ω_k is the **curvature ratio** from the discrete shell integral: at horizon N,
+the curvature parameter at shell n is `curvature_integral n / curvature_integral N`
+(dimensionless). At the horizon itself (n = N) this ratio is 1. Different N
+(e.g. QCD lockin vs CMB LSS) give different curvature; the formalism is
+horizon-dependent by construction.
+-/
 
-/-- True curvature value (proved equal to paper constant). -/
-theorem omega_k_true_eq : omega_k_true = 0.0098 := rfl
-
-/-- **ω_k as exact rational:** omega_k_true = 98/10000 = 49/5000. -/
-theorem omega_k_true_rational : omega_k_true = (49 : ℝ) / 5000 := by unfold omega_k_true; norm_num
-
-/-- Positivity of the target curvature. -/
-theorem omega_k_true_pos : 0 < omega_k_true := by
-  unfold omega_k_true
-  norm_num
-
-/-- **Ω_k relative to the horizon used.**
-
-Spatial curvature density estimate when the horizon is taken at shell `N`:
-Ω_k(n; N) = Ω_k_true · (curvature_integral n / curvature_integral N).
-In the continuous picture, 0 < x < θ corresponds to integrating up to x
-relative to the horizon θ; here the discrete analogue is shells 0..n vs
-horizon cutoff N. The value changes with the chosen horizon N. -/
-def omega_k_at_horizon (n N : Nat) : ℝ :=
-  if curvature_integral N ≤ 0.0 then
-    omega_k_true
-  else
-    omega_k_true * curvature_integral n / curvature_integral N
+/-- **Curvature ratio at horizon N** (first-principles).
+    Ω_k(n; N) = curvature_integral n / curvature_integral N when the horizon
+    integral is positive; else 1 (so at-horizon value remains 1). No external
+    amplitude; purely from the shell integral. -/
+noncomputable def omega_k_at_horizon (n N : Nat) : ℝ :=
+  if curvature_integral N ≤ (0 : ℝ) then 1
+  else curvature_integral n / curvature_integral N
 
 /-- **Equation for Ω_k at horizon N:** when the horizon integral is positive,
-omega_k_at_horizon n N = omega_k_true · (curvature_integral n / curvature_integral N). -/
+    omega_k_at_horizon n N = curvature_integral n / curvature_integral N. -/
 theorem omega_k_at_horizon_eq (n N : Nat) (hN : 0 < curvature_integral N) :
-  omega_k_at_horizon n N = omega_k_true * curvature_integral n / curvature_integral N := by
+  omega_k_at_horizon n N = curvature_integral n / curvature_integral N := by
   unfold omega_k_at_horizon
   simp [ne_of_gt hN, not_le_of_gt hN]
 
-/-- **Equation: Ω_k at the chosen horizon.**
-
-For a chosen horizon shell N with 0 < curvature_integral N, the spatial curvature
-density at shell n is given by
-  Ω_k(n; N) = Ω_k_true · (∫₀ⁿ shape / ∫₀ᴺ shape)
-           = omega_k_true * curvature_integral n / curvature_integral N.
-So once the horizon N is fixed, omega_k is determined by this ratio; at the
-horizon itself (n = N) the ratio is 1, so Ω_k(N; N) = Ω_k_true. -/
-theorem omega_k_at_chosen_horizon (n N : Nat) (hN : 0 < curvature_integral N) :
-  omega_k_at_horizon n N = omega_k_true * curvature_integral n / curvature_integral N :=
-  omega_k_at_horizon_eq n N hN
-
-/-- **Value at the horizon:** when evaluated at the chosen horizon shell (n = N),
-Ω_k equals the true curvature, Ω_k(N; N) = Ω_k_true. -/
-theorem omega_k_at_chosen_horizon_self (N : Nat) (hN : 0 < curvature_integral N) :
-  omega_k_at_horizon N N = omega_k_true :=
-  omega_k_at_horizon_self N hN
-
-/-- At the horizon itself (n = N), Ω_k equals the true curvature. -/
+/-- At the horizon itself (n = N), the curvature ratio equals 1 (unit in lattice units). -/
 theorem omega_k_at_horizon_self (N : Nat) (hN : 0 < curvature_integral N) :
-  omega_k_at_horizon N N = omega_k_true := by
+  omega_k_at_horizon N N = 1 := by
   rw [omega_k_at_horizon_eq N N hN]
   field_simp [ne_of_gt hN]
 
-/-- The fixed reference partial is Ω_k at horizon referenceM. -/
+/-- **Ω_k partial** at reference horizon: curvature ratio relative to referenceM.
+    omega_k_partial n = omega_k_at_horizon n referenceM. -/
+noncomputable def omega_k_partial (n : Nat) : ℝ :=
+  omega_k_at_horizon n referenceM
+
+/-- The partial is exactly the curvature ratio at the reference horizon. -/
 theorem omega_k_partial_eq_at_horizon (n : Nat) :
-  omega_k_partial n = omega_k_at_horizon n referenceM := by
-  unfold omega_k_partial omega_k_at_horizon
-  simp only []
+  omega_k_partial n = omega_k_at_horizon n referenceM := rfl
+
+/-- **At the reference horizon, Ω_k partial = 1** (first-principles; no 0.0098). -/
+theorem omega_k_partial_at_reference (hpos : 0 < curvature_integral referenceM) :
+  omega_k_partial referenceM = 1 :=
+  omega_k_at_horizon_self referenceM hpos
 
 /-- **Ω_k depends on the horizon:** for a fixed shell n with positive integral,
 different horizon cutoffs N₁ ≠ N₂ with different integrals give different Ω_k values. -/
@@ -886,121 +901,49 @@ theorem omega_k_at_horizon_depends_on_horizon
   omega_k_at_horizon n N₁ ≠ omega_k_at_horizon n N₂ := by
   rw [omega_k_at_horizon_eq n N₁ h₁, omega_k_at_horizon_eq n N₂ h₂]
   intro h
-  have : curvature_integral n / curvature_integral N₁ = curvature_integral n / curvature_integral N₂ := by
-    apply (mul_right_inj' omega_k_true_pos.ne').mp
-    exact h
   have h₁' : curvature_integral N₁ ≠ 0 := ne_of_gt h₁
   have h₂' : curvature_integral N₂ ≠ 0 := ne_of_gt h₂
-  field_simp at this
-  exact hne this
+  field_simp at h
+  exact hne h.symm
 
-/-- **Auxiliary bound:** if the normalised curvature integral at shell `n`
-is within `δ` of 1, then the corresponding Ω\_k estimate `omega_k_partial n`
-is within `omega_k_true * δ` of the true curvature.
-
-This is a purely algebraic/inequality step; it packages the scaling
-property of the calibration and isolates the genuinely analytic content
-in the statement about the curvature-integral ratio. -/
+/-- **Auxiliary bound:** if the curvature ratio at shell n is within δ of 1,
+then |omega_k_partial n - 1| < δ. -/
 theorem omega_k_partial_abs_bound_of_ratio
     (hpos_ref : 0 < curvature_integral referenceM)
-    (hpos_omega : 0 < omega_k_true)
     {n : Nat} {δ : ℝ}
-    (hδ : |curvature_integral n / curvature_integral referenceM - 1.0| < δ) :
-    |omega_k_partial n - omega_k_true| < omega_k_true * δ := by
-  -- From positivity we also get non-vanishing of the reference integral.
-  have hne_ref : curvature_integral referenceM ≠ 0 := ne_of_gt hpos_ref
-  -- And we will use the fact that `omega_k_true` is a positive scale factor.
-  have hne_omega : omega_k_true ≠ 0 := ne_of_gt hpos_omega
-  -- Unfold `omega_k_partial` in the calibrated branch (guard is false).
-  have hguard_false : ¬ curvature_integral referenceM ≤ 0.0 :=
-    fun hle => not_le_of_gt hpos_ref hle
-  have hform :
-      omega_k_partial n - omega_k_true
-        = omega_k_true * (curvature_integral n / curvature_integral referenceM - 1.0) := by
-    -- First rewrite `omega_k_partial n` using the calibration branch.
-    have hpartial :
-        omega_k_partial n
-          = omega_k_true * curvature_integral n / curvature_integral referenceM := by
-      -- Here `omega_k_true = 0.0098` but we keep it symbolic.
-      simp [omega_k_partial, omega_k_true, hguard_false, hne_ref]
-    -- Now manipulate the algebra on ℝ.
-    calc
-      omega_k_partial n - omega_k_true
-          = omega_k_true * curvature_integral n / curvature_integral referenceM
-              - omega_k_true := by simpa [hpartial]
-      _   = omega_k_true *
-              (curvature_integral n / curvature_integral referenceM - 1.0) := by
-              -- Factor out `omega_k_true`.
-              ring
-  -- Take absolute values and use `abs_mul`.
-  have habs :
-      |omega_k_partial n - omega_k_true|
-        = omega_k_true * |curvature_integral n / curvature_integral referenceM - 1.0| := by
-    have : |omega_k_true| = omega_k_true := abs_of_pos hpos_omega
-    simp [hform, abs_mul, this]
-  -- Now scale the inequality `hδ` by the positive factor `omega_k_true`.
-  have hscaled :
-      omega_k_true * |curvature_integral n / curvature_integral referenceM - 1.0|
-        < omega_k_true * δ :=
-    mul_lt_mul_of_pos_left hδ hpos_omega
-  -- Combine with the identity for the absolute value.
-  have :
-      |omega_k_partial n - omega_k_true|
-        < omega_k_true * δ := by
-    simpa [habs] using hscaled
-  exact this
+    (hδ : |curvature_integral n / curvature_integral referenceM - (1 : ℝ)| < δ) :
+    |omega_k_partial n - 1| < δ := by
+  unfold omega_k_partial
+  rw [omega_k_at_horizon_eq n referenceM hpos_ref]
+  exact hδ
 
--- Quick check for the auxiliary bound
-#check omega_k_partial_abs_bound_of_ratio
-
-/-- **Curvature integral tends to infinity** as more shells are included.
-
-The discrete integral is a sum of positive terms (curvatureDensity (m+1) ≥ 1/(m+1)),
-so it is bounded below by the harmonic sum and hence diverges. The ratio
-`curvature_integral n / curvature_integral referenceM` therefore tends to **∞**, not 1;
-the physical calibration is at the reference shell only (`omega_k_partial referenceM = omega_k_true`). -/
+/-- **Curvature integral tends to infinity** as more shells are included;
+the ratio curvature_integral n / curvature_integral referenceM therefore tends to ∞. -/
 theorem curvature_integral_tends_to_atTop :
   Tendsto curvature_integral atTop atTop := by
   refine Monotone.tendsto_atTop_atTop curvature_integral_mono fun B => ?_
-  rw [Filter.tendsto_atTop_atTop] at p_series.Real.tendsto_sum_range_one_div_nat_succ_atTop
-  obtain ⟨N, hN⟩ := p_series.Real.tendsto_sum_range_one_div_nat_succ_atTop B
-  exact ⟨N, fun n hn => (hN n hn).trans (curvature_integral_ge_harmonic n)⟩
+  have hHarm :
+      Tendsto (fun n => ∑ i ∈ range n, (1 : ℝ) / (i + 1 : ℝ)) atTop atTop :=
+    by simpa using Real.tendsto_sum_range_one_div_nat_succ_atTop
+  rcases Filter.tendsto_atTop_atTop.1 hHarm B with ⟨N, hN⟩
+  refine ⟨N, ?_⟩
+  have hHarmN : B ≤ ∑ i ∈ range N, (1 : ℝ) / (i + 1 : ℝ) := hN N (le_rfl)
+  exact le_trans hHarmN (curvature_integral_ge_harmonic N)
 
-/-- **Calibration lemma:** at the chosen reference cutoff, the partial Ω_k
-equals the target (by definition of `omega_k_partial`). The theory only
-needs that some such reference exists (`exists_transition_shell`). -/
-theorem omega_k_partial_at_reference :
-    omega_k_partial referenceM = omega_k_true := by
-  -- Case split on the calibration guard.
-  by_cases hle : curvature_integral referenceM ≤ 0.0
-  · -- In this branch, we are in the "fallback" case by definition.
-    simp [omega_k_partial, omega_k_true, hle]
-  · -- In this branch, the guard is false, so we are in the calibrated case.
-    have hpos : 0.0 < curvature_integral referenceM := lt_of_not_ge hle
-    have hne : curvature_integral referenceM ≠ 0.0 := ne_of_gt hpos
-    -- Now `omega_k_partial referenceM` simplifies to `0.0098 * 1 = 0.0098`.
-    simp [omega_k_partial, omega_k_true, hle, hne]
-
--- Quick check for the calibration lemma (type-correctness)
-#check omega_k_partial_at_reference
-
-/-- **Asymptotic behaviour of the partial Ω\_k estimate:** as more shells are included,
-`omega_k_partial n` tends to **∞** (because `curvature_integral n` tends to ∞ while the
-denominator is fixed). The physical calibration is therefore at the reference shell only:
-`omega_k_partial referenceM = omega_k_true` by definition. -/
+/-- **Asymptotic behaviour:** as more shells are included, omega_k_partial n tends to ∞
+(because curvature_integral n → ∞ while the denominator is fixed). -/
 theorem omega_k_partial_tends_to_atTop :
   Tendsto (fun n : Nat => omega_k_partial n) atTop atTop := by
   have hpos_ref := curvature_integral_ref_pos
-  have hguard : ¬curvature_integral referenceM ≤ 0.0 := fun h => not_le_of_gt hpos_ref h
-  simp only [omega_k_partial, hguard, ite_false]
-  conv in (0.0098 * _ / _) => rw [mul_div_assoc]
-  exact Tendsto.atTop_mul_const (by norm_num)
-    (curvature_integral_tends_to_atTop.atTop_div_const hpos_ref)
+  have heq : (fun n => omega_k_partial n) = (fun n => curvature_integral n / curvature_integral referenceM) := by
+    ext n; unfold omega_k_partial; rw [omega_k_at_horizon_eq n referenceM hpos_ref]
+  rw [heq]
+  exact curvature_integral_tends_to_atTop.atTop_div_const hpos_ref
 
--- Quick checks (run these in VS Code infoview)
+-- Quick checks (curvature_integral and omega_k_partial are noncomputable)
 #eval available_modes 0
 #eval new_modes referenceM
-#eval curvature_integral 10
-#eval omega_k_partial referenceM
+#check curvature_integral 10
+#check omega_k_partial referenceM
 
 end Hqiv

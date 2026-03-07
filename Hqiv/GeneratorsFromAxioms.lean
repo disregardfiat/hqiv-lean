@@ -137,7 +137,7 @@ def generators_lie_closed : Prop :=
 and linearly independent (GeneratorsLieClosure.so8_generators_linear_independent).
 So they form a basis for so(8). Proved in `GeneratorsLieClosure.generators_from_octonion_closure`. -/
 def generators_from_octonion_closure : Prop :=
-  (∀ k : Fin 28, so8Generator k + (so8Generator k)ᵀ = 0) ∧
+  (∀ k : Fin 28, so8Generator k + Matrix.transpose (so8Generator k) = 0) ∧
   generators_lie_closed ∧
   LinearIndependent ℝ (fun k : Fin 28 => so8Generator k)
 

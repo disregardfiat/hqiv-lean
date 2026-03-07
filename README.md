@@ -1,26 +1,51 @@
 # HQIV_LEAN
 
-Formalisation of the HQIV (Horizon-Quantized Informational Vacuum) framework in Lean 4.  
-Modules: `Hqiv.Geometry.OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, `Hqiv.Generators` (28 so(8) generators; **antisymmetry proved**), `Hqiv.OctonionLeftMultiplication` (L(e_1)..L(e_7)), `Hqiv.GeneratorsFromAxioms` (L, Δ, g₂; target statements), `Hqiv.GeneratorsLieClosureData` (Lie bracket coefficients), `Hqiv.GeneratorsLieClosure` (**Lie bracket closure proved**: all [g_i,g_j] in span; `generators_from_octonion_closure`; linear independence stated, proof depends on `so8CoordMatrix_det_ne_zero`), `Hqiv.So8CoordMatrix` (28×28 coord matrix for linear independence), `Hqiv.Conservations`. Scripts: `scripts/print_lie_bracket_closure.py --write`, `scripts/print_linear_independence.py [--write]`.
+Formalisation of the HQIV (Horizon-Quantized Informational Vacuum) framework in Lean 4.
+
+## Building
+
+```bash
+lake build
+```
+
+If the build exits with **code 134** (stack overflow in `GeneratorsLieClosureData`):
+
+- **Daily work (no SO(8) generator stack):** `lake build HQIVPhysics` or `./scripts/build.sh`
+- **Full build (with SO(8) closure):** you must raise the stack limit **in the same shell** before any `lake` command, then build:
+  ```bash
+  ulimit -s 65536
+  lake build HQIVLEAN
+  ```
+  Or run `./scripts/build.sh HQIVLEAN` (the script sets ulimit before building).
+
+**Default build** is the root plus the current formal core: `OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, and the generator stack (`Generators`, `OctonionLeftMultiplication`, `GeneratorsFromAxioms`, `GeneratorsLieClosureData`, `So8CoordMatrix`, `GeneratorsLieClosure`). Downstream (`Now`, `Conservations`, `Forces`, `SM_GR_Unification`, `Baryogenesis`) remains unlinked; set `globs = ["HQIVLEAN", "Hqiv.+"]` in `lakefile.toml` to build all. The first run will build mathlib and can take 30–60+ minutes.
+
+**ProofWidgets:** If the build fails with `ProofWidgets not up-to-date. Please run lake exe cache get`, the widget cache may be unavailable. A workaround is to comment out the `errorOnBuild` check in `.lake/packages/proofwidgets/lakefile.lean` (the block `if let some msg := get_config? errorOnBuild then error msg`) so the widget is built from source. Re-apply this change after `lake update` if the package is reset.
+If you see errors like `failed to load header from ... setup.json: unexpected end of input`, the mathlib build cache may be corrupted; then run:
+
+```bash
+cd .lake/packages/mathlib && lake clean && cd ../../..
+lake build
+```  
+Current build: `Hqiv.Geometry.OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, `Hqiv.Generators`, `Hqiv.OctonionLeftMultiplication`, `Hqiv.GeneratorsFromAxioms`, `Hqiv.GeneratorsLieClosureData`, `Hqiv.So8CoordMatrix`, `Hqiv.GeneratorsLieClosure`. Full tree (when re-enabled): `Now`, `Conservations`, `Forces`, `SM_GR_Unification`, `Baryogenesis`, etc. Scripts: `scripts/print_lie_bracket_closure.py --write`, `scripts/print_linear_independence.py [--write]`.
 
 **What traces to the light cone (single axiom, no arbitrary defs)**  
 - **Single axiom:** New modes at shell m = 8 × stars-and-bars(m) = 4·(m+2)(m+1).  
 - From that: `latticeSimplexCount`, `cumLatticeSimplexCount` (and closed form), `available_modes`, `new_modes`.  
 - Temperature ladder T(m) = T_Pl/(m+1) (with T_Pl = 1 in natural units) and φ(m) = 2/T(m) are the lattice division rule and the paper’s φ = 2/Θ.  
 - `shell_shape` is **proved** equal to (1/(m+1))(1 + α log(T_Pl/T(m))) so the curvature shape is derived from the temperature ladder, not an independent def.  
-- Curvature integral, its divergence, divisibility (3∣…, 2∣…), α = 3/5 as lattice ratio and limit, and Ω_k at chosen horizon are proved from the lattice.
+- Curvature integral, its divergence, divisibility (3∣…, 2∣…), α = 3/5 as lattice ratio and limit. **Ω_k is dynamic and horizon-dependent:** `omega_k_at_horizon n N` is the curvature ratio at horizon N; spatial curvature between different horizons (e.g. quarks vs CMB LSS) is different even at time "now" — no single Ω_k without specifying the horizon.
 - **Analytic curvature:** The discrete curvature integral is proved to be sandwiched between the harmonic sum and (1+α log(n+1)) times the harmonic sum (`curvature_integral_ge_harmonic`, `curvature_integral_le_harmonic_mul_log`), so it grows like Θ(log n); no continuous integral axiom.
 
 **External or conventional defs (not derived from the light cone in Lean)**  
 - **α** = 0.60: we prove α = 3/5 and that the lattice ratio (n+1)(n+2)(n+3)/(5·cum n) = 3/5 for all n and tends to 3/5 as n → ∞.  
 - **γ** = 2/5: from entanglement monogamy (metric sector), not from the lattice.  
 - **curvature_norm_combinatorial** = 6⁷√3: **not chosen by convenience.** It is uniquely determined by three structural inputs: (1) 3D cube → 6 directions (3 axes × 2 signs); (2) octonion algebra → 7 imaginary units; (3) unit-cube half-diagonal → √3. No free parameter; change any input and the number changes. Matter fraction and η require the full SM embedding to SO(8).  
-- **omega_k_true** = 0.0098: calibration constant (paper value).  
 - **referenceM** = lockin = qcdShell + stepsFromQCDToLockin; discrete steps through baryogenesis (a few steps after T_lockin).  
 - **Natural units:** T_Pl = 1, G₀ = H₀ = 1.  
 - **Metric / lapse:** N = 1 + Φ + φ t and the HQVM line element come from the informational-energy axiom (paper), not from the light cone; φ can be the lattice-derived field.
 
-So: the **combinatorics, T-ladder, φ on shells, curvature shape, α from the lattice, and Ω_k equation** come from the light-cone axiom; **γ**, the curvature norm (6⁷√3, determined by cube + octonion + unit cube, not tuned), **omega_k_true**, **referenceM**, and the metric form are inputs or conventions. Matter fraction and η are downstream of the SM embedding to SO(8).
+So: the **combinatorics, T-ladder, φ on shells, curvature shape, α from the lattice, and horizon-dependent Ω_k (curvature ratio from shell integral)** come from the light-cone axiom; **γ**, the curvature norm (6⁷√3), **referenceM**, and the metric form are inputs or conventions. Spatial curvature is different between any two horizons (e.g. QCD vs CMB LSS) even at "now". Matter fraction and η are downstream of the SM embedding to SO(8).
 
 ## GitHub configuration
 

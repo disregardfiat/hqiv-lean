@@ -2,6 +2,8 @@
 
 This directory is the [doc-gen4](https://github.com/leanprover/doc-gen4) build for the main package.
 
+**Versions (stable only):** doc-gen4 is pinned to `v4.28.0` (matching `lean-toolchain` and root mathlib `v4.28.0`). Mathlib is the only extra dependency of the main package.
+
 ## First-time setup
 
 From this directory (`docbuild/`):

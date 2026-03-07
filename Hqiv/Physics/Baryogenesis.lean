@@ -43,16 +43,25 @@ def m_lockin : Nat := referenceM
 theorem m_lockin_eq_m_QCD_add_steps : m_lockin = m_QCD + stepsFromQCDToLockin := by
   unfold m_lockin m_QCD referenceM; rfl
 
+/-- **Observed baryon asymmetry parameter** (paper value). η ≈ 6.10×10^{-10}. -/
+def eta_paper : ℝ := 6.10e-10
+
+/-- **η equals the paper constant.** -/
+theorem eta_paper_eq : eta_paper = 6.10e-10 := rfl
+
+/-- **η is positive.** -/
+theorem eta_paper_pos : 0 < eta_paper := by unfold eta_paper; norm_num
+
 /-- **Baryogenesis shells:** discrete steps from m_QCD through lockin and a few steps after.
     Shells m with m_QCD ≤ m ≤ m_lockin + stepsAfterLockin. -/
 def baryogenesisShells : Finset Nat :=
   Finset.Icc m_QCD (m_lockin + stepsAfterLockin)
 
 /-- **T_QCD:** QCD transition temperature on the lattice ladder. T_QCD = T(m_QCD) = 1/(m_QCD+1). -/
-def T_QCD : ℝ := T m_QCD
+noncomputable def T_QCD : ℝ := T m_QCD
 
 /-- **T_lockin:** Lockin temperature on the lattice ladder. T_lockin = T(m_lockin) = 1/(m_lockin+1). -/
-def T_lockin : ℝ := T m_lockin
+noncomputable def T_lockin : ℝ := T m_lockin
 
 /-- **T_QCD is on the temperature ladder.** -/
 theorem T_QCD_eq_ladder : T_QCD = T m_QCD := rfl
@@ -70,23 +79,51 @@ theorem T_lockin_closed : T_lockin = 1 / (m_lockin + 1 : ℝ) := T_eq m_lockin
 theorem T_QCD_pos : 0 < T_QCD := T_pos m_QCD
 theorem T_lockin_pos : 0 < T_lockin := T_pos m_lockin
 
+/-- **Baryon asymmetry η at horizon N (evaluated at shell n).**
+    Same normalization as Ω_k: η(n; N) = eta_paper × (curvature_integral n / curvature_integral N).
+    When curvature_integral N ≤ 0 we fall back to eta_paper (no division). -/
+noncomputable def eta_at_horizon (n N : Nat) : ℝ :=
+  if curvature_integral N ≤ 0.0 then
+    eta_paper
+  else
+    eta_paper * curvature_integral n / curvature_integral N
+
+/-- **Equation for η at horizon N** when the horizon integral is positive. -/
+theorem eta_at_horizon_eq (n N : Nat) (hN : 0 < curvature_integral N) :
+    eta_at_horizon n N = eta_paper * curvature_integral n / curvature_integral N := by
+  unfold eta_at_horizon
+  split_ifs with h'
+  · exfalso; linarith
+  · rfl
+
+/-- **η at the horizon itself:** η(N; N) = eta_paper. -/
+theorem eta_at_horizon_self (N : Nat) (hN : 0 < curvature_integral N) :
+    eta_at_horizon N N = eta_paper := by
+  rw [eta_at_horizon_eq N N hN]
+  simp only [mul_div_cancel_right₀ _ (ne_of_gt hN)]
+
+/-- **Same normalization as Ω_k:** the ratio η(n; N) / Ω_k(n; N) = eta_paper (Ω_k is the
+    curvature ratio, so η = eta_paper × ratio and Ω_k = ratio ⇒ η/Ω_k = eta_paper). -/
+theorem eta_over_omega_k_constant (n N : Nat) (hN : 0 < curvature_integral N) (hn : curvature_integral n ≠ 0) :
+    eta_at_horizon n N / omega_k_at_horizon n N = eta_paper := by
+  rw [eta_at_horizon_eq n N hN, omega_k_at_horizon_eq n N hN]
+  field_simp [hN.ne', hn]
+
 /-- **Vital for the proof:** η at the lockin horizon (evaluated at the lockin shell) equals eta_paper.
     So the baryon asymmetry that locks in at T_lockin is the observed η. -/
 theorem eta_lockin_calibration (h_lockin : 0 < curvature_integral m_lockin) :
     eta_at_horizon m_lockin m_lockin = eta_paper :=
   eta_at_horizon_self m_lockin h_lockin
 
-/-- **Vital for the proof:** Ω_k at the lockin horizon equals omega_k_true at the lockin shell.
-    So curvature and η share the same calibration at the lockin temperature. -/
+/-- **Vital for the proof:** Ω_k at the lockin horizon equals 1 (first-principles ratio). -/
 theorem omega_k_lockin_calibration (h_lockin : 0 < curvature_integral m_lockin) :
-    omega_k_at_horizon m_lockin m_lockin = omega_k_true :=
+    omega_k_at_horizon m_lockin m_lockin = 1 :=
   omega_k_at_horizon_self m_lockin h_lockin
 
-/-- **Same normalization at lockin:** at the lockin horizon, η/Ω_k = eta_paper/omega_k_true. -/
+/-- **Same normalization at lockin:** at the lockin horizon, η/Ω_k = eta_paper (Ω_k = 1 there). -/
 theorem eta_over_omega_k_at_lockin (h_lockin : 0 < curvature_integral m_lockin) :
-    eta_at_horizon m_lockin m_lockin / omega_k_at_horizon m_lockin m_lockin =
-    eta_paper / omega_k_true :=
-  eta_over_omega_k_constant m_lockin m_lockin h_lockin
+    eta_at_horizon m_lockin m_lockin / omega_k_at_horizon m_lockin m_lockin = eta_paper :=
+  eta_over_omega_k_constant m_lockin m_lockin h_lockin (ne_of_gt h_lockin)
 
 /-- **η at QCD shell with lockin horizon:** the baryon asymmetry evaluated at the QCD shell
     when the horizon is the lockin shell. Vital: this uses T_QCD (via m_QCD) and T_lockin (via m_lockin). -/
@@ -110,57 +147,23 @@ theorem curvature_integral_m_lockin_pos : 0 < curvature_integral m_lockin := by
     Ω_k and η. So T_QCD and T_lockin are vital for the proof. -/
 theorem baryogenesis_vital_T_QCD_T_lockin :
     eta_at_horizon m_lockin m_lockin = eta_paper ∧
-    omega_k_at_horizon m_lockin m_lockin = omega_k_true ∧
+    omega_k_at_horizon m_lockin m_lockin = 1 ∧
     T_QCD = T m_QCD ∧ T_lockin = T m_lockin := by
   refine ⟨eta_lockin_calibration curvature_integral_m_lockin_pos,
           omega_k_lockin_calibration curvature_integral_m_lockin_pos,
           T_QCD_eq_ladder, T_lockin_eq_ladder⟩
 
-/-- **Observed baryon asymmetry parameter** (paper value). η ≈ 6.10×10^{-10}. -/
-def eta_paper : ℝ := 6.10e-10
-
-/-- **η equals the paper constant.** -/
-theorem eta_paper_eq : eta_paper = 6.10e-10 := rfl
-
-/-- **η is positive.** -/
-theorem eta_paper_pos : 0 < eta_paper := by unfold eta_paper; norm_num
-
-/-- **Baryon asymmetry η at horizon N (evaluated at shell n).**
-    Same normalization as Ω_k: η(n; N) = eta_paper × (curvature_integral n / curvature_integral N).
-    When curvature_integral N ≤ 0 we fall back to eta_paper (no division). -/
-def eta_at_horizon (n N : Nat) : ℝ :=
-  if curvature_integral N ≤ 0.0 then
-    eta_paper
-  else
-    eta_paper * curvature_integral n / curvature_integral N
-
-/-- **Equation for η at horizon N** when the horizon integral is positive. -/
-theorem eta_at_horizon_eq (n N : Nat) (hN : 0 < curvature_integral N) :
-    eta_at_horizon n N = eta_paper * curvature_integral n / curvature_integral N := by
-  unfold eta_at_horizon
-  simp [ne_of_gt hN, not_le_of_gt hN]
-
-/-- **η at the horizon itself:** η(N; N) = eta_paper. -/
-theorem eta_at_horizon_self (N : Nat) (hN : 0 < curvature_integral N) :
-    eta_at_horizon N N = eta_paper := by
-  rw [eta_at_horizon_eq N N hN]
-  field_simp [ne_of_gt hN]
-
-/-- **Same normalization as Ω_k:** the ratio η(n; N) / Ω_k(n; N) is constant (independent of n, N).
-    So η and Ω_k are fixed by the same curvature-imprint pipeline. -/
-theorem eta_over_omega_k_constant (n N : Nat) (hN : 0 < curvature_integral N) :
-    eta_at_horizon n N / omega_k_at_horizon n N = eta_paper / omega_k_true := by
-  rw [eta_at_horizon_eq n N hN, omega_k_at_horizon_eq n N hN]
-  field_simp [omega_k_true_pos.ne', ne_of_gt hN]
-
-/-- **η at reference horizon** equals eta_paper (calibration). -/
+/-- **η at reference horizon** equals eta_paper × curvature ratio (or fallback). -/
 theorem eta_at_reference_horizon (n : Nat) :
     eta_at_horizon n referenceM = eta_paper * curvature_integral n / curvature_integral referenceM ∨
     curvature_integral referenceM ≤ 0 := by
   unfold eta_at_horizon
-  by_cases h : curvature_integral referenceM ≤ 0.0
+  by_cases h : curvature_integral referenceM ≤ 0
   · right; exact h
-  · left; simp [not_le.mp h, ne_of_gt (lt_of_not_ge h)]
+  · left
+    split_ifs with h'
+    · exfalso; linarith
+    · rfl
 
 /-- **Calibration at reference:** eta_at_horizon referenceM referenceM = eta_paper. -/
 theorem eta_partial_at_reference :
@@ -169,7 +172,7 @@ theorem eta_partial_at_reference :
   exact eta_at_horizon_self referenceM hpos
 
 /-- **η partial** (η at horizon referenceM), mirroring omega_k_partial. -/
-def eta_partial (n : Nat) : ℝ := eta_at_horizon n referenceM
+noncomputable def eta_partial (n : Nat) : ℝ := eta_at_horizon n referenceM
 
 /-- **η partial at reference** equals eta_paper. -/
 theorem eta_partial_at_reference' : eta_partial referenceM = eta_paper :=
@@ -187,14 +190,14 @@ theorem eta_at_horizon_pos (n N : Nat) (hn : 0 < curvature_integral n)
     (hN : 0 < curvature_integral N) :
     0 < eta_at_horizon n N := by
   rw [eta_at_horizon_eq n N hN]
-  positivity
+  apply div_pos
+  · exact mul_pos eta_paper_pos hn
+  · exact hN
 
-/-- **Baryogenesis summary:** Ω_k and η share the same curvature-imprint normalization;
-    both are determined by curvature_integral and the reference horizon. -/
+/-- **Baryogenesis summary:** η = eta_paper × Ω_k (same curvature ratio; Ω_k dynamic). -/
 theorem baryogenesis_same_normalization_as_omega_k (n N : Nat) (hN : 0 < curvature_integral N) :
-    eta_at_horizon n N = (eta_paper / omega_k_true) * omega_k_at_horizon n N := by
+    eta_at_horizon n N = eta_paper * omega_k_at_horizon n N := by
   rw [eta_at_horizon_eq n N hN, omega_k_at_horizon_eq n N hN]
-  field_simp [omega_k_true_pos.ne', ne_of_gt hN]
   ring
 
 end Hqiv

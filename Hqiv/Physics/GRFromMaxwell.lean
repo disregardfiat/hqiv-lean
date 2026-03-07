@@ -65,7 +65,7 @@ theorem HQVM_lapse_uses_same_phi (Φ φ t : ℝ) :
 theorem O_Maxwell_determines_HQVM_GR_homogeneous (φ rho_m rho_r : ℝ) (hφ : 0 ≤ φ) :
     HQVM_Friedmann_eq φ rho_m rho_r ↔
       (13/5 : ℝ) * φ ^ 2 = 8 * Real.pi * (φ ^ alpha) * (rho_m + rho_r) := by
-  rw [HQVM_Friedmann_eq_power φ rho_m rho_r hφ, G_eff_eq φ hφ]
+  rw [HQVM_Friedmann_eq_power φ rho_m rho_r hφ]
 
 /-- **Minkowski limit.** When φ = 0 (no horizon coupling), the lapse is N = 1 and the
     O-Maxwell equation reduces to classic Maxwell (flat limit). So the "no gravity"

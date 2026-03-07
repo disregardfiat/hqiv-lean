@@ -76,10 +76,11 @@ def timeAxis : Fin 4 := 0
 /-- **Conservations in structure → forces:** the conservations forced by the metric
     (phase, charge from divergence of O-equation) hold in the structure from O; the
     force assignment maps that structure to EM / weak / strong sectors so that the
-    same conservation laws apply per sector. -/
-theorem conservations_hold_per_sector (a : Fin 8) :
+    same conservation laws apply per sector. (Sector index unused: the same structure
+    theorem holds for every sector.) -/
+theorem conservations_hold_per_sector (_a : Fin 8) :
     conservations_in_structure_from_O :=
-  trivial
+  conservations_in_structure_from_O_holds
 
 /-!
 ## Unit systems: metric (natural) vs SI
@@ -131,7 +132,6 @@ theorem dimensionless_equation_metric_iff_SI (x : ℝ) :
 structure ValueInUnits where
   system : UnitSystem
   val : ℝ
-  deriving DecidableEq
 
 /-- **Value in metric units** (dimensionless or in natural units). -/
 def inMetric (x : ℝ) : ValueInUnits where
@@ -166,14 +166,14 @@ def force_natural_to_SI (F_natural : ℝ) : ℝ :=
 
 /-- **Equation in metric units:** the inhomogeneous O-equation (or its H-restriction)
     with all quantities in natural units. -/
-def emergentMaxwellInhomogeneous_O_metric (a : Fin 8) (ν : Fin 4) : ℝ :=
-  ModifiedMaxwell.emergentMaxwellInhomogeneous_O a ν
+noncomputable def emergentMaxwellInhomogeneous_O_metric (a : Fin 8) (ν : Fin 4) : ℝ :=
+  emergentMaxwellInhomogeneous_O a ν
 
 /-- **Equation in SI:** the same equation with currents and fields converted to SI.
     The equation form is ∂·F = 4π J + (φ correction); in SI we have ∂·F_SI = μ₀ J_SI + ...
     Here we take the current in SI units; the residual has the same zero set as the
     metric version when conversion is applied. -/
-def emergentMaxwellInhomogeneous_O_SI (a : Fin 8) (ν : Fin 4) (J_SI : Fin 8 → Fin 4 → ℝ) : ℝ :=
+noncomputable def emergentMaxwellInhomogeneous_O_SI (a : Fin 8) (ν : Fin 4) (J_SI : Fin 8 → Fin 4 → ℝ) : ℝ :=
   -- Same physical equation: residual in SI equals (scale factor) × residual in natural units.
   -- For "same math", the equation holds in metric iff the corresponding SI residual is zero.
   emergentMaxwellInhomogeneous_O_metric a ν
@@ -183,7 +183,7 @@ def emergentMaxwellInhomogeneous_O_SI (a : Fin 8) (ν : Fin 4) (J_SI : Fin 8 →
     Here we state it when the SI current is the identity conversion of J_O. -/
 theorem equation_metric_iff_SI (a : Fin 8) (ν : Fin 4) :
     emergentMaxwellInhomogeneous_O_metric a ν = 0 ↔
-    emergentMaxwellInhomogeneous_O_SI a ν (ModifiedMaxwell.J_O · ·) = 0 := by
+    emergentMaxwellInhomogeneous_O_SI a ν (J_O · ·) = 0 := by
   unfold emergentMaxwellInhomogeneous_O_SI emergentMaxwellInhomogeneous_O_metric
   simp
 

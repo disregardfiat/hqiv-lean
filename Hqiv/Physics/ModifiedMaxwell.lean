@@ -18,16 +18,23 @@ Maxwell's 3D equations** by holding one axis fixed.
 - **3D**: Fix one spacetime axis (e.g. time); the remaining 3D spatial equations
   are the usual div E, curl B − ∂E/∂t, etc. (Units and which axis is time, which
   octonion components are E/B, are handled later in Conservations → Forces.)
+
+## Proof status
+
+- **Proven:** O → H reduction to classic Maxwell when φ constant and metric flat;
+  charge_conservation_O (with placeholder div_μ); flat limit instance.
+- **Placeholder (API only):** grad_φ, div_μ, g_rr, J_O return constants; real
+  manifold versions will use these parameter names. 3D div E / curl B terms TBD.
 -/
 
 /-- Placeholder for (∇φ)_ν; full manifold version later. -/
-def ∂φ (ν : Fin 4) : ℝ := 0
+def grad_φ (_ν : Fin 4) : ℝ := 0
 
 /-- Placeholder divergence ∂_μ; real version will use manifold API. -/
-def ∂_μ (f : Fin 4 → ℝ) : ℝ := 0
+def div_μ (_f : Fin 4 → ℝ) : ℝ := 0
 
 /-- Radial metric component (placeholder: flat; derived metric in O/H later). -/
-def g_rr (x : ℝ) : ℝ := 1
+def g_rr (_x : ℝ) : ℝ := 1
 
 /-- Field strength in O: 8 algebra components, 4×4 spacetime (placeholder 2-form per component). -/
 structure F_O where
@@ -35,35 +42,34 @@ structure F_O where
   antisymm : ∀ a μ ν, comp a μ ν = - comp a ν μ
 
 /-- Current in O (8 components; phenomenological for now). -/
-def J_O (a : Fin 8) (ν : Fin 4) : ℝ := 0
+def J_O (_a : Fin 8) (_ν : Fin 4) : ℝ := 0
 
 /-- **Emergent inhomogeneous equation in O.** One equation per octonion component and spacetime index.
     Pure math; which component corresponds to which force is assigned in Conservations → Forces. -/
-def emergentMaxwellInhomogeneous_O (a : Fin 8) (ν : Fin 4) : ℝ :=
-  let divTerm := 0.0   -- placeholder for ∇_μ (√-g F_O^{a μν}) in O
-  let phiCorrection := alpha * (Real.log (phi_of_T (T ν.val))) * (∂φ ν)
-  divTerm - 4 * π * J_O a ν - phiCorrection
+noncomputable def emergentMaxwellInhomogeneous_O (a : Fin 8) (ν : Fin 4) : ℝ :=
+  let _divTerm := 0.0   -- placeholder for ∇_μ (√-g F_O^{a μν}) in O
+  let phiCorrection := alpha * (Real.log (phi_of_T (T ν.val))) * (grad_φ ν)
+  0.0 - 4 * Real.pi * J_O a ν - phiCorrection
 
 /-- Quaternionic subalgebra: indices 0..3 of O. -/
 def inH (i : Fin 8) : Prop := i.val < 4
 
 /-- Restriction of the O-equation to H (components 0..3). -/
-def emergentMaxwellInHomogeneous_H (ν : Fin 4) : ℝ := emergentMaxwellInhomogeneous_O 0 ν
+noncomputable def emergentMaxwellInHomogeneous_H (ν : Fin 4) : ℝ := emergentMaxwellInhomogeneous_O 0 ν
 
 /-- Classic Maxwell inhomogeneous equation (same form as in H). -/
-def classicMaxwellInhomogeneous (ν : Fin 4) : ℝ :=
-  let divTerm := 0.0
-  4 * π * (J_O 0 ν)   -- standard source term when restricted to one component
+noncomputable def classicMaxwellInhomogeneous (ν : Fin 4) : ℝ :=
+  4 * Real.pi * (J_O 0 ν)   -- standard source term when restricted to one component
 
 /-- **Reduction: the O-equation restricted to H coincides with classic Maxwell when φ is constant
     and the metric is flat.** -/
 theorem O_reduces_to_classic_Maxwell_in_H (ν : Fin 4)
-    (h_flat : ∀ x, g_rr x = 1)
+    (_h_flat : ∀ x, g_rr x = 1)
     (h_phi_const : ∀ x, phi_of_T x = 2.0)
-    (h_grad_zero : ∀ ν, ∂φ ν = 0) :
+    (h_grad_zero : ∀ ν, grad_φ ν = 0) :
     emergentMaxwellInHomogeneous_H ν = classicMaxwellInhomogeneous ν := by
   unfold emergentMaxwellInHomogeneous_H classicMaxwellInhomogeneous
-  simp only [emergentMaxwellInhomogeneous_O, h_phi_const, h_grad_zero, J_O, mul_zero, sub_zero, zero_sub]
+  simp only [emergentMaxwellInhomogeneous_O, h_phi_const, h_grad_zero, J_O, mul_zero, sub_zero]
   ring_nf
   simp
 
@@ -88,16 +94,16 @@ theorem spatialIndices_card : spatialIndices.card = 3 := by
 
 /-- **Charge conservation in O.** The divergence of the emergent inhomogeneous equation (in μ) is zero.
     Will follow from antisymmetry of F_O once we have the real manifold divergence operator. -/
-theorem charge_conservation_O (a : Fin 8) (ν : Fin 4) :
-    ∂_μ (fun μ => emergentMaxwellInhomogeneous_O a μ) = 0 := by
-  unfold ∂_μ
+theorem charge_conservation_O (_a : Fin 8) (_ν : Fin 4) :
+    div_μ (fun μ => emergentMaxwellInhomogeneous_O a μ) = 0 := by
+  unfold div_μ; rfl
 
 /-- **Classic Maxwell in H under flat limit.** When the metric is flat and φ is constant (with zero
     gradient), the H-restriction of the O-equation equals the classic inhomogeneous equation.
     Combined with `g_rr_flat`, this gives a concrete instance of `O_reduces_to_classic_Maxwell_in_H`. -/
 theorem classic_Maxwell_in_H_under_flat_limit (ν : Fin 4)
     (h_phi_const : ∀ x, phi_of_T x = 2.0)
-    (h_grad_zero : ∀ ν, ∂φ ν = 0) :
+    (h_grad_zero : ∀ ν, grad_φ ν = 0) :
     emergentMaxwellInHomogeneous_H ν = classicMaxwellInhomogeneous ν :=
   O_reduces_to_classic_Maxwell_in_H ν g_rr_flat h_phi_const h_grad_zero
 

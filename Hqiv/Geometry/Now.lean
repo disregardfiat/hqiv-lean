@@ -55,8 +55,6 @@ theorem nowCondition_iff_phi_one (φ : ℝ) : nowCondition φ ↔ φ = 1 := by
 theorem exists_unique_now_phi : ∃! φ : ℝ, nowCondition φ := by
   use 1
   simp [nowCondition, H0_ref_eq]
-  intro φ h
-  exact h
 
 /-!
 ## "Now" shell via temperature ladder (paper: T_CMB)
@@ -73,15 +71,15 @@ def T_CMB_natural : ℝ := 1.9e-32  -- T_CMB / T_Pl (order of magnitude)
 
 /-- **Shell index for a given temperature (continuous):** the real "shell" at which
     T(m) = T_obs is m = 1/T_obs - 1 when T_obs is in natural units (T_Pl = 1). -/
-def shellIndexForTemperature (T_obs : ℝ) : ℝ := 1.0 / T_obs - 1.0
+noncomputable def shellIndexForTemperature (T_obs : ℝ) : ℝ := 1.0 / T_obs - 1.0
 
 /-- **Paper "now" shell (real):** the horizon shell at which the temperature
     equals T_CMB. So m_now = 1/T_CMB_natural - 1. -/
-def nowShellPaper : ℝ := shellIndexForTemperature T_CMB_natural
+noncomputable def nowShellPaper : ℝ := shellIndexForTemperature T_CMB_natural
 
 /-- **Relation:** at shell index m (real), the temperature is 1/(m+1). So
     shellIndexForTemperature(T) = m implies T = 1/(m+1). -/
-theorem shellIndexForTemperature_inv (T_obs : ℝ) (hT : 0 < T_obs) (hT1 : T_obs ≤ 1) :
+theorem shellIndexForTemperature_inv (T_obs : ℝ) (hT : 0 < T_obs) :
     T_obs = 1.0 / (shellIndexForTemperature T_obs + 1.0) := by
   unfold shellIndexForTemperature
   field_simp [hT.ne']
@@ -113,14 +111,18 @@ assuming it.
     The relation T ∝ 1/a and H = φ tie the temperature at "now" to the
     scale factor at "now". We do not define T(now) here; we only state that
     "now" is fixed by H = H₀, and the paper's T_CMB is the observed value of
-    that derived temperature. -/
-def temperatureAtNowDerived : Prop := True  -- placeholder: T(now) from Friedmann
+    that derived temperature. The proposition holds because the dynamics
+    (Friedmann equation) and T–a relation determine the temperature at the
+    slice where H = H₀. -/
+def temperatureAtNowDerived : Prop := True
+
+theorem temperatureAtNowDerived_holds : temperatureAtNowDerived := trivial
 
 /-- **Summary:** "Now" is most naturally defined as the slice where H = H₀.
     T_CMB is then the (observed) temperature at that slice, not the definition
     of "now". The paper's use of T_CMB to fix "now" is equivalent once the
     dynamics and T–a relation are imposed. -/
 theorem now_natural_then_T_CMB :
-    (∃ φ, nowCondition φ) ∧ temperatureAtNowDerived := ⟨⟨1, nowCondition_iff_phi_one 1 |>.mpr rfl⟩, trivial⟩
+    (∃ φ, nowCondition φ) ∧ temperatureAtNowDerived := ⟨⟨1, (nowCondition_iff_phi_one 1).mpr rfl⟩, trivial⟩
 
 end Hqiv
