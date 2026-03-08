@@ -6,7 +6,7 @@ Formalisation of the HQIV (Horizon-Quantized Informational Vacuum) framework in 
 
 - **Preprint (Zenodo):** [zenodo.org/records/18899939](https://zenodo.org/records/18899939)
 - **DOI:** [10.5281/zenodo.18899939](https://doi.org/10.5281/zenodo.18899939)
-- **API documentation (GitHub Pages):** The [Lean docgen workflow](.github/workflows/lean_action_ci.yml) builds and deploys the API docs on each push to the default branch. Once enabled, they are published at [**disregardfiat.github.io/HQIV_LEAN/docs**](https://disregardfiat.github.io/HQIV_LEAN/docs).
+- **API documentation (GitHub Pages):** The [Lean docgen workflow](.github/workflows/lean_action_ci.yml) builds and deploys the API docs on each push to the default branch. Once enabled, they are published at [**disregardfiat.github.io/HQIV_LEAN/docs**](https://disregardfiat.github.io/hqiv-lean/docs), look for the hqiv section on the side.
 
 ## Building
 

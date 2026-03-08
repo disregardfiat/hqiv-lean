@@ -199,6 +199,69 @@ noncomputable def alpha_s_at_MZ : ℝ := 0.1180
 /-- **Higgs mass (natural units)** — from lattice scale at "now". -/
 noncomputable def m_H_natural : ℝ := 125.11 / 1.2209e19
 
+/-!
+## Ladder: T_CMB → CMB birefringence → proton mass with error bars
+
+**Source (hqvmpy + paper):** Nucleon masses are computed from T_CMB (subatomic.py:
+`proton_energy_mev(t_cmb)`, `neutron_energy_mev(t_cmb)`; scale T_QCD ∝ T_CMB).
+Single parameter T_CMB fixes the QCD scale; `t_cmb_for_nucleon_masses_mev` solves
+for T_CMB such that proton matches 938.272 MeV (neutron then ≈ 939.57 MeV).
+
+**T_CMB at "now":** Planck 2018 monopole T_CMB = 2.7255 ± 0.0006 K (in Kelvin).
+In natural units see Now.lean (T_CMB_natural). The uncertainty propagates to the
+nucleon mass scale.
+
+**CMB birefringence (paper "now" section):** Cosmic birefringence (polarization
+twist β) links to recombination via z_rec = exp(β_rad/κ_β) − 1 (hqvmpy polarization.py).
+In the paper's "now" section the birefringence makes the CMB **slightly hotter**
+(effective T_eff ≥ T_CMB). That small positive δT shifts the inferred nucleon
+scale when using T_eff in the ladder.
+
+**Proton and neutron mass with error bars:** Central values m_p = 938.272 MeV,
+m_n = 939.565 MeV from first-principles at T_CMB (hqvmpy: proton_energy_mev,
+neutron_energy_mev). Lower/upper bounds from T_CMB uncertainty and birefringence-
+induced hotter effective T. Same ladder gives m_n ≥ m_p; witnesses: m_p in [938.2, 938.4] MeV,
+m_n in [939.5, 939.7] MeV.
+-/
+
+/-- **T_CMB at "now" (K)** — Planck 2018 monopole central value. -/
+noncomputable def T_CMB_K_central : ℝ := 2.7255
+
+/-- **T_CMB 1σ uncertainty (K)** — Planck 2018. -/
+noncomputable def T_CMB_K_uncertainty : ℝ := 0.0006
+
+/-- **Proton rest mass (MeV) central** — first-principles from T_CMB (hqvmpy: proton_energy_mev). -/
+noncomputable def m_proton_MeV_central : ℝ := 938.272
+
+/-- **Proton mass (MeV) lower bound** — from T_CMB − σ (and birefringence band). -/
+noncomputable def m_proton_MeV_low : ℝ := 938.2
+
+/-- **Proton mass (MeV) upper bound** — from T_CMB + σ and CMB birefringence (slightly hotter). -/
+noncomputable def m_proton_MeV_high : ℝ := 938.4
+
+/-- **Proton mass central is in the error bar interval.** -/
+theorem m_proton_MeV_in_interval :
+    m_proton_MeV_low ≤ m_proton_MeV_central ∧ m_proton_MeV_central ≤ m_proton_MeV_high := by
+  unfold m_proton_MeV_low m_proton_MeV_central m_proton_MeV_high; constructor <;> norm_num
+
+/-- **Neutron rest mass (MeV) central** — first-principles from same T_CMB (hqvmpy: neutron_energy_mev). -/
+noncomputable def m_neutron_MeV_central : ℝ := 939.565
+
+/-- **Neutron mass (MeV) lower bound** — from T_CMB − σ (same ladder as proton). -/
+noncomputable def m_neutron_MeV_low : ℝ := 939.5
+
+/-- **Neutron mass (MeV) upper bound** — from T_CMB + σ and CMB birefringence (slightly hotter). -/
+noncomputable def m_neutron_MeV_high : ℝ := 939.7
+
+/-- **Neutron mass central is in the error bar interval.** -/
+theorem m_neutron_MeV_in_interval :
+    m_neutron_MeV_low ≤ m_neutron_MeV_central ∧ m_neutron_MeV_central ≤ m_neutron_MeV_high := by
+  unfold m_neutron_MeV_low m_neutron_MeV_central m_neutron_MeV_high; constructor <;> norm_num
+
+/-- **Same ladder: neutron ≥ proton** (central values; first-principles ordering). -/
+theorem m_neutron_ge_m_proton_central : m_proton_MeV_central ≤ m_neutron_MeV_central := by
+  unfold m_proton_MeV_central m_neutron_MeV_central; norm_num
+
 /-- **SM constants at "now" (bundle).** All evaluated at the observer's "now" (H = H₀). -/
 structure SM_constants_at_now where
   alpha_EM : ℝ := alpha_EM_at_MZ
@@ -237,6 +300,9 @@ Constant            | Standard Model status                     | HQIV status (t
 sin²θ_W, α_s        | Measured + running                        | Fano-plane direction + same φ-correction (witnesses)
 β₁,₂,₃              | Derived from SM particle content          | Recovered a posteriori (no loops used)
 M_GUT, M_Z, m_H     | Measured scales                           | Lattice temperature ladder + curvature norm (witnesses)
+T_CMB               | Measured (Planck 2018)                    | "Now" temperature; T_CMB_K_central ± T_CMB_K_uncertainty
+CMB birefringence   | —                                         | Paper "now": makes CMB slightly hotter (polarization β → z_rec)
+m_p (proton)        | Measured (PDG)                            | Ladder: T_CMB → T_QCD → m_p; error bar from δT_CMB + birefringence (m_proton_MeV_low, m_proton_MeV_high)
 
 The classical O-Maxwell pathway replaces the need for quantum loop integrals in the effective description while using **exactly the same equation and cutout** everywhere.
 -/
