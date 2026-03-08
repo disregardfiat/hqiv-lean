@@ -24,8 +24,8 @@ jobs:
           build: true
           test: false
 
-  # Docs and Pages in a separate job so only one artifact named "github-pages" is produced
-  # (avoids "Multiple artifacts named github-pages" when deploy-pages runs)
+  # Docs and Pages in a separate job so only one artifact named "github-pages" is produced.
+  # lean-action installs elan/lake and restores build cache; docgen-action then builds docs and uploads once.
   pages:
     needs: build
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -33,13 +33,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore Lake build cache
-        uses: actions/cache/restore@v4
+      - name: Install toolchain and restore build
+        uses: leanprover/lean-action@v1
         with:
-          path: .lake
-          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
-          restore-keys: |
-            lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
+          build: true
+          test: false
 
       - name: Build docs and deploy to GitHub Pages
         uses: leanprover-community/docgen-action@v1
