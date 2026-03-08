@@ -1,8 +1,9 @@
 name = "hqiv-lean"
 version = "0.1.0"
 
-# Used by leanprover-community/docgen-action to build HQIVLEAN:docs
-defaultTargets = ["HQIVLEAN"]
+# CI-friendly default: build HQIVPhysics (geometry + physics, no GeneratorsLieClosureData).
+# Full build with generators: lake build HQIVLEAN
+defaultTargets = ["HQIVPhysics"]
 
 [[lean_lib]]
 name = "HQIVLEAN"

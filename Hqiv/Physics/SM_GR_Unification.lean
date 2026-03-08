@@ -1,5 +1,4 @@
 import Mathlib.Data.Real.Basic
-import Mathlib.Data.Rat.Defs
 import Hqiv.Conservations
 import Hqiv.Geometry.AuxiliaryField
 import Hqiv.Geometry.HQVMetric
@@ -27,7 +26,7 @@ monogamy (→ γ). No free parameters beyond natural units and the lattice.
 
 This module states the **Yang–Mills / SM–GR unification** problem and proves that HQIV satisfies it with all constants derived from the single axiom.
 
-**On noncomputability:** In Lean, `ℝ` is the Cauchy reals; division and the coercion `ℚ → ℝ` are noncomputable. We therefore define exact rationals (α_GUT, β₁, β₂, β₃) as **computable** `ℚ` values and give the `ℝ` versions as their cast (noncomputable). The remaining constants (α_EM, sin²θ_W, α_s, mass scales) are decimal witnesses from the framework and remain noncomputable `ℝ`.
+**On noncomputability:** In Lean, `ℝ` is the Cauchy reals; division is noncomputable. We define α_GUT and β₁,₂,₃ in ℝ (noncomputable). The remaining constants are decimal witnesses from the framework.
 -/
 
 /-!
@@ -40,19 +39,12 @@ theorem alpha_derived : alpha = 3/5 := alpha_eq_3_5
 /-- **γ = 2/5** — derived from the horizon split γ = 1 − α (monogamy). -/
 theorem gamma_derived : gamma_HQIV = 2/5 := gamma_eq_2_5
 
-/-- **α_GUT as a rational** — computable. 1/(6×7) = 1/42 from cube directions × octonion dimension. -/
-def alpha_GUT_rat : ℚ := (1 : ℚ) / (cubeDirections * octonionImaginaryDim : ℚ)
-
-theorem alpha_GUT_rat_eq : alpha_GUT_rat = 1/42 := by
-  unfold alpha_GUT_rat cubeDirections octonionImaginaryDim cubeAxes signsPerAxis
-  norm_num
-
-/-- **α_GUT** — GUT coupling in ℝ (cast from ℚ; noncomputable because `ℚ → ℝ` is). -/
-noncomputable def alpha_GUT : ℝ := alpha_GUT_rat
+/-- **α_GUT** — GUT coupling: 1/(cube directions × octonion dimension) = 1/(6×7) = 1/42. -/
+noncomputable def alpha_GUT : ℝ := (1 : ℝ) / (cubeDirections * octonionImaginaryDim : ℝ)
 
 /-- **α_GUT = 1/42** — from the combinatorial definition (6×7 = 42). -/
 theorem alpha_GUT_eq_1_42 : alpha_GUT = 1/42 := by
-  unfold alpha_GUT; rw [alpha_GUT_rat_eq]; norm_num
+  unfold alpha_GUT cubeDirections octonionImaginaryDim cubeAxes signsPerAxis; norm_num
 
 /-- **α_GUT is positive** (so 1/α_GUT is well-defined). -/
 theorem alpha_GUT_pos : 0 < alpha_GUT := by rw [alpha_GUT_eq_1_42]; norm_num
@@ -136,26 +128,17 @@ standard rationals as the **recovered** values (Fano normalization c ≈ 1).
 -/
 
 /-- **One-loop β coefficient for U(1)** (equivalent b₁ = 41/10 from O-Maxwell running). -/
-def beta_1_rat : ℚ := (41 : ℚ) / 10
+noncomputable def beta_1 : ℝ := 41/10
 
 /-- **One-loop β coefficient for SU(2)** (equivalent b₂ = -19/6 from O-Maxwell running). -/
-def beta_2_rat : ℚ := (-19 : ℚ) / 6
+noncomputable def beta_2 : ℝ := -19/6
 
 /-- **One-loop β coefficient for SU(3)** (equivalent b₃ = -7 from O-Maxwell running). -/
-def beta_3_rat : ℚ := (-7 : ℚ)
+noncomputable def beta_3 : ℝ := -7
 
-/-- **β₁ in ℝ** (noncomputable: cast). -/
-noncomputable def beta_1 : ℝ := beta_1_rat
-
-/-- **β₂ in ℝ** (noncomputable: cast). -/
-noncomputable def beta_2 : ℝ := beta_2_rat
-
-/-- **β₃ in ℝ** (noncomputable: cast). -/
-noncomputable def beta_3 : ℝ := beta_3_rat
-
-theorem beta_1_eq : beta_1 = 41/10 := by unfold beta_1 beta_1_rat; norm_num
-theorem beta_2_eq : beta_2 = -19/6 := by unfold beta_2 beta_2_rat; norm_num
-theorem beta_3_eq : beta_3 = -7 := by unfold beta_3 beta_3_rat; norm_num
+theorem beta_1_eq : beta_1 = 41/10 := rfl
+theorem beta_2_eq : beta_2 = -19/6 := rfl
+theorem beta_3_eq : beta_3 = -7 := rfl
 
 /-!
 ## Side-by-side: Same modified Maxwell equation + same 0 < x < Θ_local cutout across all domains

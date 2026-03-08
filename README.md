@@ -10,21 +10,20 @@ Formalisation of the HQIV (Horizon-Quantized Informational Vacuum) framework in 
 
 ## Building
 
+**Default (CI and daily use):** builds **HQIVPhysics** (geometry + physics, no generator stack). Finishes in reasonable time.
+
 ```bash
 lake build
 ```
 
-If the build exits with **code 134** (stack overflow in `GeneratorsLieClosureData`):
-
-- **Daily work (no SO(8) generator stack):** `lake build HQIVPhysics` or `./scripts/build.sh`
-- **Full build (with SO(8) closure):** you must raise the stack limit **in the same shell** before any `lake` command, then build:
+- **Full build (with SO(8) closure):** for HQIVLEAN you must raise the stack limit, then:
   ```bash
   ulimit -s 65536
   lake build HQIVLEAN
   ```
-  Or run `./scripts/build.sh HQIVLEAN` (the script sets ulimit before building).
+  Or run `./scripts/build.sh HQIVLEAN`. The full build can take hours; CI uses the default (HQIVPhysics) only.
 
-**Default build** is the root plus the current formal core: `OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, and the generator stack (`Generators`, `OctonionLeftMultiplication`, `GeneratorsFromAxioms`, `GeneratorsLieClosureData`, `So8CoordMatrix`, `GeneratorsLieClosure`). Downstream (`Now`, `Conservations`, `Forces`, `SM_GR_Unification`, `Baryogenesis`) remains unlinked; set `globs = ["HQIVLEAN", "Hqiv.+"]` in `lakefile.toml` to build all. The first run will build mathlib and can take 30–60+ minutes.
+**Default build (HQIVPhysics)** includes geometry (`OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, `Now`), `Conservations`, and physics (`Baryogenesis`, `ModifiedMaxwell`, `GRFromMaxwell`, `Forces`, `Action`, `CovariantSolution`, `SM_GR_Unification`). No generator stack. First run will build mathlib and can take 30–60+ minutes.
 
 **ProofWidgets:** If the build fails with `ProofWidgets not up-to-date. Please run lake exe cache get`, the widget cache may be unavailable. A workaround is to comment out the `errorOnBuild` check in `.lake/packages/proofwidgets/lakefile.lean` (the block `if let some msg := get_config? errorOnBuild then error msg`) so the widget is built from source. Re-apply this change after `lake update` if the package is reset.
 If you see errors like `failed to load header from ... setup.json: unexpected end of input`, the mathlib build cache may be corrupted; then run:
@@ -33,7 +32,7 @@ If you see errors like `failed to load header from ... setup.json: unexpected en
 cd .lake/packages/mathlib && lake clean && cd ../../..
 lake build
 ```  
-Current build: `Hqiv.Geometry.OctonionicLightCone`, `AuxiliaryField`, `HQVMetric`, `Hqiv.Generators`, `Hqiv.OctonionLeftMultiplication`, `Hqiv.GeneratorsFromAxioms`, `Hqiv.GeneratorsLieClosureData`, `Hqiv.So8CoordMatrix`, `Hqiv.GeneratorsLieClosure`. Full tree (when re-enabled): `Now`, `Conservations`, `Forces`, `SM_GR_Unification`, `Baryogenesis`, etc. Scripts: `scripts/print_lie_bracket_closure.py --write`, `scripts/print_linear_independence.py [--write]`.
+**HQIVLEAN** (full build) adds the generator stack: `Generators`, `OctonionLeftMultiplication`, `GeneratorsFromAxioms`, `GeneratorsLieClosureData*`, `So8CoordMatrix`, `GeneratorsLieClosure`, `SO8Closure`. Scripts: `scripts/print_lie_bracket_closure.py --write`, `scripts/print_linear_independence.py [--write]`.
 
 **What traces to the light cone (single axiom, no arbitrary defs)**  
 - **Single axiom:** New modes at shell m = 8 × stars-and-bars(m) = 4·(m+2)(m+1).  
