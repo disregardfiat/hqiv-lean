@@ -38,11 +38,12 @@ render_one () {
   fi
 
   # Prefer inheriting LEAN_PATH from `lake build Alectryon` (no nested Lake).
-  # If run manually, fall back to `lake env` to populate LEAN_PATH.
+  # Also pass `--lake lakefile.lean` so LeanInk runs with the correct Lake
+  # project context (resolving mathlib + local packages).
   if [[ -n "${LEAN_PATH:-}" ]]; then
-    "$ALECTRYON" --frontend lean4 -o "$out" "$in"
+    "$ALECTRYON" --frontend lean4 --lake lakefile.lean -o "$out" "$in"
   else
-    lake env "$ALECTRYON" --frontend lean4 -o "$out" "$in"
+    lake env "$ALECTRYON" --frontend lean4 --lake lakefile.lean -o "$out" "$in"
   fi
   echo "  wrote: $out" >&2
 }
