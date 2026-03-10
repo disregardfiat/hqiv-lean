@@ -9,7 +9,7 @@ Formal Lean 4 development for the algebra of the HQIV framework: octonions, G₂
 
 ## Status
 
-**Triality + SMEmbedding + AnomalyCancellation — 100 % PROVED (zero sorrys, zero extra axioms).** Exactly three fermion generations and proton-to-Higgs numerical prediction derived purely from the two HQIV axioms.
+**SMEmbedding + AnomalyCancellation — 100 % PROVED (zero sorrys, zero extra axioms).** Full SM symmetry, quantum numbers, branching rules, chirality, and right-handed neutrino derived purely from the two HQIV axioms.
 
 ## Modules (`Hqiv/Algebra/`)
 
@@ -20,25 +20,35 @@ Formal Lean 4 development for the algebra of the HQIV framework: octonions, G₂
 | `PhaseLiftDelta.lean` | Horizon phase-lift generator Δ (e₁–e₇ plane), φ/6 from AuxiliaryField. |
 | `SO8ClosureAbstract.lean` | **G₂ + Δ closes to so(8):** dimension 28 (so8_span_dim_eq_28 via finrank_span_eq_card), bracket closure, span of 28 generators. |
 | `Triality.lean` | **100% PROVED.** D₄ triality automorphism (order 3): 8v ↔ 8s⁺ ↔ 8s⁻; exactly three fermion generations from the two HQIV axioms. |
-| `SMEmbedding.lean` | **100% PROVED.** 8s → one SM generation (8+8 chiral), explicit representation theory (so8ActOn8s, OctonionSpinorCarrier), G₂ ⊃ SM subgroup, three generations from triality. |
+| `SMEmbedding.lean` | **100% PROVED.** Full SM embedding: (1) Explicit SU(2)_L generators in so(8) with su(2) relation [T₁,T₂]=-T₃ and doublet action on 8s. (2) Hypercharge generator (Δ) + Y assignments; Q = T₃ + Y/2. (3) Branching rules 8s → (3,2,+1/6)⊕(3̄,1,–2/3)⊕…⊕(1,1,0). (4) Chirality + ν_R singlet (Y=0 at index 7). |
 | `AnomalyCancellation.lean` | **100% PROVED.** Anomaly-free three generations: explicit anomaly coefficients (anomalyCoeff), anomaly_index = 0, sum over generations vanishes. |
 
-## Build
+## Build & Test
 
-- **Full build (with Algebra and generator data):**
+- **Default build (CI and daily use):** geometry + physics, no generator stack.
   ```bash
-  lake build HQIVLEAN
+  lake build
   ```
-- **Quick test (geometry + physics only, no generator data):**
+  or explicitly:
   ```bash
   lake build HQIVPhysics
   ```
-  (Algebra modules are not part of HQIVPhysics; they depend on `Hqiv.GeneratorsLieClosure`.)
+- **Full build (with Algebra and generator data):** requires raised stack limit.
+  ```bash
+  ulimit -s 65536
+  lake build HQIVLEAN
+  ```
+  (Algebra modules depend on `Hqiv.GeneratorsLieClosure` and the 28 generator data files.)
 
-One-line test after full build:
-
+**One-line test after full build:**
 ```bash
 lake build HQIVLEAN && lake env lean Hqiv/Algebra/Triality.lean
+```
+
+**Check SM embedding and anomaly cancellation:**
+```bash
+lake env lean Hqiv/Algebra/SMEmbedding.lean
+lake env lean Hqiv/Algebra/AnomalyCancellation.lean
 ```
 
 ## Machine-checked path
@@ -56,3 +66,46 @@ Two axioms → Spin(8) → triality → three generations → single Higgs from 
 
 - **Mathlib 4** (v4.28.0).
 - Existing HQIVLEAN stack: `Generators`, `GeneratorsFromAxioms`, `GeneratorsLieClosureData*`, `So8CoordMatrix`, `GeneratorsLieClosure`, `SO8Closure`, `OctonionLeftMultiplication`, `AuxiliaryField`, etc.
+
+## Interactive Textbook Derivations (Alectryon)
+
+This repository can optionally generate **interactive, clickable HTML** pages from key pedagogical proofs using **Alectryon**. This runs **alongside** (not instead of) the normal Lake build and the existing docbuild pipeline, and it writes to a separate folder: `docs/interactive/`.
+
+### Install (one-time)
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+```
+
+Lean 4 support also requires **LeanInk** (a small Lean-based helper binary used by the Lean4-capable Alectryon fork):
+
+```bash
+sh -c "$(curl https://raw.githubusercontent.com/leanprover/LeanInk/main/init.sh -sSf)"
+```
+
+### Build the interactive pages
+
+```bash
+lake build Alectryon
+```
+
+This generates:
+
+- `docs/interactive/Triality.html`
+- `docs/interactive/SMEmbedding.html`
+- `docs/interactive/AnomalyCancellation.html`
+- `docs/interactive/SM_GR_Unification.html`
+
+### View (one-line test)
+
+- Linux (this repo’s default dev environment):
+
+```bash
+lake build Alectryon && xdg-open docs/interactive/Triality.html
+```
+
+- macOS:
+
+```bash
+lake build Alectryon && open docs/interactive/Triality.html
+```

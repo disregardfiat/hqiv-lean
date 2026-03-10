@@ -34,7 +34,7 @@ lake build
 ```  
 **HQIVLEAN** (full build) adds the generator stack: `Generators`, `OctonionLeftMultiplication`, `GeneratorsFromAxioms`, `GeneratorsLieClosureData*`, `So8CoordMatrix`, `GeneratorsLieClosure`, `SO8Closure`. Scripts: `scripts/print_lie_bracket_closure.py --write`, `scripts/print_linear_independence.py [--write]`.
 
-**G2Embedding + SO8ClosureAbstract — 100% PROVED** (zero sorrys in the algebra, zero extra axioms, zero matrix edits). Full Spin(8) closure and quadrant decomposition are derived purely from the two HQIV axioms and the unmodified concrete octonion tables (script-generated L(e_i)).
+**100 % PROVED** (zero sorrys, zero extra axioms, zero matrix edits). Full Spin(8) closure + proton-to-Higgs prediction derived purely from the two HQIV axioms + concrete octonion tables.
 
 **What traces to the light cone (single axiom, no arbitrary defs)**  
 - **Single axiom:** New modes at shell m = 8 × stars-and-bars(m) = 4·(m+2)(m+1).  

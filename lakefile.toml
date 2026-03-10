@@ -16,6 +16,12 @@ name = "HQIVPhysics"
 # Geometry + Conservations + Physics only (no GeneratorsLieClosureData). Use when full build crashes with exit 134.
 globs = ["HQIVPhysics", "Hqiv.Geometry.OctonionicLightCone", "Hqiv.Geometry.AuxiliaryField", "Hqiv.Geometry.HQVMetric", "Hqiv.Geometry.Now", "Hqiv.Conservations", "Hqiv.Physics.Baryogenesis", "Hqiv.Physics.ModifiedMaxwell", "Hqiv.Physics.GRFromMaxwell", "Hqiv.Physics.Forces", "Hqiv.Physics.Action", "Hqiv.Physics.CovariantSolution", "Hqiv.Physics.SM_GR_Unification"]
 
+[[lean_lib]]
+name = "Alectryon"
+# Optional interactive HTML derivations (never built by default).
+# Run explicitly: `lake build Alectryon`
+globs = ["Alectryon"]
+
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4.git"

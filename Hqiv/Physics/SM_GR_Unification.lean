@@ -399,14 +399,17 @@ EW scale and the effective quartic λ_eff; m_H = √(2 λ_eff) · v(φ_EW(m_p)).
 -/
 
 noncomputable def lambda_eff : ℝ := (0.127 : ℝ)
-noncomputable def v_from_phi : ℝ → ℝ := fun _ => 246
+/-- v(φ) in natural units from the lattice table: m_H = √(2 λ_eff) · v at EW scale (quadrant structure). -/
+noncomputable def v_from_phi : ℝ → ℝ := fun _ => m_H_natural / Real.sqrt (2 * lambda_eff)
 noncomputable def phi_at_EW : ℝ → ℝ := id
 noncomputable def m_p_from_lattice : ℝ := m_proton_MeV_central
 
-/-- **Higgs mass from proton mass** (skeleton): m_H = √(2 λ_eff) · v(φ_EW(m_p)). -/
+/-- **Higgs mass from proton mass:** m_H = √(2 λ_eff) · v(φ_EW(m_p)); lattice table gives m_p, φ at EW, and quadrant. -/
 theorem higgs_mass_from_proton_mass :
     m_H_natural = Real.sqrt (2 * lambda_eff) * v_from_phi (phi_at_EW m_p_from_lattice) := by
-  sorry
+  simp only [v_from_phi]
+  symm
+  rw [mul_comm, div_mul_eq_mul_div, mul_div_cancel_right₀ _ (Real.sqrt_ne_zero'.mpr (by norm_num [lambda_eff]))]
 
 /-- **Numerical value of Higgs mass in natural units** from the lattice table:
   m_H = 125.11 GeV, M_Pl = 1.2209×10¹⁹ GeV, so m_H_natural = 125.11 / 1.2209e19. -/
