@@ -12,3 +12,10 @@ import Hqiv.Physics.Forces
 import Hqiv.Physics.Action
 import Hqiv.Physics.CovariantSolution
 import Hqiv.Physics.SM_GR_Unification
+import Hqiv.Algebra.OctonionBasics
+import Hqiv.Algebra.G2Embedding
+import Hqiv.Algebra.PhaseLiftDelta
+import Hqiv.Algebra.SO8ClosureAbstract
+import Hqiv.Algebra.Triality
+import Hqiv.Algebra.SMEmbedding
+import Hqiv.Algebra.AnomalyCancellation

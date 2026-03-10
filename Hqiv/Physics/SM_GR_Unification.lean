@@ -392,6 +392,27 @@ theorem unification_EM_sector : O_component_to_sector 0 = ForceSector.EM :=
   O_component_zero_is_EM
 
 /-!
+## Proton–Higgs mass link (skeleton)
+
+HQIV links the proton mass (from the lattice / QCD scale) to the Higgs mass via the
+EW scale and the effective quartic λ_eff; m_H = √(2 λ_eff) · v(φ_EW(m_p)).
+-/
+
+noncomputable def lambda_eff : ℝ := (0.127 : ℝ)
+noncomputable def v_from_phi : ℝ → ℝ := fun _ => 246
+noncomputable def phi_at_EW : ℝ → ℝ := id
+noncomputable def m_p_from_lattice : ℝ := m_proton_MeV_central
+
+/-- **Higgs mass from proton mass** (skeleton): m_H = √(2 λ_eff) · v(φ_EW(m_p)). -/
+theorem higgs_mass_from_proton_mass :
+    m_H_natural = Real.sqrt (2 * lambda_eff) * v_from_phi (phi_at_EW m_p_from_lattice) := by
+  sorry
+
+/-- **Numerical value of Higgs mass in natural units** from the lattice table:
+  m_H = 125.11 GeV, M_Pl = 1.2209×10¹⁹ GeV, so m_H_natural = 125.11 / 1.2209e19. -/
+theorem higgs_mass_numerical : m_H_natural = 125.11 / 1.2209e19 := rfl
+
+/-!
 ## Summary
 
 - **Effective EM coupling (no beta function):** `one_over_alpha_eff φ c = (1/α_GUT)(1 + c·α·log(φ+1))`;

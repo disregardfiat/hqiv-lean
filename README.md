@@ -6,7 +6,7 @@ Formalisation of the HQIV (Horizon-Quantized Informational Vacuum) framework in 
 
 - **Preprint (Zenodo):** [zenodo.org/records/18899939](https://zenodo.org/records/18899939)
 - **DOI:** [10.5281/zenodo.18899939](https://doi.org/10.5281/zenodo.18899939)
-- **API documentation (GitHub Pages):** The [Lean docgen workflow](.github/workflows/lean_action_ci.yml) builds and deploys the API docs on each push to the default branch. Once enabled, they are published at [**disregardfiat.github.io/HQIV_LEAN/docs**](https://disregardfiat.github.io/hqiv-lean/docs), look for the hqiv section on the side.
+- **API documentation (GitHub Pages):** The [Lean docgen workflow](.github/workflows/lean_action_ci.yml) builds and deploys the API docs on each push to the default branch. Once enabled, they are published at [**disregardfiat.github.io/hqiv-lean/docs**](https://disregardfiat.github.io/hqiv-lean/docs), look for the hqiv section on the side.
 
 ## Building
 
@@ -33,6 +33,8 @@ cd .lake/packages/mathlib && lake clean && cd ../../..
 lake build
 ```  
 **HQIVLEAN** (full build) adds the generator stack: `Generators`, `OctonionLeftMultiplication`, `GeneratorsFromAxioms`, `GeneratorsLieClosureData*`, `So8CoordMatrix`, `GeneratorsLieClosure`, `SO8Closure`. Scripts: `scripts/print_lie_bracket_closure.py --write`, `scripts/print_linear_independence.py [--write]`.
+
+**G2Embedding + SO8ClosureAbstract — 100% PROVED** (zero sorrys in the algebra, zero extra axioms, zero matrix edits). Full Spin(8) closure and quadrant decomposition are derived purely from the two HQIV axioms and the unmodified concrete octonion tables (script-generated L(e_i)).
 
 **What traces to the light cone (single axiom, no arbitrary defs)**  
 - **Single axiom:** New modes at shell m = 8 × stars-and-bars(m) = 4·(m+2)(m+1).  
