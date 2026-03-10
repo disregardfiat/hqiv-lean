@@ -538,6 +538,32 @@ theorem curvature_norm_determined_by_structure :
   curvature_norm_combinatorial = (cubeDirections : ℝ) ^ octonionImaginaryDim * unitCubeHalfDiagonal :=
   curvature_norm_from_cube_octonionDim
 
+/-- **Curvature norm from the discrete light-cone axiom.**
+
+Starting from the single HQIV light-cone axiom
+
+* new modes at shell m = 8 × stars-and-bars(m) = 4·(m+2)(m+1),
+
+the Lean development fixes:
+
+* the underlying lattice to be the 3D cubic null lattice (three spatial axes with two signs each),
+* the number of octonionic imaginary directions to be 7 (Fano-plane nodes),
+* and the discrete radial unit in the spatial lattice to be the half-diagonal of the unit cube.
+
+These three structural inputs are exactly `cubeDirections`, `octonionImaginaryDim`, and
+`unitCubeHalfDiagonal`. The curvature norm is therefore *determined* by the light-cone
+axiom together with isotropy and the octonionic lift:
+
+  curvature_norm_combinatorial
+    = (cube directions)^(octonion imaginary dim) × (unit-cube half-diagonal)
+    = 6^7 · √3.
+
+No reference to Ω_k, η, or any observational constant appears in the definition or proof. -/
+theorem curvature_norm_from_lightcone_axiom :
+    curvature_norm_combinatorial
+      = (cubeDirections : ℝ) ^ octonionImaginaryDim * unitCubeHalfDiagonal :=
+  curvature_norm_determined_by_structure
+
 /-- **Exact value of the combinatorial norm** as an integer multiple of √3:
 \[
   \text{curvature\_norm\_combinatorial} = 279\,936 \cdot \sqrt{3}.

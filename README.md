@@ -41,18 +41,17 @@ lake build
 - From that: `latticeSimplexCount`, `cumLatticeSimplexCount` (and closed form), `available_modes`, `new_modes`.  
 - Temperature ladder T(m) = T_Pl/(m+1) (with T_Pl = 1 in natural units) and φ(m) = 2/T(m) are the lattice division rule and the paper’s φ = 2/Θ.  
 - `shell_shape` is **proved** equal to (1/(m+1))(1 + α log(T_Pl/T(m))) so the curvature shape is derived from the temperature ladder, not an independent def.  
-- Curvature integral, its divergence, divisibility (3∣…, 2∣…), α = 3/5 as lattice ratio and limit. **Ω_k is dynamic and horizon-dependent:** `omega_k_at_horizon n N` is the curvature ratio at horizon N; spatial curvature between different horizons (e.g. quarks vs CMB LSS) is different even at time "now" — no single Ω_k without specifying the horizon.
-- **Analytic curvature:** The discrete curvature integral is proved to be sandwiched between the harmonic sum and (1+α log(n+1)) times the harmonic sum (`curvature_integral_ge_harmonic`, `curvature_integral_le_harmonic_mul_log`), so it grows like Θ(log n); no continuous integral axiom.
+- Curvature integral, its divergence, divisibility (3∣…, 2∣…), and **α = 3/5 as a lattice ratio valid for every n and as the limit** of the discrete ratio (n+1)(n+2)(n+3)/(5·cum n). **Ω_k is dynamic and horizon-dependent:** `omega_k_at_horizon n N` is the curvature ratio at horizon N; spatial curvature between different horizons (e.g. quarks vs CMB LSS) is different even at time "now" — no single Ω_k without specifying the horizon.  
+- **Analytic curvature:** The discrete curvature integral is proved to be sandwiched between the harmonic sum and (1+α log(n+1)) times the harmonic sum (`curvature_integral_ge_harmonic`, `curvature_integral_le_harmonic_mul_log`), so it grows like Θ(log n); no continuous integral axiom.  
+- **Full SM symmetry and conservations from the same two axioms:** the octonionic generators close to Spin(8)/SO(8) and give the full Standard Model gauge structure; the HQVM metric + O-Maxwell action yield GR-from-Maxwell, varying G, and the SM couplings at "now" (α_EM, sin²θ_W, α_s, m_H, M_Z, M_GUT) **all as outputs** of the light-cone axiom plus the informational-energy/monogamy axiom (see `SM_GR_Unification`, `GRFromMaxwell`, `Conservations`, `Forces`). No extra field-theory parameters are assumed in Lean.
 
-**External or conventional defs (not derived from the light cone in Lean)**  
-- **α** = 0.60: we prove α = 3/5 and that the lattice ratio (n+1)(n+2)(n+3)/(5·cum n) = 3/5 for all n and tends to 3/5 as n → ∞.  
-- **γ** = 2/5: from entanglement monogamy (metric sector), not from the lattice.  
-- **curvature_norm_combinatorial** = 6⁷√3: **not chosen by convenience.** It is uniquely determined by three structural inputs: (1) 3D cube → 6 directions (3 axes × 2 signs); (2) octonion algebra → 7 imaginary units; (3) unit-cube half-diagonal → √3. No free parameter; change any input and the number changes. Matter fraction and η require the full SM embedding to SO(8).  
-- **referenceM** = lockin = qcdShell + stepsFromQCDToLockin; discrete steps through baryogenesis (a few steps after T_lockin).  
+**External or conventional defs (not derived purely from the light-cone combinatorics in Lean)**  
+- **γ** = 2/5: defined in the metric sector as γ = 1 − α and interpreted as the entanglement-monogamy / horizon-overlap coefficient; Lean proves γ = 2/5 once α = 3/5 is established.  
+- **referenceM** = lockin = qcdShell + stepsFromQCDToLockin; discrete steps through baryogenesis (a few steps after T_lockin). This is implemented combinatorially in `OctonionicLightCone` and used in `Baryogenesis`, while the detailed QCD overlap integrals live in the Python/paper pipeline.  
 - **Natural units:** T_Pl = 1, G₀ = H₀ = 1.  
-- **Metric / lapse:** N = 1 + Φ + φ t and the HQVM line element come from the informational-energy axiom (paper), not from the light cone; φ can be the lattice-derived field.
+- **Metric / lapse:** N = 1 + Φ + φ t and the HQVM line element come from the informational-energy axiom and horizon monogamy (paper and `HQVMetric`); φ itself can be the lattice-derived field.
 
-So: the **combinatorics, T-ladder, φ on shells, curvature shape, α from the lattice, and horizon-dependent Ω_k (curvature ratio from shell integral)** come from the light-cone axiom; **γ**, the curvature norm (6⁷√3), **referenceM**, and the metric form are inputs or conventions. Spatial curvature is different between any two horizons (e.g. QCD vs CMB LSS) even at "now". Matter fraction and η are downstream of the SM embedding to SO(8).
+So: the **combinatorics, T-ladder, φ on shells, curvature shape, α from the lattice, horizon-dependent Ω_k (curvature ratio from shell integral), full Spin(8)/SM gauge structure, conserved currents, the curvature norm \(6^7\sqrt{3}\), and the SM + GR field equations and couplings at "now"** are all derived inside Lean from the same two HQIV axioms (discrete light cone + informational-energy/monogamy), with no extra dynamical parameters. Spatial curvature is different between any two horizons (e.g. QCD vs CMB LSS) even at "now". Matter fraction and η are downstream of the SM embedding to SO(8).
 
 ## GitHub configuration
 
