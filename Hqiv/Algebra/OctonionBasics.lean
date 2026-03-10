@@ -86,10 +86,4 @@ theorem leftMulByBasis_e0 (y : OctonionVec) : leftMulByBasis 0 y = y := by
   · intro x _ hne; simp only [hne.symm, ite_false, zero_mul]
   · intro h; exact absurd (Finset.mem_univ k) h
 
-/-- **Imaginary left-mul is skew-adjoint** (norm preservation / alternativity of O).
-For pure imaginary unit e_i (i ≠ 0), ⟨L(e_i)x, y⟩ + ⟨x, L(e_i)y⟩ = 0.
-Consequence of the HQIV lattice axiom and Fano-plane algebra. -/
-axiom octonion_alternativity_imaginary (i : Fin 8) (hi : i ≠ 0) (x y : OctonionVec) :
-  octonionInner (leftMulByBasis i x) y + octonionInner x (leftMulByBasis i y) = 0
-
 end Hqiv.Algebra

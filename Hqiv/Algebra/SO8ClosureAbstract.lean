@@ -121,16 +121,39 @@ theorem so8_span_self (k : Fin 28) :
 /-- **G₂ generators as a set** (for reference). -/
 def G2_generators : Set (Matrix (Fin 8) (Fin 8) ℝ) := Set.range Hqiv.Algebra.g2Generator
 
+/-- **Each G₂ generator lies in span(so8).** (Coefficient data from script; antisymmetry gives G₂ ⊆ so(8).) -/
+theorem g2Generator_mem_span_so8 (k : Fin 14) :
+    Hqiv.Algebra.g2Generator k ∈ Submodule.span ℝ (Set.range Hqiv.so8Generator) := by
+  sorry
+
+/-- **Δ lies in span(so8).** (Antisymmetric ⇒ Δ ∈ so(8) = span of 28 generators.) -/
+theorem phaseLiftDelta_mem_span_so8 :
+    Hqiv.phaseLiftDelta ∈ Submodule.span ℝ (Set.range Hqiv.so8Generator) := by
+  sorry
+
+/-- **Each so(8) generator lies in span(G₂ ∪ {Δ}).** (Lie closure + dimension 28.) -/
+theorem so8Generator_mem_span_G2_Delta (k : Fin 28) :
+    Hqiv.so8Generator k ∈ Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta}) := by
+  sorry
+
 /-- **Full closure:** span(G₂ ∪ {Δ}) = span(so8). Proved by le_antisymm: containment from
   antisymmetry (G₂, Δ ∈ so(8)) and dimension 28; reverse containment from Lie closure. -/
 theorem G2_plus_Delta_closes_to_so8_full :
     Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta}) =
     Submodule.span ℝ (Set.range Hqiv.so8Generator) := by
   le_antisymm
-  · -- span(G₂ ∪ {Δ}) ≤ span(so8): generators are antisymmetric and in so(8) span
-    sorry
-  · -- span(so8) ≤ span(G₂ ∪ {Δ}): each so8Generator in Lie closure (dimension + bracket closure)
-    sorry
+  · intro M hM
+    cases hM with
+    | inl g =>
+      obtain ⟨k, rfl⟩ := g
+      exact g2Generator_mem_span_so8 k
+    | inr d =>
+      rw [Set.mem_singleton_iff] at d
+      rw [d]
+      exact phaseLiftDelta_mem_span_so8
+  · intro M hM
+    obtain ⟨k, rfl⟩ := hM
+    exact so8Generator_mem_span_G2_Delta k
 
 /-!
 ## Quadrant decomposition (Cayley–Dickson / Maxwell H block)

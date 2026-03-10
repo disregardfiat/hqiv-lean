@@ -100,6 +100,27 @@ def octonionLeftMul_7 : Matrix (Fin 8) (Fin 8) ℝ := !![
     (1 : ℝ), (0 : ℝ), (0 : ℝ), (0 : ℝ), (0 : ℝ), (0 : ℝ), (0 : ℝ), (0 : ℝ)
   ]
 
+/-- Entry lemmas for L(e_4) at indices where fin_cases + norm_num may not reduce (antisymmetry proof). -/
+lemma octonionLeftMul_4_2_4 : octonionLeftMul_4 2 4 = 0 := rfl
+lemma octonionLeftMul_4_4_2 : octonionLeftMul_4 4 2 = 0 := rfl
+lemma octonionLeftMul_4_2_6 : octonionLeftMul_4 2 6 = 1 := rfl
+lemma octonionLeftMul_4_6_2 : octonionLeftMul_4 6 2 = -1 := rfl
+lemma octonionLeftMul_4_3_5 : octonionLeftMul_4 3 5 = 0 := rfl
+lemma octonionLeftMul_4_5_3 : octonionLeftMul_4 5 3 = 0 := rfl
+lemma octonionLeftMul_4_3_7 : octonionLeftMul_4 3 7 = 1 := rfl
+lemma octonionLeftMul_4_7_3 : octonionLeftMul_4 7 3 = -1 := rfl
+
+/-- **L(e_{N+1}) as a map** from Fin 7 (N=0..6 → e_1..e_7). -/
+def octonionLeftMul_N (N : Fin 7) : Matrix (Fin 8) (Fin 8) ℝ :=
+  match N with
+  | 0 => octonionLeftMul_1
+  | 1 => octonionLeftMul_2
+  | 2 => octonionLeftMul_3
+  | 3 => octonionLeftMul_4
+  | 4 => octonionLeftMul_5
+  | 5 => octonionLeftMul_6
+  | 6 => octonionLeftMul_7
+
 /-!
 ## Next steps (GeneratorsFromAxioms)
 

@@ -84,37 +84,79 @@ theorem matrix_skew_iff_skewAdjoint (M : Matrix (Fin 8) (Fin 8) ℝ) :
       octonionInner (M.mulVec x) y + octonionInner x (M.mulVec y) = 0 :=
   ⟨fun h => matrix_skewAdjoint_of_skew M h, matrix_skew_of_skewAdjoint M⟩
 
-/-- **Skew-adjoint for imaginary e_i:** ⟨L(e_i)x, y⟩ + ⟨x, L(e_i)y⟩ = 0 (norm preservation / alternativity). -/
+/-- **L(e_1) + L(e_1)ᵀ = 0** (concrete Fano table). -/
+theorem leftMul_1_add_transpose : Hqiv.octonionLeftMul_1 + (Hqiv.octonionLeftMul_1)ᵀ = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp only [add_apply, transpose_apply, Hqiv.octonionLeftMul_1, zero_apply]; all_goals norm_num
+/-- **L(e_2) + L(e_2)ᵀ = 0** (concrete Fano table). -/
+theorem leftMul_2_add_transpose : Hqiv.octonionLeftMul_2 + (Hqiv.octonionLeftMul_2)ᵀ = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp only [add_apply, transpose_apply, Hqiv.octonionLeftMul_2, zero_apply]; all_goals norm_num
+/-- **L(e_3) + L(e_3)ᵀ = 0** (concrete Fano table). -/
+theorem leftMul_3_add_transpose : Hqiv.octonionLeftMul_3 + (Hqiv.octonionLeftMul_3)ᵀ = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp only [add_apply, transpose_apply, Hqiv.octonionLeftMul_3, zero_apply]; all_goals norm_num
+/-- **L(e_4) + L(e_4)ᵀ = 0** (concrete Fano table). -/
+theorem leftMul_4_add_transpose : Hqiv.octonionLeftMul_4 + (Hqiv.octonionLeftMul_4)ᵀ = 0 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp only [add_apply, transpose_apply, zero_apply] <;>
+    (try rw [Hqiv.octonionLeftMul_4_2_4, Hqiv.octonionLeftMul_4_4_2, Hqiv.octonionLeftMul_4_2_6,
+      Hqiv.octonionLeftMul_4_6_2, Hqiv.octonionLeftMul_4_3_5, Hqiv.octonionLeftMul_4_5_3,
+      Hqiv.octonionLeftMul_4_3_7, Hqiv.octonionLeftMul_4_7_3]) <;>
+    norm_num
+/-- **L(e_5) + L(e_5)ᵀ = 0** (concrete Fano table). -/
+theorem leftMul_5_add_transpose : Hqiv.octonionLeftMul_5 + (Hqiv.octonionLeftMul_5)ᵀ = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp only [add_apply, transpose_apply, Hqiv.octonionLeftMul_5, zero_apply]; all_goals norm_num
+/-- **L(e_6) + L(e_6)ᵀ = 0** (concrete Fano table). -/
+theorem leftMul_6_add_transpose : Hqiv.octonionLeftMul_6 + (Hqiv.octonionLeftMul_6)ᵀ = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp only [add_apply, transpose_apply, Hqiv.octonionLeftMul_6, zero_apply]; all_goals norm_num
+/-- **L(e_7) + L(e_7)ᵀ = 0** (concrete Fano table). -/
+theorem leftMul_7_add_transpose : Hqiv.octonionLeftMul_7 + (Hqiv.octonionLeftMul_7)ᵀ = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp only [add_apply, transpose_apply, Hqiv.octonionLeftMul_7, zero_apply]; all_goals norm_num
+
+/-- **Left multiplication by imaginary unit e_i is skew-symmetric** (from concrete Fano tables). -/
+theorem leftMul_matrix_skew (i : Fin 8) (hi : i ≠ 0) :
+    leftMulMatrix i + (leftMulMatrix i)ᵀ = 0 := by
+  fin_cases i
+  · exact absurd rfl hi
+  · simp only [leftMulMatrix]; exact leftMul_1_add_transpose
+  · simp only [leftMulMatrix]; exact leftMul_2_add_transpose
+  · simp only [leftMulMatrix]; exact leftMul_3_add_transpose
+  · simp only [leftMulMatrix]; exact leftMul_4_add_transpose
+  · simp only [leftMulMatrix]; exact leftMul_5_add_transpose
+  · simp only [leftMulMatrix]; exact leftMul_6_add_transpose
+  · simp only [leftMulMatrix]; exact leftMul_7_add_transpose
+
+/-- **Alternativity for imaginary units**, proved from the concrete lattice multiplication table (no axiom). -/
+theorem octonion_alternativity_imaginary (i : Fin 8) (hi : i ≠ 0) (x y : OctonionVec) :
+    octonionInner (leftMulByBasis i x) y + octonionInner x (leftMulByBasis i y) = 0 := by
+  rw [leftMulByBasis_eq_mulVec]; exact matrix_skewAdjoint_of_skew (leftMulMatrix i) (leftMul_matrix_skew i hi) x y
+
+/-- **Skew-adjoint for imaginary e_i:** ⟨L(e_i)x, y⟩ + ⟨x, L(e_i)y⟩ = 0 (from table + matrix_skewAdjoint_of_skew). -/
 theorem leftMul_imaginary_antisymm (i : Fin 8) (hi : i ≠ 0) (x y : OctonionVec) :
     octonionInner (leftMulByBasis i x) y + octonionInner x (leftMulByBasis i y) = 0 :=
   octonion_alternativity_imaginary i hi x y
 
-/-- **Left multiplication by imaginary unit e_i is skew-symmetric** (from alternativity). -/
-theorem leftMul_matrix_skew (i : Fin 8) (hi : i ≠ 0) :
-    leftMulMatrix i + (leftMulMatrix i)ᵀ = 0 :=
-  (matrix_skew_iff_skewAdjoint (leftMulMatrix i)).mpr (leftMul_imaginary_antisymm i hi)
-
-/-- **L(e_{N+1}) as a map** from Fin 7 (N=0..6 → e_1..e_7). -/
-def octonionLeftMul_N (N : Fin 7) : Matrix (Fin 8) (Fin 8) ℝ := leftMulMatrix (Fin.succ N)
+lemma leftMulMatrix_succ (N : Fin 7) : leftMulMatrix (Fin.succ N) = Hqiv.octonionLeftMul_N N := by
+  unfold leftMulMatrix Hqiv.octonionLeftMul_N; fin_cases N <;> rfl
 
 /-- **Each L(e_{N+1}) is antisymmetric** (single parameterized proof). -/
-theorem leftMul_N_antisymm (N : Fin 7) : (octonionLeftMul_N N)ᵀ = -octonionLeftMul_N N :=
-  eq_neg_iff_add_eq_zero.mpr (add_comm _ _ |>.trans (leftMul_matrix_skew (Fin.succ N) (Fin.succ_ne_zero N)))
+theorem leftMul_N_antisymm (N : Fin 7) : (Hqiv.octonionLeftMul_N N)ᵀ = -Hqiv.octonionLeftMul_N N := by
+  rw [← leftMulMatrix_succ]
+  exact eq_neg_iff_add_eq_zero.mpr (add_comm _ _ |>.trans (leftMul_matrix_skew (Fin.succ N) (Fin.succ_ne_zero N)))
 
 theorem leftMul_1_antisymm : (Hqiv.octonionLeftMul_1)ᵀ = -Hqiv.octonionLeftMul_1 := by
-  simpa [octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 0
+  simpa [Hqiv.octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 0
 theorem leftMul_2_antisymm : (Hqiv.octonionLeftMul_2)ᵀ = -Hqiv.octonionLeftMul_2 := by
-  simpa [octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 1
+  simpa [Hqiv.octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 1
 theorem leftMul_3_antisymm : (Hqiv.octonionLeftMul_3)ᵀ = -Hqiv.octonionLeftMul_3 := by
-  simpa [octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 2
+  simpa [Hqiv.octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 2
 theorem leftMul_4_antisymm : (Hqiv.octonionLeftMul_4)ᵀ = -Hqiv.octonionLeftMul_4 := by
-  simpa [octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 3
+  simpa [Hqiv.octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 3
 theorem leftMul_5_antisymm : (Hqiv.octonionLeftMul_5)ᵀ = -Hqiv.octonionLeftMul_5 := by
-  simpa [octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 4
+  simpa [Hqiv.octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 4
 theorem leftMul_6_antisymm : (Hqiv.octonionLeftMul_6)ᵀ = -Hqiv.octonionLeftMul_6 := by
-  simpa [octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 5
+  simpa [Hqiv.octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 5
 theorem leftMul_7_antisymm : (Hqiv.octonionLeftMul_7)ᵀ = -Hqiv.octonionLeftMul_7 := by
-  simpa [octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 6
+  simpa [Hqiv.octonionLeftMul_N, leftMulMatrix] using leftMul_N_antisymm 6
 
 /-- From Lᵀ = -L we get L + Lᵀ = 0 (for use with lieBracket_skew_of_skew). -/
 lemma add_eq_zero_of_neg_eq (L : Matrix (Fin 8) (Fin 8) ℝ) (h : Lᵀ = -L) : L + Lᵀ = 0 :=
