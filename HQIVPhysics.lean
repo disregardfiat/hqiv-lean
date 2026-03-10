@@ -9,3 +9,5 @@ import Hqiv.Physics.Baryogenesis
 import Hqiv.Physics.ModifiedMaxwell
 import Hqiv.Physics.GRFromMaxwell
 import Hqiv.Physics.Forces
+import Hqiv.Physics.BoundStates
+import Hqiv.QuantumMechanics.Schrodinger
