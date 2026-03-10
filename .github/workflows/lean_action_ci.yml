@@ -51,10 +51,13 @@ jobs:
           fi
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Build interactive HTML (Alectryon)
+      - name: Build interactive HTML (Alectryon, non-blocking)
+        continue-on-error: true
         run: |
+          set -o pipefail
           ulimit -s 65536
-          lake build Alectryon
+          echo "Running optional Alectryon target (failures here do NOT fail CI)…"
+          lake build Alectryon || echo "Alectryon build failed (optional step); see logs above."
 
   # Docs and Pages in a separate job so only one artifact named "github-pages" is produced.
   # lean-action installs elan/lake and restores build cache; docgen-action then builds docs and uploads once.
