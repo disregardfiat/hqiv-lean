@@ -40,7 +40,15 @@ jobs:
           cd LeanInk
           lake build
           mkdir -p "$HOME/.local/bin"
-          cp build/bin/leanInk "$HOME/.local/bin/"
+          if [ -f "build/bin/leanInk" ]; then
+            cp build/bin/leanInk "$HOME/.local/bin/"
+          elif [ -f ".lake/build/bin/leanInk" ]; then
+            cp .lake/build/bin/leanInk "$HOME/.local/bin/"
+          else
+            echo "LeanInk executable not found after build" >&2
+            ls -R .
+            exit 1
+          fi
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Build interactive HTML (Alectryon)
