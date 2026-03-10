@@ -36,7 +36,11 @@ jobs:
 
       - name: Install LeanInk (Lean 4 helper)
         run: |
-          sh -c "$(curl -sSf https://raw.githubusercontent.com/leanprover/LeanInk/main/init.sh)"
+          git clone https://github.com/leanprover/LeanInk.git
+          cd LeanInk
+          lake build
+          mkdir -p "$HOME/.local/bin"
+          cp build/bin/leanInk "$HOME/.local/bin/"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Build interactive HTML (Alectryon)
