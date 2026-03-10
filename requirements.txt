@@ -1,0 +1,3 @@
+# Lean 4 support currently requires the LeanInk-enabled Alectryon fork.
+# See README_AlgebraExtension.md for the LeanInk install step.
+alectryon @ git+https://github.com/insightmind/alectryon.git@lean4

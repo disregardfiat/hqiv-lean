@@ -66,3 +66,46 @@ Two axioms → Spin(8) → triality → three generations → single Higgs from 
 
 - **Mathlib 4** (v4.28.0).
 - Existing HQIVLEAN stack: `Generators`, `GeneratorsFromAxioms`, `GeneratorsLieClosureData*`, `So8CoordMatrix`, `GeneratorsLieClosure`, `SO8Closure`, `OctonionLeftMultiplication`, `AuxiliaryField`, etc.
+
+## Interactive Textbook Derivations (Alectryon)
+
+This repository can optionally generate **interactive, clickable HTML** pages from key pedagogical proofs using **Alectryon**. This runs **alongside** (not instead of) the normal Lake build and the existing docbuild pipeline, and it writes to a separate folder: `docs/interactive/`.
+
+### Install (one-time)
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+```
+
+Lean 4 support also requires **LeanInk** (a small Lean-based helper binary used by the Lean4-capable Alectryon fork):
+
+```bash
+sh -c "$(curl https://raw.githubusercontent.com/leanprover/LeanInk/main/init.sh -sSf)"
+```
+
+### Build the interactive pages
+
+```bash
+lake build Alectryon
+```
+
+This generates:
+
+- `docs/interactive/Triality.html`
+- `docs/interactive/SMEmbedding.html`
+- `docs/interactive/AnomalyCancellation.html`
+- `docs/interactive/SM_GR_Unification.html`
+
+### View (one-line test)
+
+- Linux (this repo’s default dev environment):
+
+```bash
+lake build Alectryon && xdg-open docs/interactive/Triality.html
+```
+
+- macOS:
+
+```bash
+lake build Alectryon && open docs/interactive/Triality.html
+```
