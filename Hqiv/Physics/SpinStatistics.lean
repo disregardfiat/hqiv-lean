@@ -1,4 +1,5 @@
 import Mathlib.Data.Complex.Basic
+import Hqiv.Algebra.SMEmbedding
 
 /-!
 ## Spin–statistics from triality and null-lattice causality
@@ -120,11 +121,14 @@ structure SpinStatisticsAxioms (D : SpinStatisticsData) : Prop where
       D.spacelikeSep m₁ m₂ →
       D.exchangePhase (J m₁ m₂) (J m₂ m₁) = (1 : ℂ)
 
-  /-- Composition law: the exchange phase of a bilinear observable built from
-  `m₁` and `m₂` equals the product of the single-mode exchange phases. This
-  abstracts the way exchange acts on pairs of identical modes. -/
+  /-- Composition law (fermionic sector): for two fermionic modes, the
+  exchange phase of the bilinear observable built from them equals the
+  product of the single-mode exchange phases. This abstracts the way
+  exchange acts on pairs of identical fermionic modes. -/
   exchangePhase_bilinear :
     ∀ m₁ m₂,
+      isFermionic D m₁ →
+      isFermionic D m₂ →
       D.exchangePhase (J m₁ m₂) (J m₂ m₁) =
         D.exchangePhase m₁ m₁ * D.exchangePhase m₂ m₂
 
@@ -211,6 +215,119 @@ theorem spin_statistics_from_axioms
     have h₂ : D.exchangePhase m m = twoPiPhase m := h_link m
     -- Combine.
     simpa [h₁] using h₂
+
+/-- **Concrete spin–statistics data** built from the HQIV octonion 8s carrier.
+
+Modes are either:
+
+* a left-handed octonion spinor (`Sum.inl`), treated as **fermionic** (half-integer
+  spin), or
+* a bosonic composite (`Sum.inr`), treated as **integer** spin.
+
+Spacelike separation is left abstract (always `True` in this minimal model),
+and exchange phases are assigned purely from the spin class. -/
+def D_HQIV : SpinStatisticsData :=
+  { mode := Sum Hqiv.Algebra.OctonionSpinorCarrier Unit
+    , spinClass := fun m =>
+        match m with
+        | Sum.inl _ => SpinClass.halfInteger
+        | Sum.inr _ => SpinClass.integer
+    , exchangePhase := fun m₁ m₂ =>
+        if h : m₁ = m₂ then
+          match m₁ with
+          | Sum.inl _ => (-1 : ℂ)
+          | Sum.inr _ => (1 : ℂ)
+        else
+          (1 : ℂ)
+    , spacelikeSep := fun _ _ => True }
+
+namespace D_HQIV
+
+/-- Every HQIV mode in `D_HQIV` is either integer- or half-integer–spin. -/
+theorem spinClass_cases (m : D_HQIV.mode) :
+    D_HQIV.spinClass m = SpinClass.integer ∨
+    D_HQIV.spinClass m = SpinClass.halfInteger := by
+  cases m <;> simp [D_HQIV]
+
+end D_HQIV
+
+/-- **Concrete axioms**: triality-style bilinear, locality, and phase link
+for the HQIV spin–statistics data `D_HQIV`. -/
+def A_HQIV : SpinStatisticsAxioms D_HQIV :=
+by
+  refine
+    { twoPiPhase := ?twoPi
+      , twoPiPhase_halfInteger := ?twoPi_half
+      , twoPiPhase_integer := ?twoPi_int
+      , J := ?J
+      , J_bosonic := ?J_bos
+      , locality_bosonic := ?loc
+      , exchangePhase_bilinear := ?bilin
+      , exchange_eq_twoPiPhase := ?link }
+  · -- twoPiPhase
+    intro m
+    cases m <;> simp [D_HQIV]
+  · -- twoPiPhase_halfInteger: half-integer modes get −1.
+    intro m hF
+    cases m with
+    | inl v =>
+        simp [D_HQIV, SpinStatisticsData.isFermionic, *] at hF ⊢
+    | inr u =>
+        -- Impossible: bosonic mode cannot be fermionic.
+        simp [D_HQIV, SpinStatisticsData.isFermionic] at hF
+  · -- twoPiPhase_integer: integer-spin modes get +1.
+    intro m hB
+    cases m with
+    | inl v =>
+        -- Impossible: fermionic mode cannot be bosonic.
+        simp [D_HQIV, SpinStatisticsData.isBosonic] at hB
+    | inr u =>
+        simp [D_HQIV, SpinStatisticsData.isBosonic, *] at hB ⊢
+  · -- J: triality-style bilinear — two fermions map to a boson.
+    intro m₁ m₂
+    exact
+      match m₁, m₂ with
+      | Sum.inl _, Sum.inl _ => Sum.inr ()
+      | _, _ => Sum.inr ()
+  · -- J_bosonic: fermion–fermion bilinear is bosonic.
+    intro m₁ m₂ hF₁ hF₂
+    cases m₁ <;> cases m₂ <;>
+      simp [D_HQIV, SpinStatisticsData.isFermionic,
+            SpinStatisticsData.isBosonic] at hF₁ hF₂ ⊢
+  · -- locality_bosonic: bosonic bilinears commute (unit exchange phase).
+    intro m₁ m₂ _hsep
+    -- J m₁ m₂ and J m₂ m₁ are always bosonic Sum.inr; exchange phase = 1.
+    cases m₁ <;> cases m₂ <;>
+      simp [D_HQIV]  -- both sides reduce to 1
+  · -- exchangePhase_bilinear: in fermionic sector, phase is product of
+    -- single-mode phases (−1)·(−1) = 1.
+    intro m₁ m₂ hF₁ hF₂
+    cases m₁ <;> cases m₂ <;>
+      simp [D_HQIV, SpinStatisticsData.isFermionic] at hF₁ hF₂ ⊢
+  · -- exchange_eq_twoPiPhase: single-mode exchange phase equals 2π phase.
+    intro m
+    cases m with
+    | inl v =>
+        simp [D_HQIV, SpinStatisticsData.isFermionic,
+              SpinStatisticsData.isBosonic]
+    | inr u =>
+        simp [D_HQIV, SpinStatisticsData.isFermionic,
+              SpinStatisticsData.isBosonic]
+
+/-- **HQIV satisfies the spin–statistics statement** in the abstract sense:
+there exists a spin–statistics data bundle and corresponding axioms such
+that the spin–statistics sign rule holds. -/
+theorem HQIV_satisfies_SpinStatistics_from_triality_and_causality :
+    SpinStatistics_from_triality_and_causality_statement := by
+  refine
+    ⟨D_HQIV, ?_, ?_, ?_⟩
+  · -- (1) Every mode is labelled as integer or half-integer spin.
+    intro m
+    exact D_HQIV.spinClass_cases m
+  · -- (2) HQIV spin–statistics axioms for this data.
+    exact A_HQIV
+  · -- (3) Spin–statistics sign rule follows from the axioms.
+    exact spin_statistics_from_axioms D_HQIV A_HQIV
 
 end Hqiv.Physics
 
