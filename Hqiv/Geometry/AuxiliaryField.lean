@@ -16,6 +16,18 @@ All definitions here are in natural Planck units (T_Pl = 1, c = 1). The field is
 directly to the same temperature ladder that underlies the curvature imprint.
 -/
 
+/-- **Coefficient in φ = (this) / Θ.** In the paper, φ(m) = 2/Θ_local(m); we identify
+    Θ_local with the temperature ladder T(m). So the numerator is 2 — one unit per
+    "quadrant" of the universal cutout (0 < x < Θ). Not inserted: it is the fixed
+    ratio from the homogeneous limit (two axioms: light-cone + informational-energy). -/
+def phiTemperatureCoeff : ℝ := 2
+
+/-- **phiTemperatureCoeff equals 2** (the paper's φ = 2/Θ convention). -/
+theorem phiTemperatureCoeff_eq_two : phiTemperatureCoeff = 2 := rfl
+
+/-- **phiTemperatureCoeff is positive** (so φ(m) = phiTemperatureCoeff/T(m) is well-defined). -/
+theorem phiTemperatureCoeff_pos : 0 < phiTemperatureCoeff := by unfold phiTemperatureCoeff; norm_num
+
 /-- Planck temperature in natural units. -/
 noncomputable def T_Pl : ℝ := 1.0
 
@@ -34,14 +46,14 @@ theorem T_pos (m : Nat) : 0 < T m := by
 
 /-- Auxiliary field φ at shell `m` in the homogeneous limit.
 
-Formally φ(m) = 2 / Θ_local(m); here we identify Θ_local(m) with the temperature
-ladder T(m) in natural units as suggested in the paper. -/
+Formally φ(m) = phiTemperatureCoeff / Θ_local(m); here we identify Θ_local(m) with
+the temperature ladder T(m). The coefficient is 2 from the paper (quadrant structure). -/
 noncomputable def phi_of_shell (m : Nat) : ℝ :=
-  2.0 / T m
+  phiTemperatureCoeff / T m
 
 /-- Continuous version of the auxiliary field as a function of local temperature. -/
 noncomputable def phi_of_T (t : ℝ) : ℝ :=
-  2.0 / t
+  phiTemperatureCoeff / t
 
 /-- Bridge lemma: the discrete shell version equals the continuous version. -/
 theorem phi_of_shell_eq_phi_of_T (m : Nat) :
@@ -50,17 +62,17 @@ theorem phi_of_shell_eq_phi_of_T (m : Nat) :
 
 /-- Helper: explicit closed form for φ(m) in terms of the shell index. -/
 theorem phi_of_shell_closed_form (m : Nat) :
-    phi_of_shell m = 2.0 * (m + 1 : ℝ) := by
-  unfold phi_of_shell T T_Pl
+    phi_of_shell m = phiTemperatureCoeff * (m + 1 : ℝ) := by
+  unfold phi_of_shell T T_Pl phiTemperatureCoeff
   field_simp
   norm_num
 
-/-- **φ(m) is positive** and **φ(m) ≥ 2** for all shells (φ(0) = 2, then grows). -/
+/-- **φ(m) is positive** and **φ(m) ≥ phiTemperatureCoeff** for all shells (φ(0) = 2, then grows). -/
 theorem phi_of_shell_pos (m : Nat) : 0 < phi_of_shell m := by
-  rw [phi_of_shell_closed_form]; positivity
+  rw [phi_of_shell_closed_form]; unfold phiTemperatureCoeff; positivity
 
-theorem phi_of_shell_ge_two (m : Nat) : (2 : ℝ) ≤ phi_of_shell m := by
-  rw [phi_of_shell_closed_form]; have : (0 : ℝ) ≤ m := Nat.cast_nonneg m; nlinarith
+theorem phi_of_shell_ge_two (m : Nat) : phiTemperatureCoeff ≤ phi_of_shell m := by
+  rw [phi_of_shell_closed_form]; unfold phiTemperatureCoeff; have : (0 : ℝ) ≤ m := Nat.cast_nonneg m; nlinarith
 
 /-- Key connection lemma: `shell_shape` can be expressed purely in terms of φ.
 
@@ -71,12 +83,12 @@ can be rewritten with the argument φ(m)/2. This makes φ reusable on the
 HQVM / Friedmann side without duplicating the curvature definitions. -/
 theorem shell_shape_in_terms_of_phi (m : Nat) :
     shell_shape m
-      = (1 / (phi_of_shell m / 2.0))
-          * (1 + alpha * Real.log (phi_of_shell m / 2.0)) := by
-  -- First rewrite φ(m)/2 as (m+1).
+      = (1 / (phi_of_shell m / phiTemperatureCoeff))
+          * (1 + alpha * Real.log (phi_of_shell m / phiTemperatureCoeff)) := by
+  -- First rewrite φ(m)/phiTemperatureCoeff as (m+1).
   have hphi_div :
-      phi_of_shell m / 2.0 = (m + 1 : ℝ) := by
-    rw [phi_of_shell_closed_form m]; field_simp
+      phi_of_shell m / phiTemperatureCoeff = (m + 1 : ℝ) := by
+    rw [phi_of_shell_closed_form m]; unfold phiTemperatureCoeff; field_simp
   -- Prove LHS = (1/(m+1))*... = (1/(φ/2))*... using shell_shape_formula and hphi_div.
   trans (1 / (m + 1 : ℝ)) * (1 + alpha * Real.log (m + 1 : ℝ))
   · exact shell_shape_formula m

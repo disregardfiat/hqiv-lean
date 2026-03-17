@@ -10,4 +10,5 @@ import Hqiv.Physics.ModifiedMaxwell
 import Hqiv.Physics.GRFromMaxwell
 import Hqiv.Physics.Forces
 import Hqiv.Physics.BoundStates
+import Hqiv.Physics.NuclearAndAtomicSpectra
 import Hqiv.QuantumMechanics.Schrodinger

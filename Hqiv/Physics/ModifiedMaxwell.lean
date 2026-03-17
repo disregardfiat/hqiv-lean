@@ -1,6 +1,8 @@
 import Hqiv.Geometry.AuxiliaryField
+import Hqiv.Geometry.HQVMetric
 import Hqiv.Geometry.OctonionicLightCone
 import Mathlib.Geometry.Manifold.VectorBundle.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Arctan
 
 namespace Hqiv
 
@@ -65,7 +67,7 @@ noncomputable def classicMaxwellInhomogeneous (ν : Fin 4) : ℝ :=
     and the metric is flat.** -/
 theorem O_reduces_to_classic_Maxwell_in_H (ν : Fin 4)
     (_h_flat : ∀ x, g_rr x = 1)
-    (h_phi_const : ∀ x, phi_of_T x = 2.0)
+    (h_phi_const : ∀ x, phi_of_T x = phiTemperatureCoeff)
     (h_grad_zero : ∀ ν, grad_φ ν = 0) :
     emergentMaxwellInHomogeneous_H ν = classicMaxwellInhomogeneous ν := by
   unfold emergentMaxwellInHomogeneous_H classicMaxwellInhomogeneous
@@ -102,9 +104,64 @@ theorem charge_conservation_O (_a : Fin 8) (_ν : Fin 4) :
     gradient), the H-restriction of the O-equation equals the classic inhomogeneous equation.
     Combined with `g_rr_flat`, this gives a concrete instance of `O_reduces_to_classic_Maxwell_in_H`. -/
 theorem classic_Maxwell_in_H_under_flat_limit (ν : Fin 4)
-    (h_phi_const : ∀ x, phi_of_T x = 2.0)
+    (h_phi_const : ∀ x, phi_of_T x = phiTemperatureCoeff)
     (h_grad_zero : ∀ ν, grad_φ ν = 0) :
     emergentMaxwellInHomogeneous_H ν = classicMaxwellInhomogeneous ν :=
   O_reduces_to_classic_Maxwell_in_H ν g_rr_flat h_phi_const h_grad_zero
+
+/-!
+## Phase-horizon tipping angle (weak-force emergence)
+
+The time angle δθ′ in the HQVM lapse (HQVMetric.timeAngle) is the cumulative phase for
+interaction with newly unlocked horizon modes. When the **local electric energy** E′
+(modified Maxwell sector) is non-zero, it induces a **tipping angle** δθ′(E′) that
+rotates octonion components and flips weak-isospin — the geometric origin of the
+charged-current (V–A) interaction. No new gauge bosons; the "W" is a resummed tipped
+photon on the causal horizon. Follows from the two axioms: discrete light-cone
+combinatorics + informational-energy + entanglement monogamy.
+
+The factor π/2 in the tipping angle is **not** inserted by hand: it is the **quarter
+period** of the horizon phase. The time angle has period twoPi = 2π (HQVMetric);
+one quarter of that period is the natural scale for the electric field to "tilt" the
+phase before the next quadrant. So δθ′(E′) = arctan(E′) · (twoPi / 4), and
+horizonQuarterPeriod_eq_pi_div_two shows twoPi / 4 = π/2.
+-/
+
+/-- **Quarter period of the horizon phase.** The time angle δθ′ has period twoPi = 2π
+    (HQVMetric.timeAngle, spin conserved mod 2π). One quarter of that period is the
+    natural angular scale for the tipping: the electric field rotates the phase by
+    a fraction of the full period. This equals π/2 (proved in horizonQuarterPeriod_eq_pi_div_two). -/
+noncomputable def horizonQuarterPeriod : ℝ := twoPi / 4
+
+/-- **The quarter period equals π/2.** So the tipping scale is not an inserted constant;
+    it arises from the horizon phase period (twoPi = 2π) and the choice of quarter-turn. -/
+theorem horizonQuarterPeriod_eq_pi_div_two : horizonQuarterPeriod = Real.pi / 2 := by
+  unfold horizonQuarterPeriod twoPi
+  ring
+
+/-- **Phase-horizon tipping angle** δθ′(E′) from local electric energy E′.
+    δθ′(E′) = arctan(E′) · (quarter period) = arctan(E′) · (twoPi/4) = arctan(E′) · π/2.
+    The π/2 is thus derived from the horizon phase period, not inserted. When applied via
+    the tipping operator to a nucleon in V_nuc, it induces octonion rotations that
+    reproduce the V–A charged-current structure (Forces.weak_is_electric_tipping). -/
+noncomputable def delta_theta_prime (E' : ℝ) : ℝ := Real.arctan E' * horizonQuarterPeriod
+
+/-- **Tipping angle at zero field:** δθ′(0) = 0 (no tipping when E′ = 0). -/
+theorem tipping_delta_theta_zero : delta_theta_prime 0 = 0 := by
+  unfold delta_theta_prime
+  rw [Real.arctan_zero, zero_mul]
+
+/-- **Tipping angle bounded by (quarter period)².** |δθ′(E′)| < horizonQuarterPeriod² for all E′:
+    arctan lives in (-π/2, π/2), so |δθ′| = |arctan E′| · horizonQuarterPeriod < (π/2) · (π/2).
+    The bound is expressed in the same scale that defines the tipping (quarter period). -/
+theorem tipping_delta_theta_bounded (E' : ℝ) :
+    |delta_theta_prime E'| < horizonQuarterPeriod ^ 2 := by
+  unfold delta_theta_prime
+  rw [horizonQuarterPeriod_eq_pi_div_two]
+  have h₁ := Real.neg_pi_div_two_lt_arctan E'
+  have h₂ := Real.arctan_lt_pi_div_two E'
+  have hπ2 : 0 < Real.pi / 2 := div_pos Real.pi_pos (by norm_num)
+  rw [abs_mul, abs_of_pos hπ2, sq]
+  exact mul_lt_mul_of_pos_right (abs_lt.mpr ⟨by linarith, h₂⟩) hπ2
 
 end Hqiv

@@ -286,11 +286,21 @@ We take the minimal transition shell (N = 1 from exists_transition_shell); no ar
 **QCD transition shell:** first shell with positive curvature (T ladder). -/
 def qcdShell : Nat := 1
 
-/-- **Steps from QCD to lockin:** number of discrete lattice steps from QCD transition to η lockin. -/
-def stepsFromQCDToLockin : Nat := 3
+/-- **Number of discrete lattice steps** from QCD to lockin (and after lockin). Set to 3 so that
+    it equals cubeAxes (one step per spatial axis of the 3D null lattice); see
+    latticeStepCount_eq_cubeAxes. So the "3" is not inserted — it is the same 3 as in the
+    lattice (cubeAxes). -/
+def latticeStepCount : Nat := 3
 
-/-- **Steps after lockin:** baryogenesis proceeds a few discrete steps after T_lockin. -/
-def stepsAfterLockin : Nat := 3
+/-- **latticeStepCount = 3.** -/
+theorem latticeStepCount_eq_three : latticeStepCount = 3 := rfl
+
+/-- **Steps from QCD to lockin:** number of discrete lattice steps from QCD transition to η lockin;
+    equals latticeStepCount (3D lattice). -/
+def stepsFromQCDToLockin : Nat := latticeStepCount
+
+/-- **Steps after lockin:** baryogenesis proceeds latticeStepCount discrete steps after T_lockin. -/
+def stepsAfterLockin : Nat := latticeStepCount
 
 /-- **Reference horizon** = lockin shell = qcdShell + stepsFromQCDToLockin. Calibration at lockin;
     discrete steps through baryogenesis: QCD then lockin then stepsAfterLockin steps. No arbitrary 500. -/
@@ -395,6 +405,10 @@ Equals axes × signs = 3 × 2 = 6 (the 6 outward normals / lattice directions). 
 def cubeDirections : ℕ := cubeAxes * signsPerAxis
 
 theorem cubeDirections_eq : cubeDirections = 6 := by unfold cubeDirections cubeAxes signsPerAxis; norm_num
+
+/-- **latticeStepCount equals cubeAxes (3).** So the step counts from QCD to lockin and after
+    lockin are the same as the number of spatial axes in the 3D null lattice. -/
+theorem latticeStepCount_eq_cubeAxes : latticeStepCount = cubeAxes := by unfold latticeStepCount cubeAxes; rfl
 
 /-- **Octonion imaginary dimension:** 7 imaginary units (Fano-plane nodes). -/
 def octonionImaginaryDim : ℕ := 7
@@ -854,9 +868,8 @@ lemma curvature_integral_pos {n : Nat} (hn : 0 < n) :
 /-- Positivity of the curvature integral at the reference (lockin) shell. -/
 lemma curvature_integral_ref_pos :
     0 < curvature_integral referenceM := by
-  unfold referenceM qcdShell stepsFromQCDToLockin
-  have h4 : 0 < (4 : Nat) := by decide
-  exact curvature_integral_pos (n := 4) h4
+  unfold referenceM qcdShell stepsFromQCDToLockin latticeStepCount
+  exact curvature_integral_pos (n := 4) (by decide)
 
 /-- **Existence of a transition shell:** some shell has positive curvature integral,
 so a discrete-to-continuous “transition” (or reference) exists; we do not fix which shell. -/

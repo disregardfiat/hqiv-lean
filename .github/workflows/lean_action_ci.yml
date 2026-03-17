@@ -24,41 +24,6 @@ jobs:
           build: true
           test: false
 
-      - name: Set up Python (for Alectryon)
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install Alectryon (Lean 4 fork)
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Install LeanInk (Lean 4 helper)
-        run: |
-          git clone https://github.com/leanprover/LeanInk.git
-          cd LeanInk
-          lake build
-          mkdir -p "$HOME/.local/bin"
-          if [ -f "build/bin/leanInk" ]; then
-            cp build/bin/leanInk "$HOME/.local/bin/"
-          elif [ -f ".lake/build/bin/leanInk" ]; then
-            cp .lake/build/bin/leanInk "$HOME/.local/bin/"
-          else
-            echo "LeanInk executable not found after build" >&2
-            ls -R .
-            exit 1
-          fi
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Build interactive HTML (Alectryon, non-blocking)
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          ulimit -s 65536
-          echo "Running optional Alectryon target (failures here do NOT fail CI)…"
-          lake build Alectryon || echo "Alectryon build failed (optional step); see logs above."
-
   # Docs and Pages in a separate job so only one artifact named "github-pages" is produced.
   # lean-action installs elan/lake and restores build cache; docgen-action then builds docs and uploads once.
   pages:

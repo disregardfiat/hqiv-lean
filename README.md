@@ -52,7 +52,14 @@ lake build
 - **Natural units:** T_Pl = 1, G₀ = H₀ = 1.  
 - **Metric / lapse:** N = 1 + Φ + φ t and the HQVM line element come from the informational-energy axiom and horizon monogamy (paper and `HQVMetric`); φ itself can be the lattice-derived field.
 
-So: the **combinatorics, T-ladder, φ on shells, curvature shape, α from the lattice, horizon-dependent Ω_k (curvature ratio from shell integral), full Spin(8)/SM gauge structure, conserved currents, the curvature norm \(6^7\sqrt{3}\), and the SM + GR field equations and couplings at "now"** are all derived inside Lean from the same two HQIV axioms (discrete light cone + informational-energy/monogamy), with no extra dynamical parameters. Spatial curvature is different between any two horizons (e.g. QCD vs CMB LSS) even at "now". Matter fraction and η are downstream of the SM embedding to SO(8).
+So: the **combinatorics, T-ladder, φ on shells, curvature shape, α from the lattice, horizon-dependent Ω_k (curvature ratio from shell integral), full Spin(8)/SM gauge structure, conserved currents, the curvature norm \(6^7\sqrt{3}\), and the SM + GR field equations and couplings at "now"** are all derived inside Lean from the same two HQIV axioms (discrete light cone + informational-energy/monogamy), with no extra dynamical parameters. Spatial curvature is different between any two horizons (e.g. QCD vs CMB LSS) even at time "now". Matter fraction and η are downstream of the SM embedding to SO(8).
+
+**What a conventional physicist would recognize as outputs of the single axiom**  
+- **Spin(8)/Standard Model gauge sector**: full so(8) closure, G₂ ⊃ SU(3)\_c × SU(2)\_L × U(1)\_Y, three generations from triality, explicit SU(2)\_L and hypercharge generators, and SM branching rules, all traced back to counting over the octonionic light cone.  
+- **Running couplings without SM β-functions**: α = 3/5 and α\_GUT = 1/42 from the lattice; the modified O-Maxwell equation and φ(m) ladder yield 1/α\_EM(M\_Z) ≈ 127.9, sin²θ\_W(M\_Z), α\_s(M\_Z), and the Higgs mass scale from the same curvature/φ machinery (`SM_GR_Unification`).  
+- **GR from the same horizon structure**: the HQVM lapse N = 1 + Φ + φ t and O-Maxwell action give Friedmann + varying G\_eff(φ) and a horizon-dependent spatial curvature Ω\_k(n; N) computed from the discrete curvature integral (`GRFromMaxwell`, `UniverseAge`).  
+- **Matter content and nucleon scales**: baryogenesis and η, the QCD transition shell, and proton/neutron masses (with error bars from T\_CMB and birefringence) are derived via the same shell/φ ladder and curvature norm (`Baryogenesis`, `SM_GR_Unification`).  
+- **Spin–statistics link (abstract layer)**: a spin–statistics statement is formulated and satisfied in Lean (`SpinStatistics`), expressing that half-integer–spin modes (octonion 8s sector) anticommute while integer–spin modes commute, driven by Spin(8) triality plus null-lattice causality/monogamy.
 
 ## GitHub configuration
 

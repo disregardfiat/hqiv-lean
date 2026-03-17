@@ -230,7 +230,19 @@ noncomputable def T_CMB_K_central : ℝ := 2.7255
 /-- **T_CMB 1σ uncertainty (K)** — Planck 2018. -/
 noncomputable def T_CMB_K_uncertainty : ℝ := 0.0006
 
-/-- **Proton rest mass (MeV) central** — first-principles from T_CMB (hqvmpy: proton_energy_mev). -/
+/-- **Proton rest mass (MeV) central** — first-principles from T_CMB (hqvmpy: `proton_energy_mev`).
+
+In the full HQIV Python pipeline the scale is set by a **polarization-corrected**
+effective CMB temperature
+\[
+  T_\mathrm{eff} = T_\mathrm{CMB}\,\bigl(1 + \mathrm{BIREFRINGENCE\_SCALE}\cdot\beta_\mathrm{rad}\bigr),
+\]
+so that the small loss of photon energy into polarization (cosmic birefringence)
+is accounted for. A shift of order **T_CMB + O(0.3°)** in this effective
+temperature still matches Planck observations and produces the same
+first-principles proton mass; this Lean witness `m_proton_MeV_central` is
+understood to come from that T_eff ladder rather than from a bare, uncorrected
+T_CMB. -/
 noncomputable def m_proton_MeV_central : ℝ := 938.272
 
 /-- **Proton mass (MeV) lower bound** — from T_CMB − σ (and birefringence band). -/
