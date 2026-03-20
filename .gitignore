@@ -8,3 +8,8 @@ docbuild/
 
 # Nested Lake build cache for the standalone generators package.
 HQIVGenerators/.lake/
+
+# Stray editor/build dumps at repo root (real sources live under Hqiv/).
+/Mathlib
+/Hqiv.Geometry.AuxiliaryField
+/Hqiv.Geometry.OctonionicLightCone
