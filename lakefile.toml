@@ -1,0 +1,32 @@
+name = "hqiv-lean"
+version = "0.1.0"
+
+# Default: compile only the light-weight witness subset (no SO8CoordMatrix).
+# Full build with heavy algebra: lake build HQIVPhysics
+defaultTargets = ["HQIVWitnesses"]
+
+[[lean_lib]]
+name = "HQIVLEAN"
+# Core + generators (left mult, so(8) coord, Lie closure).
+# Chunked GeneratorsLieClosureData0..27 avoid one 21k-case term (stack overflow).
+globs = ["HQIVLEAN", "Hqiv.Geometry.OctonionicLightCone", "Hqiv.Geometry.AuxiliaryField", "Hqiv.Geometry.HQVMetric", "Hqiv.Geometry.Now", "Hqiv.Geometry.UniverseAge", "Hqiv.Generators", "Hqiv.OctonionLeftMultiplication", "Hqiv.GeneratorsFromAxioms", "Hqiv.GeneratorsLieClosureData0", "Hqiv.GeneratorsLieClosureData1", "Hqiv.GeneratorsLieClosureData2", "Hqiv.GeneratorsLieClosureData3", "Hqiv.GeneratorsLieClosureData4", "Hqiv.GeneratorsLieClosureData5", "Hqiv.GeneratorsLieClosureData6", "Hqiv.GeneratorsLieClosureData7", "Hqiv.GeneratorsLieClosureData8", "Hqiv.GeneratorsLieClosureData9", "Hqiv.GeneratorsLieClosureData10", "Hqiv.GeneratorsLieClosureData11", "Hqiv.GeneratorsLieClosureData12", "Hqiv.GeneratorsLieClosureData13", "Hqiv.GeneratorsLieClosureData14", "Hqiv.GeneratorsLieClosureData15", "Hqiv.GeneratorsLieClosureData16", "Hqiv.GeneratorsLieClosureData17", "Hqiv.GeneratorsLieClosureData18", "Hqiv.GeneratorsLieClosureData19", "Hqiv.GeneratorsLieClosureData20", "Hqiv.GeneratorsLieClosureData21", "Hqiv.GeneratorsLieClosureData22", "Hqiv.GeneratorsLieClosureData23", "Hqiv.GeneratorsLieClosureData24", "Hqiv.GeneratorsLieClosureData25", "Hqiv.GeneratorsLieClosureData26", "Hqiv.GeneratorsLieClosureData27", "Hqiv.GeneratorsLieClosureData", "Hqiv.So8CoordMatrix", "Hqiv.GeneratorsLieClosure", "Hqiv.SO8Closure", "Hqiv.Algebra.OctonionBasics", "Hqiv.Algebra.G2Embedding", "Hqiv.Algebra.PhaseLiftDelta", "Hqiv.Algebra.SO8ClosureAbstract", "Hqiv.Algebra.Triality", "Hqiv.Algebra.SMEmbedding", "Hqiv.Algebra.AnomalyCancellation", "Hqiv.Conservations", "Hqiv.Physics.Baryogenesis", "Hqiv.Physics.ModifiedMaxwell", "Hqiv.Physics.GRFromMaxwell", "Hqiv.Physics.Forces", "Hqiv.Physics.Action", "Hqiv.Physics.CovariantSolution", "Hqiv.Physics.SM_GR_Unification", "Hqiv.Physics.BoundStates", "Hqiv.Physics.NuclearAndAtomicSpectra", "Hqiv.QuantumMechanics.Schrodinger"]
+
+[[lean_lib]]
+name = "HQIVPhysics"
+# Geometry + Conservations + Physics only (no GeneratorsLieClosureData). Use when full build crashes with exit 134.
+globs = ["HQIVPhysics", "Hqiv.Geometry.OctonionicLightCone", "Hqiv.Geometry.AuxiliaryField", "Hqiv.Geometry.HQVMetric", "Hqiv.Geometry.Now", "Hqiv.Geometry.UniverseAge", "Hqiv.Conservations", "Hqiv.Physics.Baryogenesis", "Hqiv.Physics.ModifiedMaxwell", "Hqiv.Physics.GRFromMaxwell", "Hqiv.Physics.Forces", "Hqiv.Physics.Action", "Hqiv.Physics.CovariantSolution", "Hqiv.Physics.SM_GR_Unification", "Hqiv.Physics.DerivedGaugeAndLeptonSector", "Hqiv.Physics.DerivedNucleonMass", "Hqiv.Physics.QuarkMetaResonance", "Hqiv.Physics.BoundStates", "Hqiv.Physics.NuclearAndAtomicSpectra", "Hqiv.QuantumMechanics.Schrodinger"]
+
+[[lean_lib]]
+name = "HQIVWitnesses"
+# Minimal witness build: only what `scripts/export_witnesses.lean` imports.
+globs = ["HQIVWitnesses", "Hqiv.Geometry.OctonionicLightCone", "Hqiv.Geometry.AuxiliaryField", "Hqiv.Physics.Baryogenesis", "Hqiv.Physics.DerivedGaugeAndLeptonSector", "Hqiv.Physics.DerivedNucleonMass", "Hqiv.Physics.QuarkMetaResonance"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.28.0"
+
+## Verso is the modern Lean docs system; for now, any Verso-based
+## documentation for HQIV_LEAN should live in a separate project that
+## depends on this package, so we don't disturb this repo's toolchain
+## and dependency set.

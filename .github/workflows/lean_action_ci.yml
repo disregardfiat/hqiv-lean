@@ -1,0 +1,47 @@
+name: Lean Action CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Sets permissions for the GITHUB_TOKEN
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test
+        id: lean
+        uses: leanprover/lean-action@v1
+        with:
+          build: true
+          test: false
+
+  # Docs and Pages in a separate job so only one artifact named "github-pages" is produced.
+  # lean-action installs elan/lake and restores build cache; docgen-action then builds docs and uploads once.
+  pages:
+    needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain and restore build
+        uses: leanprover/lean-action@v1
+        with:
+          build: true
+          test: false
+
+      - name: Build docs and deploy to GitHub Pages
+        uses: leanprover-community/docgen-action@v1
+        with:
+          api_docs: true
+          lake_package_directory: .
+          build_args: --log-level=warning

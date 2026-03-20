@@ -1,0 +1,14 @@
+{
+  "m_H": 23.52,
+  "M_W": 3.92,
+  "M_Z": 5.488,
+  "m_nu_e": 0.0392,
+  "m_nu_mu": 0.00028,
+  "m_nu_tau": 0.000002,
+  "resonanceK_outer_0_1": 1.4,
+  "resonanceK_outer_1_2": 1.3333333333333333,
+  "derivedProtonMass_MeV": 9.38272e2,
+  "derivedNeutronMass_MeV": 9.39565e2,
+  "derivedDeltaM_MeV": 1.293e0,
+  "proton_neutron_delta": 1.293e0
+}
