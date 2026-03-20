@@ -2,3 +2,9 @@
 /.lake
 HQIV
 hqvmpy
+
+# Local doc tooling (Verso etc.); tree is huge — not versioned here.
+docbuild/
+
+# Nested Lake build cache for the standalone generators package.
+HQIVGenerators/.lake/
