@@ -336,6 +336,10 @@ This section links an overlap energy scale `ΔE` to a resonance lifetime via the
 standard uncertainty relation. It lives here because the fermionic lattice rules
 constrain the admissible overlap energies, and those energies then control the
 strong-decay timescale.
+
+**SI twin:** `Hqiv.energyTimeResolutionScale` in `HQVMPerturbations` uses the same `τ = ħ/ΔE` form
+with `hbar_SI` from `Forces` for observer-centric time-resolution bookkeeping on the lapse /
+perturbation side (no new axiom).
 -/
 
 /-- Reduced Planck constant in MeV·s. -/

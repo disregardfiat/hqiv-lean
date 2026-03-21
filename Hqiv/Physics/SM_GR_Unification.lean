@@ -15,6 +15,7 @@ import Hqiv.Physics.GRFromMaxwell
 import Hqiv.Physics.ModifiedMaxwell
 import Hqiv.Physics.GenerationResonance
 import Hqiv.Physics.DerivedNucleonMass
+import Hqiv.Physics.Baryogenesis
 
 namespace Hqiv
 
@@ -313,6 +314,38 @@ theorem electronTemperature_from_shell :
     electronTemperatureAnchor = 1 / (electronShell + 1) := by
   unfold electronShell electronTemperatureAnchor
   simpa using shellIndexForTemperature_inv T_CMB_natural electronTemperatureAnchor_pos
+
+/-!
+**Lock-in horizon vs “now” (electron and ν anchors):** the quark top uses the same
+discrete index `referenceM` as baryogenesis lock-in (`m_top_at_lockin`, `m_lockin`).
+So `T_lockin` is the ladder temperature on that shell (`T_lockin = T m_top_at_lockin`).
+
+The **electron mass** in Planck units is not a separate mass-table input: it is
+`m_tau_Pl` divided by the two `GenerationResonance` factors, with `m_tau_Pl` fixed
+by the cumulative lattice (`tau_birth_shell_located_by_planck_volume`). The
+**observer-shell** anchor `electronTemperatureAnchor` uses `T_CMB_natural` only to
+place `φ(m)`–shape data at “now”; it is complementary to the lock-in identification
+above.
+
+**Sterile-overlap neutrinos** (`m_nu_e_derived`, …) are explicit products of `T_lockin`
+with `outerHorizonSurface` at `referenceM + 1` and `referenceM + 2`; see
+`Hqiv.Physics.m_nu_e_derived_eq_T_lockin_outer_surfaces`.
+-/
+
+/-- Lock-in shell index equals quark-top birth shell (`QuarkMetaResonance`). -/
+theorem m_lockin_eq_m_top_at_lockin : m_lockin = m_top_at_lockin := rfl
+
+/-- Lock-in temperature is the ladder value on the quark-top birth shell index. -/
+theorem T_lockin_eq_temperature_at_quark_top_birth_shell : T_lockin = T m_top_at_lockin := by
+  rw [T_lockin_eq_ladder, m_lockin_eq_referenceM]
+  rfl
+
+/-- Electron mass (Planck units) from τ Planck mass and the two resonance factors. -/
+theorem m_electron_natural_eq_m_tau_Pl_over_resonance_ks :
+    m_electron_natural =
+      m_tau_Pl / (resonance_k_tau_mu * resonance_k_mu_e) := by
+  unfold m_electron_natural
+  exact planck_electron_mass_from_tau_resonance
 
 /-- Integer shell displacement relative to the electron shell, by generation structure. -/
 /-- Generation index extracted from the already-proved triality structure. -/

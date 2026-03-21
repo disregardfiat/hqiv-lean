@@ -25,6 +25,11 @@ Notes on the detuning / resonance structure:
 * The integer resonance part is carried by the base integers `17` and `207`;
   the remaining non-integer correction is bundled into `δ_rindler_*` so that the
   exported `k` values match the lattice-aligned ladder targets.
+
+**Integration (plasma / inertia):** same φ–horizon structure as the vacuum and EM
+sectors (`ModifiedMaxwell`, `HQVMetric`, `Schrodinger` lapse factor); plasmas couple
+via currents in the O-Maxwell route (`Forces`). See the README roadmap for how
+lepton and quark formalisations are prioritised as the bridge to those effects.
 -/
 
 open scoped Real
@@ -121,6 +126,16 @@ def resonanceProduct (gen : So8RepIndex) : ℝ :=
   | .two => 1
   | .one => resonance_k_tau_mu
   | .zero => resonance_k_tau_mu * resonance_k_mu_e
+
+/--
+Light charged-lepton Planck mass from τ and the two resonance factors (same combination
+used as the electron witness in `SM_GR_Unification`).
+-/
+theorem planck_electron_mass_from_tau_resonance :
+    m_tau_Pl * (1 / resonanceProduct ⟨0, by decide⟩) =
+      m_tau_Pl / (resonance_k_tau_mu * resonance_k_mu_e) := by
+  simp [resonanceProduct]
+  field_simp
 
 /-!
 ### Generation shells used in the effective-surface resonance theorems

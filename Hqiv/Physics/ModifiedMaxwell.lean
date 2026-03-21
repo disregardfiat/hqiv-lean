@@ -27,6 +27,11 @@ Maxwell's 3D equations** by holding one axis fixed.
   charge_conservation_O (with placeholder div_μ); flat limit instance.
 - **Placeholder (API only):** grad_φ, div_μ, g_rr, J_O return constants; real
   manifold versions will use these parameter names. 3D div E / curl B terms TBD.
+
+**Plasma-facing note:** `J_O` is the natural hook for collective currents; filling
+it in (and the manifold placeholders) is how dense plasma couples back to the same
+φ ladder used in fermion mass ladders (`GenerationResonance`, `QuarkMetaResonance`).
+See README “Roadmap: plasmas, modified inertia, and fermion ladders”.
 -/
 
 /-- Placeholder for (∇φ)_ν; full manifold version later. -/
@@ -46,12 +51,19 @@ structure F_O where
 /-- Current in O (8 components; phenomenological for now). -/
 def J_O (_a : Fin 8) (_ν : Fin 4) : ℝ := 0
 
-/-- **Emergent inhomogeneous equation in O.** One equation per octonion component and spacetime index.
-    Pure math; which component corresponds to which force is assigned in Conservations → Forces. -/
-noncomputable def emergentMaxwellInhomogeneous_O (a : Fin 8) (ν : Fin 4) : ℝ :=
+/-- **Emergent inhomogeneous equation in O** with an arbitrary source `J_src` (defaults to `J_O`).
+
+The φ-correction is unchanged; plasma or other collective sources are injected only by specialising
+`J_src` (see `Hqiv.Physics.SchematicPlasmaCurrent`). -/
+noncomputable def emergentMaxwellInhomogeneous_O_general (J_src : Fin 8 → Fin 4 → ℝ) (a : Fin 8) (ν : Fin 4) :
+    ℝ :=
   let _divTerm := 0.0   -- placeholder for ∇_μ (√-g F_O^{a μν}) in O
   let phiCorrection := alpha * (Real.log (phi_of_T (T ν.val))) * (grad_φ ν)
-  0.0 - 4 * Real.pi * J_O a ν - phiCorrection
+  0.0 - 4 * Real.pi * J_src a ν - phiCorrection
+
+/-- **Emergent inhomogeneous equation in O** with the default placeholder current `J_O`. -/
+noncomputable def emergentMaxwellInhomogeneous_O (a : Fin 8) (ν : Fin 4) : ℝ :=
+  emergentMaxwellInhomogeneous_O_general J_O a ν
 
 /-- Quaternionic subalgebra: indices 0..3 of O. -/
 def inH (i : Fin 8) : Prop := i.val < 4
@@ -71,9 +83,10 @@ theorem O_reduces_to_classic_Maxwell_in_H (ν : Fin 4)
     (h_grad_zero : ∀ ν, grad_φ ν = 0) :
     emergentMaxwellInHomogeneous_H ν = classicMaxwellInhomogeneous ν := by
   unfold emergentMaxwellInHomogeneous_H classicMaxwellInhomogeneous
-  simp only [emergentMaxwellInhomogeneous_O, h_phi_const, h_grad_zero, J_O, mul_zero, sub_zero]
+  simp only [emergentMaxwellInhomogeneous_O, emergentMaxwellInhomogeneous_O_general, h_phi_const, h_grad_zero,
+    J_O, mul_zero, sub_zero]
   ring_nf
-  simp
+  norm_num
 
 /-- **Flat metric (placeholder):** `g_rr` is identically 1. -/
 theorem g_rr_flat : ∀ x, g_rr x = 1 := by
@@ -94,11 +107,16 @@ def maxwell3D_curl_B_minus_dE_dt : Fin 3 → ℝ := fun _ => 0
 theorem spatialIndices_card : spatialIndices.card = 3 := by
   rfl
 
-/-- **Charge conservation in O.** The divergence of the emergent inhomogeneous equation (in μ) is zero.
-    Will follow from antisymmetry of F_O once we have the real manifold divergence operator. -/
-theorem charge_conservation_O (_a : Fin 8) (_ν : Fin 4) :
-    div_μ (fun μ => emergentMaxwellInhomogeneous_O a μ) = 0 := by
+/-- **Charge conservation in O** for any source field: `div_μ` is still the placeholder that returns `0`,
+    so this lemma is **vacuous** until `div_μ` is replaced by a real divergence. -/
+theorem charge_conservation_O_general (J_src : Fin 8 → Fin 4 → ℝ) (a : Fin 8) :
+    div_μ (fun μ => emergentMaxwellInhomogeneous_O_general J_src a μ) = 0 := by
   unfold div_μ; rfl
+
+/-- **Charge conservation in O** with default `J_O`. -/
+theorem charge_conservation_O (a : Fin 8) (_ν : Fin 4) :
+    div_μ (fun μ => emergentMaxwellInhomogeneous_O a μ) = 0 :=
+  charge_conservation_O_general J_O a
 
 /-- **Classic Maxwell in H under flat limit.** When the metric is flat and φ is constant (with zero
     gradient), the H-restriction of the O-equation equals the classic inhomogeneous equation.

@@ -18,7 +18,9 @@ This module provides:
 - **ADM lapse:** definition and proof that the HQVM metric has lapse N = 1 + Φ + φ t
   (see `HQVM_lapse` and `HQVM_tt_coefficient`).
 - **Homogeneous limit:** γ, G_eff, and the declarative Friedmann equation
-  (φ ≈ H, used for volume-averaged dynamics and CLASS).
+  (φ ≈ H, used for volume-averaged dynamics and CLASS). For the exact lapse increment
+  `δN` around `Φ = 0` with background `φ = H`, see `HQVM_lapse_increment_homogeneous` in
+  `Hqiv.Geometry.HQVMPerturbations` (first-order piece `linearizedHQVM_lapse`, remainder `δφ δt`).
 
 The theory is built from **division math** (α = 3/5, γ = 2/5) and **monogamy**;
 the lapse formula encodes observer-centric time (wall-clock vs apparent age).

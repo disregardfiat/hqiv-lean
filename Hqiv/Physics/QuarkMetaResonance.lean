@@ -16,6 +16,16 @@ This module encodes a single three-harmonic internal ladder for quarks:
 * Two internal octave drops.
 * Up/down split represented as a hypercharge sign flip with near-identical
   shared binding content.
+
+Lepton-side lock-in alignment (electron mass from τ resonance; ν from `T_lockin`
+and outer surfaces) is stated in `SM_GR_Unification` and proved in
+`DerivedGaugeAndLeptonSector`.
+
+**Integration (plasma / inertia):** collective plasmas and lapse- or φ-modified
+inertia are not modeled inside this file; they enter through the shared EM/O-Maxwell
+and metric sectors (`ModifiedMaxwell`, `Forces`, `Schrodinger`, `HQVMetric`).
+The repository README “Roadmap” section records lepton + quark ladders as the main
+targets for tightening those links.
 -/
 
 def So8RepIndex : Type := Fin 3
@@ -122,7 +132,7 @@ theorem exactly_three_harmonics_only :
           fourthGen ≠ ⟨1, by decide⟩ ∧
           fourthGen ≠ ⟨2, by decide⟩ := by
   refine ⟨0, ?_, ?_⟩
-  · simpa [m_top_at_lockin]
+  · simp [m_top_at_lockin]
   · intro h
     rcases h with ⟨g, hg⟩
     fin_cases g

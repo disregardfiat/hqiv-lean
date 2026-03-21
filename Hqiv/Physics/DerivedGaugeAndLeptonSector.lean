@@ -19,6 +19,11 @@ def trialityOrder : ℕ := 3
 Pure-derivation gauge/lepton sector:
 all scales are generated from lattice surfaces, lock-in shell reference, triality
 structure, and resonance geometry (no external mass inputs in this module).
+
+**Neutrino anchor (same horizon language as quark top / `T_lockin`):**
+`T_lockin` multiplies the outer horizon area at `referenceM + 1` to form the vev;
+`M_Z` and then `m_nu_e_derived` follow, with sterile suppression from
+`outerHorizonSurface (referenceM + 2)`. See `m_nu_e_derived_eq_T_lockin_outer_surfaces`.
 -/
 
 /-- Outer-horizon surface from lattice stars-and-bars leading term. -/
@@ -78,4 +83,35 @@ theorem neutrino_masses_from_sterile_overlap :
     m_nu_mu_derived = sterileNeutrinoSuppression * m_nu_e_derived ∧
     m_nu_tau_derived = sterileNeutrinoSuppression * m_nu_mu_derived := by
   exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem electroweakShell_eq_succ_reference : electroweakShell = referenceM + 1 := rfl
+
+/-- Lock-in temperature is the ladder value at `referenceM` (`m_lockin = referenceM`). -/
+theorem T_lockin_eq_T_referenceM : T_lockin = T referenceM := by
+  rw [T_lockin_eq_ladder, m_lockin_eq_referenceM]
+
+theorem vacuumExpectationValue_eq_T_lockin_outer_surface :
+    vacuumExpectationValue =
+      T_lockin * outerHorizonSurface (referenceM + 1) * (1 + gammaDerived) := by
+  simp [vacuumExpectationValue, electroweakShell]
+
+/-- Two adjacent resonance steps telescope to a surface ratio two shells out. -/
+theorem resonance_two_step_outer_surface_ratio (m : ℕ) :
+    resonanceStepK m (m + 1) * resonanceStepK (m + 1) (m + 2) =
+      outerHorizonSurface (m + 2) / outerHorizonSurface m := by
+  simp [resonanceStepK, outerHorizonSurface]
+  field_simp
+
+/--
+Electron neutrino mass witness: explicit product of `T_lockin`, outer areas at
+`referenceM + 1` and `referenceM + 2`, and the derived gauge couplings — no separate
+mass-table input.
+-/
+theorem m_nu_e_derived_eq_T_lockin_outer_surfaces :
+    m_nu_e_derived =
+      (gammaDerived / outerHorizonSurface (referenceM + 2)) *
+        (su2CouplingDerived + u1CouplingDerived) *
+          T_lockin * outerHorizonSurface (referenceM + 1) * (1 + gammaDerived) := by
+  simp [m_nu_e_derived, sterileNeutrinoSuppression, M_Z_derived, gaugeBosonMassFromVev,
+    vacuumExpectationValue, electroweakShell, mul_assoc, mul_left_comm, mul_comm]
 end Hqiv.Physics
