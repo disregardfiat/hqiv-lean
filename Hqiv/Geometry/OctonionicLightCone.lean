@@ -236,23 +236,20 @@ theorem new_modes_succ (m : Nat) :
 
 /-- HQIV varying-G exponent α.
 
-This is the same dimensionless index that appears in the Python curvature
-pipeline (`alpha = 0.60` in `discrete_baryogenesis_horizon.py` and `main.tex`),
-capturing how the effective coupling \(G_\mathrm{eff}\) (or curvature imprint)
-scales with the shell temperature. In the full development, α will be shown
-α arises from the lattice as the ratio (n+1)(n+2)(n+3)/(5·cum n) = 3/5 for all n
-(hockey-stick); the limit as shells grow is therefore 3/5 (no free parameter). -/
+Same dimensionless index as in the Python curvature pipeline (`alpha = 0.60` in
+`discrete_baryogenesis_horizon.py` and `main.tex`), i.e. how \(G_\mathrm{eff}\)
+(or curvature imprint) scales with the shell temperature. **In Lean, α is identified
+with the lattice ratio** `(n+1)(n+2)(n+3)/(5·cum n)` for every `n` via
+`latticeAlphaRatio_eq_alpha` (hockey-stick); see also `tendsto_latticeAlphaRatio`. -/
 def alpha : ℝ := 0.60
 
 /-- **α equals 3/5 exactly.** The paper's 0.60 is the rational 3/5 (proved). -/
 theorem alpha_eq_3_5 : alpha = 3/5 := by unfold alpha; norm_num
 
-/-- **α as lattice rational (step toward proving 0.6):** α = 3/(3+2) = 3/5.
-The 3 is the effective growth exponent of the cumulative mode count on the 3D null
-lattice (hockey-stick: cum(m) ∝ (m+1)^3); the 5 = 3+2 comes from the stars-and-bars
-structure (binomial (m+2 choose 2)). So 0.6 is determined by the lattice dimension
-and the +2 in the simplex count; a full proof would show the discrete ratio
-tends to this value. -/
+/-- **α as lattice rational:** α = 3/(3+2) = 3/5. The 3 is the effective growth
+exponent of the cumulative mode count on the 3D null lattice (hockey-stick);
+the 5 = 3+2 comes from stars-and-bars (binomial (m+2 choose 2)). The discrete
+ratio equals 3/5 for every `n` (`latticeAlphaRatio_eq_alpha`), not only in the limit. -/
 theorem alpha_eq_lattice_rational :
   alpha = (3 : ℝ) / (3 + 2 : ℝ) := by unfold alpha; norm_num
 

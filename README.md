@@ -8,6 +8,10 @@ Formalisation of the HQIV (Horizon-Quantized Informational Vacuum) framework in 
 - **DOI:** [10.5281/zenodo.18899939](https://doi.org/10.5281/zenodo.18899939)
 - **API documentation (GitHub Pages):** The [Lean docgen workflow](.github/workflows/lean_action_ci.yml) builds and deploys the API docs on each push to the default branch. Once enabled, they are published at [**disregardfiat.github.io/hqiv-lean/docs**](https://disregardfiat.github.io/hqiv-lean/docs), look for the hqiv section on the side.
 
+## CLASS numerical fork (Lean alignment)
+
+The modified **CLASS** tree lives in the separate **`HQIV/class_hqiv`** checkout (not inside this Lean package). After edits there, `make` from `class_hqiv/`. See **`HQIV/class_hqiv/LEAN_ALIGNMENT.md`** for which C equations match `HQVMetric.lean` / `HQVMCLASSBridge.lean` / `HQVMDiscretePoisson.lean` / `HQVMConsistency.lean` and what is still missing (e.g. exact `ρ_crit′` for `H′`, lapse `HQVM_lapse`, discrete lattice).
+
 ## Building
 
 **Default (CI and daily use):** builds **HQIVPhysics** (geometry + physics, no generator stack). Finishes in reasonable time.
@@ -47,11 +51,13 @@ lake build
 - **Full SM symmetry and conservations from the same two axioms:** the octonionic generators close to Spin(8)/SO(8) and give the full Standard Model gauge structure; the HQVM metric + O-Maxwell action yield GR-from-Maxwell, varying G, and the SM couplings at "now" (α_EM, sin²θ_W, α_s, m_H, M_Z, M_GUT) **all as outputs** of the light-cone axiom plus the informational-energy/monogamy axiom (see `SM_GR_Unification`, `GRFromMaxwell`, `Conservations`, `Forces`). No extra field-theory parameters are assumed in Lean.
 - **Universe age from the ADM lapse:** Proper time (wall-clock) and coordinate time (apparent age) are related by dτ = N dt with N = 1 + Φ + φ t (`UniverseAge`). A **local scale witness** (e.g. proton mass) fixes the current scale and thus the geometry, yielding exact wall-clock and apparent age; the witness is **free from CMB phase** (no birefringence from propagated photons) and **free from accelerated motion** (Sun, galaxy), since ages are defined in the fundamental observer's rest frame. T_CMB’s phase component is quantified in Lean; paper witnesses: wall-clock ≈ 51.2 Gyr, apparent ≈ 13.8 Gyr.
 
-**External or conventional defs (not derived purely from the light-cone combinatorics in Lean)**  
-- **γ** = 2/5: defined in the metric sector as γ = 1 − α and interpreted as the entanglement-monogamy / horizon-overlap coefficient; Lean proves γ = 2/5 once α = 3/5 is established.  
-- **referenceM** = lockin = qcdShell + stepsFromQCDToLockin; discrete steps through baryogenesis (a few steps after T_lockin). This is implemented combinatorially in `OctonionicLightCone` and used in `Baryogenesis`, while the detailed QCD overlap integrals live in the Python/paper pipeline.  
-- **Natural units:** T_Pl = 1, G₀ = H₀ = 1.  
-- **Metric / lapse:** N = 1 + Φ + φ t and the HQVM line element come from the informational-energy axiom and horizon monogamy (paper and `HQVMetric`); φ itself can be the lattice-derived field.
+**What is *not* “external” (README correction):** **α = 3/5** and **γ = 2/5** are proved in Lean, not assumed. The lattice ratio `(n+1)(n+2)(n+3)/(5·cum n)` equals **α for every** `n` (hockey-stick; `OctonionicLightCone.latticeAlphaRatio_eq_alpha`). The metric sector sets **γ := 1 − α** (`HQVMetric.gamma_HQIV`); then **γ = 2/5** is `gamma_eq_2_5`. So γ is the complement split tied to the same α as the curvature / `G_eff` ladder — not a separate fitted constant.
+
+**Second HQIV axiom (metric; not stars-and-bars arithmetic):** The ADM lapse **N = 1 + Φ + φ t** and the HQVM line element are the **informational-energy / horizon-monogamy** specification in synchronous-comoving gauge (`HQVMetric.HQVM_lapse` and module doc). Lean **defines** N by that formula (the axiom’s ADM form) and proves consequences (Friedmann piece, spatial coefficients, perturbation calculus in `HQVMPerturbations`). **φ** is not a free knob: it is the lattice auxiliary field (e.g. φ(m) = 2/T(m) in `AuxiliaryField`). So the lapse is the second axiom made explicit in the metric — aligned with the paper — rather than an extra parameter beyond the two-axiom story.
+
+**Conventions and pipeline splits**  
+- **referenceM** = lockin = qcdShell + stepsFromQCDToLockin; discrete steps through baryogenesis (a few steps after T_lockin). Implemented combinatorially in `OctonionicLightCone` and used in `Baryogenesis`; detailed QCD overlap integrals remain in the Python/paper pipeline.  
+- **Natural units:** T_Pl = 1, G₀ = H₀ = 1 (reference scale for dimensionless statements in Lean and CLASS alignment).
 
 So: the **combinatorics, T-ladder, φ on shells, curvature shape, α from the lattice, horizon-dependent Ω_k (curvature ratio from shell integral), full Spin(8)/SM gauge structure, conserved currents, the curvature norm \(6^7\sqrt{3}\), and the SM + GR field equations and couplings at "now"** are all derived inside Lean from the same two HQIV axioms (discrete light cone + informational-energy/monogamy), with no extra dynamical parameters. Spatial curvature is different between any two horizons (e.g. QCD vs CMB LSS) even at time "now". Matter fraction and η are downstream of the SM embedding to SO(8).
 
