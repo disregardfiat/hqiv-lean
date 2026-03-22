@@ -59,7 +59,10 @@ We do not introduce free parameters. Each definition is **determined by** prior 
 7. **Friedmann equation:** (3−γ)H² = 8π G_eff(φ)(ρ_m + ρ_r) is the **Einstein
    equation** in the homogeneous HQVM limit with varying G. So the def
    `HQVM_Friedmann_eq` is the statement of that equation; we then prove
-   rational form, vacuum iff φ = 0, and sign of (3−γ).
+   rational form, vacuum iff φ = 0, and sign of (3−γ). The **CLASS density / Picard**
+   algebra (`ρ_crit = 8πρ/3` at `G = 1`, squared-`H` rescaling, fixed point of the
+   square-root map) is proved equivalent in `Hqiv.Geometry.HQVMCLASSBridge`
+   (`section CLASSBackgroundMethodology`).
 
 Thus the proven theory in this file **rests on** the light-cone (α, φ, curvature),
 monogamy (γ), natural units, and the informational-energy axiom; the defs are

@@ -7,6 +7,10 @@ import Hqiv.Geometry.HQVMetric
 import Hqiv.Geometry.HQVMetricAnalytic
 import Hqiv.Geometry.HQVMPerturbations
 import Hqiv.Geometry.HQVMCLASSBridge
+import Hqiv.Geometry.HQVMDiscreteLaplacian
+import Hqiv.Geometry.HQVMDiscretePoisson
+import Hqiv.Geometry.HQVMGlobalLocalDictionary
+import Hqiv.Geometry.HQVMConsistency
 import Hqiv.Geometry.Now
 import Hqiv.Conservations
 import Hqiv.Physics.Baryogenesis
@@ -17,5 +21,9 @@ import Hqiv.Physics.Forces
 import Hqiv.Physics.BoundStates
 import Hqiv.Physics.DerivedGaugeAndLeptonSector
 import Hqiv.Physics.NuclearAndAtomicSpectra
+import Hqiv.Physics.HQIVNuclei
+import Hqiv.Physics.HQIVAtoms
+import Hqiv.Physics.HQIVMolecules
+import Hqiv.Physics.HQIVLongRange
 import Hqiv.QuantumMechanics.Schrodinger
 import Hqiv.QuantumMechanics.UncertaintyPrinciple

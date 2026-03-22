@@ -39,6 +39,11 @@ chosen energy increment `ΔE`. Separately, `ObserverChart` matches `Schrodinger.
 **domain** of perturbations is the same ℝ³ chart the QM skeleton already uses; refinement to shells
 or balls is then geometric, not axiomatic. Lapse response to ladder temperature drift is packaged in
 `linearizedLapse_from_Theta` using `deriv phi_of_T` from the existing `phi_of_T` definition.
+
+Axis-aligned **finite-difference** Laplacian scaffolding on this same chart (independent of the QM
+Laplacian placeholder in `Schrodinger`) lives in `Hqiv.Geometry.HQVMDiscreteLaplacian`. Lebesgue
+volume means on `observerBall` (global–local bookkeeping toward homogeneous backgrounds) are in
+`Hqiv.Geometry.HQVMGlobalLocalDictionary`.
 -/
 
 section LapseLinearization

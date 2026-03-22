@@ -5,6 +5,10 @@ import Hqiv.Geometry.HQVMetric
 import Hqiv.Geometry.HQVMetricAnalytic
 import Hqiv.Geometry.HQVMPerturbations
 import Hqiv.Geometry.HQVMCLASSBridge
+import Hqiv.Geometry.HQVMDiscreteLaplacian
+import Hqiv.Geometry.HQVMDiscretePoisson
+import Hqiv.Geometry.HQVMGlobalLocalDictionary
+import Hqiv.Geometry.HQVMConsistency
 import Hqiv.Geometry.Now
 import Hqiv.SO8Closure
 import Hqiv.Conservations
