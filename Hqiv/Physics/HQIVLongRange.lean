@@ -1,4 +1,5 @@
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic
 
 import Hqiv.Physics.HQIVMolecules
 import Hqiv.Physics.SpinStatistics
@@ -110,6 +111,30 @@ theorem water_dielectric_rescaling_long_range (ε_r : ℝ) (hε : ε_r ≠ 0) (m
   unfold valleyPotentialLongRange waterDielectricValley
   rw [water_dielectric_rescaling_eq_EM ε_r hε]
 
+/-- Full aqueous bookkeeping chain: screened EM Coulomb distance `r ↦ ε_r * r`, H-bond proxy unchanged. -/
+theorem valleyPotentialLongRange_water_screen_chain (ε_r : ℝ) (hε : ε_r ≠ 0) (m : ℕ) (n₁ n₂ : CasimirSurface m)
+    (Z_eff r : ℝ) (θ φ dist : ℝ) :
+    waterDielectricValley ε_r m n₁ n₂ Z_eff r + hBondProxy m θ φ dist =
+        valleyPotentialEM m n₁ n₂ Z_eff (ε_r * r) + hBondProxy m θ φ dist ∧
+      valleyPotentialEM m n₁ n₂ Z_eff (ε_r * r) + hBondProxy m θ φ dist =
+        valleyPotentialLongRange m n₁ n₂ Z_eff (ε_r * r) θ φ dist := by
+  refine And.intro ?_ rfl
+  rw [water_dielectric_rescaling_eq_EM ε_r hε]
+
+/-- Long-range valley minus its EM piece is exactly `hBondProxy` (for any Coulomb distance argument, including `ε_r * r`). -/
+theorem valleyPotentialLongRange_sub_EM_eq_hBond (m : ℕ) (n₁ n₂ : CasimirSurface m) (Z_eff r : ℝ) (θ φ dist : ℝ) :
+    valleyPotentialLongRange m n₁ n₂ Z_eff r θ φ dist - valleyPotentialEM m n₁ n₂ Z_eff r =
+      hBondProxy m θ φ dist := by
+  unfold valleyPotentialLongRange
+  ring
+
+/-- Aqueous rescaling moves only `valleyPotentialEM`; the extracted H-bond proxy is unchanged (`EM-only screening`). -/
+theorem hBondProxy_eq_subtract_EM_under_aqueous_radius (ε_r : ℝ) (hε : ε_r ≠ 0) (m : ℕ) (n₁ n₂ : CasimirSurface m)
+    (Z_eff r : ℝ) (θ φ dist : ℝ) :
+    valleyPotentialLongRange m n₁ n₂ Z_eff (ε_r * r) θ φ dist - valleyPotentialEM m n₁ n₂ Z_eff (ε_r * r) =
+      valleyPotentialLongRange m n₁ n₂ Z_eff r θ φ dist - valleyPotentialEM m n₁ n₂ Z_eff r := by
+  simp [valleyPotentialLongRange_sub_EM_eq_hBond]
+
 theorem pH_charge_flip_effect_long_range (δZ Z_eff r : ℝ) (m : ℕ) (n₁ n₂ : CasimirSurface m) (θ φ dist : ℝ) :
     valleyPotentialLongRange m n₁ n₂ (Z_eff + δZ) r θ φ dist =
       valleyPotentialLongRange m n₁ n₂ Z_eff r θ φ dist + Hqiv.alpha_EM_at_MZ * δZ / r := by
@@ -130,6 +155,26 @@ theorem long_range_attraction_emergent (m : ℕ) (θ φ dist : ℝ) (hθ : 0 < c
   have hpos : 0 < K_hbond m * (cos θ * cos φ) / (1 + (dist / R_hbond m) ^ 2) :=
     div_pos (mul_pos hK hnum) hden
   linarith [hpos]
+
+/-- For positive separations, larger `dist` makes the (negative) H-bond proxy **strictly larger** (less
+attractive). On the smooth Lorentzian profile this is the same sign as `∂hBond/∂dist > 0`. -/
+theorem hBondProxy_mono_dist {m : ℕ} (θ φ : ℝ) (hθ : 0 < cos θ) (hφ : 0 < cos φ) {d₁ d₂ : ℝ}
+    (hd₁ : 0 < d₁) (hd₂ : 0 < d₂) (h : d₁ < d₂) :
+    hBondProxy m θ φ d₁ < hBondProxy m θ φ d₂ := by
+  have hKc : 0 < K_hbond m * (cos θ * cos φ) := mul_pos (K_hbond_pos m) (mul_pos hθ hφ)
+  have hRpos : 0 < R_hbond m := R_hbond_pos m
+  have hsq : d₁ ^ 2 < d₂ ^ 2 := by nlinarith [h, hd₁, hd₂]
+  have hR2 : 0 < (R_hbond m) ^ 2 := pow_pos hRpos 2
+  have hfrac : (d₁ / R_hbond m) ^ 2 < (d₂ / R_hbond m) ^ 2 := by
+    have := div_lt_div_of_pos_right hsq hR2
+    simpa [div_pow, ne_of_gt hRpos, pow_two, mul_assoc, mul_comm, mul_left_comm] using this
+  have hden_lt : 1 + (d₁ / R_hbond m) ^ 2 < 1 + (d₂ / R_hbond m) ^ 2 := by linarith [hfrac]
+  have hden₁ : 0 < 1 + (d₁ / R_hbond m) ^ 2 := overlap_denominator_pos m d₁
+  have hden₂ : 0 < 1 + (d₂ / R_hbond m) ^ 2 := overlap_denominator_pos m d₂
+  have hinv : (1 + (d₂ / R_hbond m) ^ 2)⁻¹ < (1 + (d₁ / R_hbond m) ^ 2)⁻¹ :=
+    (inv_lt_inv₀ hden₂ hden₁).mpr hden_lt
+  unfold hBondProxy
+  nlinarith [hinv, hKc]
 
 /-!
 ### Optional hydrophobic distance window (symbolic positivity of the overlap factor)
@@ -160,6 +205,18 @@ theorem augmented_minimum_energy_fold_is_native {m : ℕ} (κ θFold Z_eff r μ 
   · intro hcos
     have h1 : 1 - cos θFold = 0 := by rw [hcos]; simp
     simp [h1, add_assoc]
+
+/-!
+### Ramachandran / fold dihedral vs contact alignment (`hBondProxy`)
+-/
+
+/-- Product-structure decoupling: the scalar Ramachandran penalty depends only on `θFold`; contact energy
+adds a term with **independent** angles `(θ, φ)` used by `hBondProxy`. -/
+theorem foldEnergyWithDihedral_add_hBond_decouples {m : ℕ} (κ θFold Z_eff r μ c : ℝ) (t : TorqueTree m)
+    (θ_contact φ_contact dist : ℝ) :
+    foldEnergyWithDihedral κ θFold Z_eff r μ c t + hBondProxy m θ_contact φ_contact dist =
+      foldEnergy Z_eff r μ c t + hBondProxy m θ_contact φ_contact dist + κ * (1 - cos θFold) := by
+  simp [foldEnergyWithDihedral, add_assoc, add_comm, add_left_comm]
 
 /-!
 ## 6. Multibody attachment bookkeeping (H-bond vs covalent tag)

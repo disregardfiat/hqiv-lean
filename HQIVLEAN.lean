@@ -23,6 +23,7 @@ import Hqiv.Physics.SM_GR_Unification
 import Hqiv.Physics.NuclearAndAtomicSpectra
 import Hqiv.QuantumMechanics.Schrodinger
 import Hqiv.QuantumMechanics.UncertaintyPrinciple
+import Hqiv.QuantumOptics.HorizonQED
 import Hqiv.Algebra.OctonionBasics
 import Hqiv.Algebra.G2Embedding
 import Hqiv.Algebra.PhaseLiftDelta

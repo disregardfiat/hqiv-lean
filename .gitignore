@@ -5,6 +5,7 @@
 /.lake
 HQIV
 hqvmpy
+PROtien
 
 # Local doc tooling (Verso etc.); tree is huge — not versioned here.
 docbuild/

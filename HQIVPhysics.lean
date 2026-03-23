@@ -25,5 +25,8 @@ import Hqiv.Physics.HQIVNuclei
 import Hqiv.Physics.HQIVAtoms
 import Hqiv.Physics.HQIVMolecules
 import Hqiv.Physics.HQIVLongRange
+import Hqiv.Physics.HQIVAssembly
+import Hqiv.Physics.HQIVCollectiveModes
 import Hqiv.QuantumMechanics.Schrodinger
 import Hqiv.QuantumMechanics.UncertaintyPrinciple
+import Hqiv.QuantumOptics.HorizonQED
