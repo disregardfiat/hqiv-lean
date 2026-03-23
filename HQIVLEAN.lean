@@ -21,6 +21,9 @@ import Hqiv.Physics.Action
 import Hqiv.Physics.CovariantSolution
 import Hqiv.Physics.SM_GR_Unification
 import Hqiv.Physics.NuclearAndAtomicSpectra
+import Hqiv.Physics.ProteinAutoprocessing
+import Hqiv.Physics.VariationalScoreTerms
+import Hqiv.Physics.ForceCarrierWhip
 import Hqiv.QuantumMechanics.Schrodinger
 import Hqiv.QuantumMechanics.UncertaintyPrinciple
 import Hqiv.QuantumOptics.HorizonQED

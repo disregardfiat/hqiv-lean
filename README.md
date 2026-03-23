@@ -8,6 +8,17 @@ Formalisation of the HQIV (Horizon-Quantized Informational Vacuum) framework in 
 - **DOI:** [10.5281/zenodo.18899939](https://doi.org/10.5281/zenodo.18899939)
 - **API documentation (GitHub Pages):** The [Lean docgen workflow](.github/workflows/lean_action_ci.yml) builds and deploys the API docs on each push to the default branch. Once enabled, they are published at [**disregardfiat.github.io/hqiv-lean/docs**](https://disregardfiat.github.io/hqiv-lean/docs), look for the hqiv section on the side.
 
+## Variational score-term references
+
+`Hqiv/Physics/VariationalScoreTerms.lean` formalizes literature-standard score
+building blocks (Lennard-Jones 12-6 pair term, periodic dihedral term, weighted
+linear score decomposition) as mathematical bridges on top of established HQIV
+proof infrastructure.
+
+Primary reference:
+
+- Alford RF, Leaver-Fay A, Jeliazkov JR, et al. *The Rosetta All-Atom Energy Function for Macromolecular Modeling and Design.* J Chem Theory Comput. 2017;13(6):3031-3048. [https://doi.org/10.1021/acs.jctc.7b00125](https://doi.org/10.1021/acs.jctc.7b00125)
+
 ## CLASS numerical fork (Lean alignment)
 
 The modified **CLASS** tree lives in the separate **`HQIV/class_hqiv`** checkout (not inside this Lean package). After edits there, `make` from `class_hqiv/`. See **`HQIV/class_hqiv/LEAN_ALIGNMENT.md`** for which C equations match `HQVMetric.lean` / `HQVMCLASSBridge.lean` / `HQVMDiscretePoisson.lean` / `HQVMConsistency.lean` and what is still missing (e.g. exact `ρ_crit′` for `H′`, lapse `HQVM_lapse`, discrete lattice).
