@@ -70,10 +70,10 @@ theorem top_anchored_at_T_lockin_now :
   rfl
 
 theorem light_quarks_from_two_resonance_drops :
-    quarkMass ⟨1, by decide⟩ = 1.27 ∧
-      quarkMass ⟨0, by decide⟩ = 0.0022 ∧
-      quarkMassDown ⟨1, by decide⟩ = 0.095 ∧
-      quarkMassDown ⟨0, by decide⟩ = 0.0047 := by
+    quarkMass ⟨1, by decide⟩ = m_charm_GeV ∧
+      quarkMass ⟨0, by decide⟩ = m_up_GeV ∧
+      quarkMassDown ⟨1, by decide⟩ = m_strange_GeV ∧
+      quarkMassDown ⟨0, by decide⟩ = m_down_GeV := by
   exact two_octave_drops_to_light_quarks
 
 theorem proton_mass_from_shared_harmonics :

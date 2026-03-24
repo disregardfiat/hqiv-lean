@@ -13,7 +13,7 @@ in heavier algebra (and `So8CoordMatrix`).
 
 def trialityOrder : ℕ := 3
 
--- `So8RepIndex` comes from `QuarkMetaResonance` (the shared lightweight index type).
+-- Generation index for SM export: `So8RepIndex` (`Hqiv.Algebra`, defeq to `Fin 3`).
 
 /-!
 Pure-derivation gauge/lepton sector:

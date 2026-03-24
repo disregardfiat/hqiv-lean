@@ -235,7 +235,10 @@ noncomputable def m_electron_natural : ℝ :=
 /-- The electron witness is positive. -/
 theorem m_electron_natural_pos : 0 < m_electron_natural := by
   unfold m_electron_natural
-  norm_num
+  have hτ : 0 < m_tau_Pl := by norm_num [m_tau_Pl]
+  have hk : 0 < resonanceProduct ⟨0, by decide⟩ :=
+    mul_pos resonance_k_tau_mu_pos resonance_k_mu_e_pos
+  exact mul_pos hτ (div_pos zero_lt_one hk)
 
 /-- Labels for Standard Model elementary masses in the geometric mass sector. -/
 inductive SMMassLabel
@@ -321,8 +324,9 @@ discrete index `referenceM` as baryogenesis lock-in (`m_top_at_lockin`, `m_locki
 So `T_lockin` is the ladder temperature on that shell (`T_lockin = T m_top_at_lockin`).
 
 The **electron mass** in Planck units is not a separate mass-table input: it is
-`m_tau_Pl` divided by the two `GenerationResonance` factors, with `m_tau_Pl` fixed
-by the cumulative lattice (`tau_birth_shell_located_by_planck_volume`). The
+`m_tau_Pl` divided by the two **geometric** `GenerationResonance` factors
+(`resonance_k_*` are exact ratios of detuned `(m+1)(m+2)` surfaces at `m_tau`, `m_mu`,
+`m_e`), with `m_tau_Pl` fixed by the cumulative lattice (`tau_birth_shell_located_by_planck_volume`). The
 **observer-shell** anchor `electronTemperatureAnchor` uses `T_CMB_natural` only to
 place `φ(m)`–shape data at “now”; it is complementary to the lock-in identification
 above.
@@ -537,8 +541,12 @@ theorem sm_mass_from_geometry_pos
   have hm : 0 < m_tau_Pl := by
     norm_num [m_tau_Pl]
   have hres : 0 < resonanceProduct (smGenerationIndex label) := by
-    -- `smGenerationIndex label : Fin 3`, so split on the three cases.
-    fin_cases (smGenerationIndex label) <;> simp [resonanceProduct, resonance_k_tau_mu, resonance_k_mu_e]
+    -- `smGenerationIndex label : Fin 3`: generations 0,1,2 use product `k_τμ·k_μe`, `k_τμ`, and `1`.
+    fin_cases (smGenerationIndex label)
+    · exact mul_pos resonance_k_tau_mu_pos resonance_k_mu_e_pos
+    · exact resonance_k_tau_mu_pos
+    · simp [resonanceProduct]
+      norm_num
   -- `1 / x` is positive for `x > 0`.
   have hrecip : 0 < 1 / resonanceProduct (smGenerationIndex label) := by
     exact div_pos (show 1 > (0:ℝ) by norm_num) hres
