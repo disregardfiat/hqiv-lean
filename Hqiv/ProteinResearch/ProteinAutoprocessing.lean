@@ -97,4 +97,3 @@ theorem segmentLapse_eq (seg : ProteinBackboneSegment) :
   simpa [HQVM_lapse]
 
 end Hqiv.Physics
-

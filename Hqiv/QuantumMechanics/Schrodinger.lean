@@ -14,6 +14,7 @@ import Hqiv.Physics.Forces
 import Hqiv.Physics.SM_GR_Unification
 import Hqiv.Geometry.HQVMetric
 import Hqiv.Geometry.AuxiliaryField
+import Hqiv.QuantumMechanics.HydrogenicEnergies
 
 import Mathlib.Data.Complex.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
@@ -208,13 +209,6 @@ theorem actionExtensionYieldsSchrodinger
 def isStationaryEigenpair (ψ : Wavefunction) (E : ℝ) (H : Operator) : Prop :=
   ∀ x, H ψ x = (E : ℂ) * ψ x
 
-/-- Expected ground-state energy for a hydrogenic system in the
-HQIV effective description. This follows the usual textbook
-`− μ Z² α_EM² / 2` scaling, with the fine-structure constant taken
-from the derived low-energy value `alpha_EM_at_MZ`. -/
-noncomputable def expectedGroundEnergy (Z : ℕ) (μ : ℝ) : ℝ :=
-  - μ * (Z : ℝ) ^ 2 * (alpha_EM_at_MZ ^ 2) / 2
-
 /-- Shell-resolved Bohr radius for a hydrogenic system in the HQIV
 effective description. The Coulomb strength is taken from the
 shell-dependent effective coupling α_eff(m); unit factors use
@@ -272,19 +266,6 @@ def radialGroundStateIsEigenpairAtShell (m : ℕ) (Z : ℕ) (μ : ℝ) : Prop :=
   let u : RadialWave := fun r => r * Real.exp (-κ * r)
   isRadialEigenpair u (expectedGroundEnergy Z μ)
     (radialHamiltonianShell m Z μ)
-
-/-- Expected energy for an arbitrary principal quantum number `n ≥ 1`
-in the hydrogenic spectrum, stated in the usual `− μ (Z k)² / (2 ħ² n²)`
-form. Here the effective Coulomb coupling is expressed in terms of the
-derived low-energy fine-structure constant; the detailed spectral
-theory (Laguerre polynomials and spherical harmonics) will be added
-later once the corresponding Mathlib machinery lands. -/
-noncomputable def expectedEnergy (n : ℕ) (Z : ℕ) (μ : ℝ) : ℝ :=
-  if hn : 0 < n then
-    - μ * ((Z : ℝ) ^ 2) * (alpha_EM_at_MZ ^ 2) /
-        (2 * (hbar_SI ^ 2) * (n : ℝ) ^ 2)
-  else
-    0
 
 /-
 General spectrum comment:

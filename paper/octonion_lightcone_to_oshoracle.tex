@@ -1,0 +1,257 @@
+% HQIV: from the octonionic light cone to digital quantum computing and the OSH oracle
+% Companion narrative to Lean modules:
+%   Hqiv/Geometry/OctonionicLightCone.lean
+%   Hqiv/Algebra/OctonionBasics.lean
+%   Hqiv/QuantumComputing/{DiscreteQuantumState,DigitalGates,DiscreteSchrodinger,OctonionicFT,OSHoracle}.lean
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage[margin=1in]{geometry}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\title{From the Octonionic Light Cone\\to Digital Quantum States and the OSH Oracle}
+\author{Steven Ettinger Jr}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note is intentionally thin on prose: each block is a ``docstring'' (what the object \emph{means} in the formal layer) followed by the governing equations. It traces the discrete null lattice and octonion bookkeeping in \texttt{OctonionicLightCone}, the $\mathbb{R}^8$ gate scaffold in \texttt{OctonionBasics} / \texttt{DigitalGates}, and the horizon-causal sparse oracle layer in \texttt{OSHoracle}.
+\end{abstract}
+
+\medskip
+\noindent\textbf{Repository.} \url{https://github.com/disregardfiat/hqiv-lean}
+
+%--------------------------------------------------------------------
+\section{Discrete null lattice and mode counting}
+
+\paragraph{Stars-and-bars on the $3$D null shell.}
+At integer shell $m\ge 0$, count nonnegative integer triples $(x,y,z)$ with $x+y+z=m$. The textbook stars-and-bars cardinality is $\binom{m+2}{2}$. The Lean development tracks the numerator $(m+2)(m+1)$ and absorbs the factor $\tfrac12$ in related normalisations.
+
+\begin{equation}
+  N_{\mathrm{simp}}(m) \;=\; (m+2)(m+1).
+\end{equation}
+
+\paragraph{Cumulative shells.}
+Summing through shell $n$ satisfies a hockey-stick identity that packages the binomial $\binom{n+3}{3}$:
+
+\begin{equation}
+  3\sum_{m=0}^{n} N_{\mathrm{simp}}(m) \;=\; (n+1)(n+2)(n+3),
+  \qquad
+  \sum_{m=0}^{n} N_{\mathrm{simp}}(m) \;=\; \frac{(n+1)(n+2)(n+3)}{3}.
+\end{equation}
+
+%--------------------------------------------------------------------
+\section{Octonionic lift: available and new modes}
+
+\paragraph{HQIV light-cone axiom (combinatorial).}
+Newly available modes at shell $m$ combine the $3$D simplex count with an octonion factor $8$. Writing $C(m)=\binom{m+2}{2}=N_{\mathrm{simp}}(m)/2$,
+
+\begin{equation}
+  A(m) \;=\; 8\,C(m) \;=\; 4\,(m+2)(m+1).
+\end{equation}
+
+\paragraph{Incremental ``new modes''.}
+For $m\ge 1$, the increment obeys a linear law in the formal development:
+
+\begin{equation}
+  \Delta A(m+1) \;=\; A(m+1)-A(m) \;=\; 8\,(m+2).
+\end{equation}
+
+%--------------------------------------------------------------------
+\section{Lattice ratio and the curvature-imprint exponent}
+
+\paragraph{Rational $\alpha$ from the ladder.}
+Define the shell-wise lattice ratio (denominator uses the cumulative simplex sum $S(n)=\sum_{m\le n}N_{\mathrm{simp}}(m)$):
+
+\begin{equation}
+  r(n) \;=\; \frac{(n+1)(n+2)(n+3)}{5\,S(n)}.
+\end{equation}
+The hockey-stick identity forces $r(n)=3/5$ for every $n$ in the Lean proof, matching the fixed constant $\alpha=0.60=3/5$ used in the curvature density.
+
+\paragraph{Per-shell curvature density and $\delta_E$.}
+Sampling a continuous template at integer shells $x=m+1$,
+
+\begin{equation}
+  \rho(x) \;=\; \frac{1}{x}\Bigl(1+\alpha\ln x\Bigr),
+  \qquad
+  \sigma(m) \;=\; \rho(m+1) \;=\; \frac{1}{m+1}\Bigl(1+\alpha\ln(m+1)\Bigr).
+\end{equation}
+
+\paragraph{Combinatorial curvature norm (cube $\times$ octonion $\times$ geometry).}
+Six directions from a $3$D cube ($\pm$ along each axis), raised to the $7$ imaginary octonion dimensions, times the half-diagonal $\sqrt{3}$ of the unit cube:
+
+\begin{equation}
+  \mathcal{N}_{\mathrm{curv}} \;=\; 6^{7}\sqrt{3} \;=\; 279\,936\,\sqrt{3}.
+\end{equation}
+
+\paragraph{Per-shell imprint.}
+\begin{equation}
+  \delta_E(m) \;=\; \mathcal{N}_{\mathrm{curv}}\,\sigma(m).
+\end{equation}
+
+\paragraph{Horizon-dependent curvature ratio.}
+For a reference horizon $N$ with positive partial integral $I(N)=\sum_{m<N}|\sigma(m)|$,
+
+\begin{equation}
+  \Omega_k(n;N) \;=\; \frac{I(n)}{I(N)} \quad\text{(when }I(N)>0\text{)}.
+\end{equation}
+
+%--------------------------------------------------------------------
+\section{Octonions as \texorpdfstring{$\mathbb{R}^8$}{R8} with left-multiplication matrices}
+
+\paragraph{Carrier and inner product.}
+Octonions are realised as vectors $x\in\mathbb{R}^8\cong\mathrm{Fin}\,8\to\mathbb{R}$ with basis $e_0,\ldots,e_7$. Multiplication uses fixed left-multiplication matrices $L(e_i)$ (from the generator module). The Euclidean octonion inner product is
+
+\begin{equation}
+  \langle x,y\rangle \;=\; \sum_{k=0}^{7} x_k\,y_k.
+\end{equation}
+
+\paragraph{Norm preservation.}
+Each nontrivial imaginary left multiplier $L(e_i)$ preserves the Euclidean sum of squares; $L(e_0)$ is the identity. This is the analytic backbone for octonion-valued digital amplitudes.
+
+%--------------------------------------------------------------------
+\section{Digital quantum states on the angular ladder}
+
+\paragraph{Harmonic index and dimension.}
+Fix cutoff $L$. Angular indices are pairs $(\ell,m)$ with $\ell\in\{0,\ldots,L\}$ and $m$ ranging over $2\ell+1$ values, matching spherical-harmonic degeneracy:
+
+\begin{equation}
+  |\mathcal{H}_L| \;=\; \sum_{\ell=0}^{L} (2\ell+1) \;=\; (L+1)^2.
+\end{equation}
+
+\paragraph{Rational temperature shadow.}
+The rational ladder weight mirrors the continuous shell factor $\phi(m)=2(m+1)$:
+
+\begin{equation}
+  \varphi_{\mathrm{rat}}(m) \;=\; 2(m+1)\in\mathbb{Q}.
+\end{equation}
+
+\paragraph{State space and informational inner product.}
+A digital state assigns an octonion $8$-vector to each harmonic slot:
+
+\begin{equation}
+  f:\mathcal{H}_L \to \mathbb{R}^8,
+  \qquad
+  \langle\!\langle f,g\rangle\!\rangle \;=\; \sum_{ij\in\mathcal{H}_L} \langle f(ij),g(ij)\rangle.
+\end{equation}
+
+\paragraph{Normalisation.}
+$\|f\|^2=\langle\!\langle f,f\rangle\!\rangle$; ``physical'' digital kets satisfy $\|f\|^2=1$.
+
+%--------------------------------------------------------------------
+\section{Digital gates and time evolution}
+
+\paragraph{HQIV gate.}
+A digital gate is a bijection $U$ on $\mathcal{H}_L\to\mathbb{R}^8$ states that preserves $\langle\!\langle\cdot,\cdot\rangle\!\rangle$. Consequently it preserves $\|\cdot\|^2$.
+
+\paragraph{Examples in the scaffold.}
+Phase flips on one mode, swaps of modes sharing the same $\ell$ (so $\varphi_{\mathrm{rat}}$ weights match across the swap), octonion left actions that preserve Euclidean energy on each slot, and a finite $4$-point permutation modelling a CNOT-type swap on a binary sub-register.
+
+\paragraph{Hadamard shell identity (rational, no $\sqrt{2}$).}
+For $v\in\mathbb{Q}^2$,
+
+\begin{equation}
+  (v_0+v_1)^2 + (v_0-v_1)^2 \;=\; 2\,(v_0^2+v_1^2).
+\end{equation}
+
+\paragraph{Finite digital evolution.}
+A list of gates $(U_1,\ldots,U_T)$ acts by composition (first in the list applied first):
+
+\begin{equation}
+  f \;\mapsto\; U_T\circ\cdots\circ U_1\,f,
+  \qquad
+  \|U_T\cdots U_1 f\|^2=\|f\|^2.
+\end{equation}
+
+\paragraph{Angular-momentum proxy.}
+A combinatorial analogue of an $\ell$-weighted moment uses the same octonion energy $\langle f(ij),f(ij)\rangle$ per slot:
+
+\begin{equation}
+  \mathcal{L}[f] \;=\; \sum_{ij\in\mathcal{H}_L}
+    \ell(\ell+1)\,\varphi_{\mathrm{rat}}(\ell)\,\langle f(ij),f(ij)\rangle,
+  \qquad \ell=\ell(ij).
+\end{equation}
+Permutations that preserve $\ell$ label leave $\mathcal{L}$ invariant.
+
+%--------------------------------------------------------------------
+\section{Octonionic Fourier scaffold (OFT)}
+
+\paragraph{Control register and exact phases.}
+A $Q=2^L$ control register supports inverse-QFT-style kernels with exact roots of unity:
+
+\begin{equation}
+  \omega_{Q}(x,y) \;=\; \exp\!\Bigl(-2\pi i\,\frac{xy}{Q}\Bigr).
+\end{equation}
+
+\paragraph{Period-$4$ interference (closed form on $\mathbb{Q}$).}
+For measurement index $y$,
+
+\begin{equation}
+  p_4(y) \;=\;
+  \begin{cases}
+    \tfrac14, & y\equiv 0 \pmod 4,\\
+    0, & \text{otherwise}.
+  \end{cases}
+\end{equation}
+
+\paragraph{Current digital hook.}
+The OFT gate wrapper is the identity on $\texttt{DiscreteState}\,L$ in the present scaffold; the analytic content is carried by $\omega_Q$ and the rational peak pattern $p_4$, used upstream in period-finding style oracles.
+
+%--------------------------------------------------------------------
+\section{OSHoracle: sparse, horizon-causal support}
+
+\paragraph{Sparse register.}
+At cutoff $L$, a sparse snapshot is a finite list of pairs $(i,a)$ with $i\in\mathbb{N}$ and octonion amplitude $a\in\mathbb{R}^8$. Indices wrap modulo $(L+1)^2$, matching the cardinal of $\mathcal{H}_L$.
+
+\begin{equation}
+  |\mathcal{B}_L| \;=\; (L+1)^2.
+\end{equation}
+
+\paragraph{Causal expansion.}
+One expansion step duplicates each ket onto itself and its forward neighbour in wrapped index space:
+
+\begin{equation}
+  (i,a) \;\mapsto\; \bigl(i\bmod |\mathcal{B}_L|,\,a\bigr),\;
+                 \bigl((i+1)\bmod |\mathcal{B}_L|,\,a\bigr).
+\end{equation}
+Hence support length doubles: $|\mathrm{expand}(R)|=2|R|$.
+
+\paragraph{Dense reconstruction and gate push-through.}
+Colliding wrapped indices sum octonion amplitudes. Applying a digital gate means: expand $\to$ build dense state $\to$ evolve with $U$ $\to$ push amplitudes back onto the expanded support list.
+
+\paragraph{Flipped support and pruning.}
+Compare index multisets before/after; keep only indices that appear/disappear. If the evolved support lies inside the ``flipped'' index set, pruning does not change the sparse Euclidean energy computed from $\langle\cdot,\cdot\rangle$ on listed amplitudes.
+
+\paragraph{Practical little-$o$ bookkeeping (finite model).}
+With the ad hoc finite predicate $\mathrm{plo}(L,n)\equiv(n\le L)$, after one sparse gate step the pruned support length obeys
+
+\begin{equation}
+  \bigl|\mathrm{prune}(\mathrm{flip}(R,U R))\bigr|
+  \;\le\; \bigl|\mathrm{apply}(U,R)\bigr|
+  \;=\; 2|R|,
+\end{equation}
+so the pruned support remains $O(|R|)$ in this digital sense---a finite proxy for staying sub-exponential relative to exhaustive $2^L$ enumeration.
+
+%--------------------------------------------------------------------
+\section{Closing alignment}
+
+\paragraph{Bridge to lapse-corrected QM.}
+Casting the rational temperature weight recovers the auxiliary field shell factor used in continuum Schr\"odinger bookkeeping:
+
+\begin{equation}
+  \varphi_{\mathrm{rat}}(m) \;\text{ in }\mathbb{R}
+  \quad\text{matches}\quad
+  \phi_{\mathrm{shell}}(m).
+\end{equation}
+
+\paragraph{Monogamy hook.}
+Digital CKW steps reuse the $\eta$-mode monogamy rescaling lemmas: nonnegative tangle inputs stay in the corrected CKW cone when scaled by the mode-wise $\eta$ factors proved in the monogamy module.
+
+\end{document}
