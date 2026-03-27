@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.2.28)  25 MAR 2026 20:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.2.28)  27 MAR 2026 03:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -343,24 +343,24 @@ File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
 (./octonion_lightcone_to_oshoracle.aux)
 \openout1 = `octonion_lightcone_to_oshoracle.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 21.
-LaTeX Font Info:    ... okay on input line 21.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
@@ -404,19 +404,19 @@ e
 \Gin@req@height=\dimen175
 \Gin@req@width=\dimen176
 )
-LaTeX Info: Redefining \microtypecontext on input line 21.
-Package microtype Info: Applying patch `item' on input line 21.
-Package microtype Info: Applying patch `toc' on input line 21.
-Package microtype Info: Applying patch `eqnum' on input line 21.
-Package microtype Info: Applying patch `footnote' on input line 21.
-Package microtype Info: Applying patch `verbatim' on input line 21.
+LaTeX Info: Redefining \microtypecontext on input line 22.
+Package microtype Info: Applying patch `item' on input line 22.
+Package microtype Info: Applying patch `toc' on input line 22.
+Package microtype Info: Applying patch `eqnum' on input line 22.
+Package microtype Info: Applying patch `footnote' on input line 22.
+Package microtype Info: Applying patch `verbatim' on input line 22.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `alltext-nott'.
-LaTeX Info: Redefining \showhyphens on input line 21.
+LaTeX Info: Redefining \showhyphens on input line 22.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -425,7 +425,7 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-Package hyperref Info: Link coloring OFF on input line 21.
+Package hyperref Info: Link coloring OFF on input line 22.
 
 (./octonion_lightcone_to_oshoracle.out) (./octonion_lightcone_to_oshoracle.out)
 \@outlinefile=\write3
@@ -465,7 +465,7 @@ Package hyperref Info: Link coloring OFF on input line 21.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 23.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 24.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
@@ -473,7 +473,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 23.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 24.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -488,7 +488,9 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             See the microtype manual for details.
  [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4]
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] [6] [7] [8
+] [9] [10]
+(./octonion_lightcone_to_oshoracle.bbl [11]) [12]
 (./octonion_lightcone_to_oshoracle.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
@@ -496,16 +498,16 @@ L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `octonion_lightcone_to_oshoracle.out' has not
  changed.
-(rerunfilecheck)             Checksum: A1EA043A812619459F89FE48729C24F7;2219.
+(rerunfilecheck)             Checksum: E15297E3AFE868DD69406499FD44922E;4400.
  ) 
 Here is how much of TeX's memory you used:
- 12852 strings out of 474222
- 199727 string characters out of 5748733
+ 13035 strings out of 474222
+ 201881 string characters out of 5748733
  1938975 words of memory out of 5000000
- 34795 multiletter control sequences out of 15000+600000
- 572540 words of font info for 133 fonts, out of 8000000 for 9000
+ 34828 multiletter control sequences out of 15000+600000
+ 575053 words of font info for 173 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,9n,79p,1028b,459s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,1734b,585s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texl
@@ -521,10 +523,11 @@ s/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
 hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/t
 exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texlive
 /texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on octonion_lightcone_to_oshoracle.pdf (4 pages, 212423 bytes).
+Output written on octonion_lightcone_to_oshoracle.pdf (12 pages, 269425 bytes).
+
 PDF statistics:
- 209 PDF objects out of 1000 (max. 8388607)
- 169 compressed objects within 2 object streams
- 66 named destinations out of 1000 (max. 500000)
- 28745 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 368 PDF objects out of 1000 (max. 8388607)
+ 318 compressed objects within 4 object streams
+ 133 named destinations out of 1000 (max. 500000)
+ 30321 words of extra memory for PDF output out of 35830 (max. 10000000)
 

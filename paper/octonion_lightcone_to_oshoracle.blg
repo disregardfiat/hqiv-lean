@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: octonion_lightcone_to_oshoracle.aux
+The style file: plain.bst
+Database file #1: octonion_lightcone_to_oshoracle_refs.bib
+You've used 17 entries,
+            2118 wiz_defined-function locations,
+            605 strings with 6467 characters,
+and the built_in function-call counts, 5111 in all, are:
+= -- 515
+> -- 195
+< -- 1
++ -- 85
+- -- 62
+* -- 325
+:= -- 855
+add.period$ -- 58
+call.type$ -- 17
+change.case$ -- 80
+chr.to.int$ -- 0
+cite$ -- 17
+duplicate$ -- 181
+empty$ -- 439
+format.name$ -- 62
+if$ -- 1066
+int.to.chr$ -- 0
+int.to.str$ -- 17
+missing$ -- 14
+newline$ -- 95
+num.names$ -- 34
+pop$ -- 91
+preamble$ -- 1
+purify$ -- 64
+quote$ -- 0
+skip$ -- 128
+stack$ -- 0
+substring$ -- 347
+swap$ -- 27
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 64
+warning$ -- 0
+while$ -- 54
+width$ -- 19
+write$ -- 197

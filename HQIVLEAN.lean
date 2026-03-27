@@ -23,9 +23,12 @@ import Hqiv.Physics.SM_GR_Unification
 import Hqiv.Physics.NuclearAndAtomicSpectra
 import Hqiv.ProteinResearch.ProteinAutoprocessing
 import Hqiv.ProteinResearch.ProteinQuantumExploration
+import Hqiv.ProteinResearch.AtomEnergyOSHoracleBridge
+import Hqiv.ProteinResearch.AdditiveFieldAndTorque
 import Hqiv.Physics.ForceCarrierWhip
 import Hqiv.QuantumMechanics.Schrodinger
 import Hqiv.QuantumMechanics.UncertaintyPrinciple
+import Hqiv.QuantumMechanics.AuxFieldBellDelayedChoice
 import Hqiv.QuantumOptics.HorizonQED
 import Hqiv.QuantumComputing.DiscreteQuantumState
 import Hqiv.QuantumComputing.DigitalGates

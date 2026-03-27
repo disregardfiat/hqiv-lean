@@ -1,0 +1,103 @@
+\begin{thebibliography}{10}
+
+\bibitem{aspect1982}
+Alain Aspect, Jean Dalibard, and G{\'e}rard Roger.
+\newblock Experimental test of bell's inequalities using time-varying
+  analyzers.
+\newblock {\em Physical Review Letters}, 49(25):1804--1807, 1982.
+
+\bibitem{baez2002octonions}
+John~C. Baez.
+\newblock The octonions.
+\newblock {\em Bulletin of the American Mathematical Society}, 39(2):145--205,
+  2002.
+
+\bibitem{bombelli1987}
+Luca Bombelli, Joohan Lee, David Meyer, and Rafael~D. Sorkin.
+\newblock Space-time as a causal set.
+\newblock {\em Physical Review Letters}, 59(5):521--524, 1987.
+
+\bibitem{bousso2002}
+Raphael Bousso.
+\newblock The holographic principle.
+\newblock {\em Reviews of Modern Physics}, 74(3):825--874, 2002.
+
+\bibitem{brodie2026}
+K.~Brodie.
+\newblock Derivation of quantised inertia from {Jacobson} thermodynamics.
+\newblock Zenodo, 2026.
+\newblock Backward-hemisphere overlap integral; factor $1/6$ and thermodynamic
+  coefficient $\gamma$.
+
+\bibitem{ckw2000}
+Valerie Coffman, Joydip Kundu, and William~K. Wootters.
+\newblock Distributed entanglement.
+\newblock {\em Physical Review A}, 61(5):052306, 2000.
+
+\bibitem{dirac1930}
+Paul Adrien~Maurice Dirac.
+\newblock {\em The Principles of Quantum Mechanics}.
+\newblock Clarendon Press, Oxford, 4th edition, 1930.
+\newblock Reprinted 1958, 1981.
+
+\bibitem{ettinger2026hqiv}
+Steven~Jr Ettinger.
+\newblock Horizon-quantized informational vacuum (hqiv): A unified framework
+  from causal horizon monogamy and discrete null-lattice combinatorics.
+\newblock Zenodo preprint, 2026.
+\newblock Version v2.
+
+\bibitem{freedman2019}
+Michael Freedman, Modjtaba Shokrian-Zini, and Zhenghan Wang.
+\newblock Quantum computing with octonions.
+\newblock {\em Peking Mathematical Journal}, 2:239--273, 2019.
+
+\bibitem{grover1996}
+Lov~K. Grover.
+\newblock A fast quantum mechanical algorithm for database search.
+\newblock In {\em Proceedings of the Twenty-Eighth Annual ACM Symposium on
+  Theory of Computing}, pages 212--219, 1996.
+\newblock arXiv:quant-ph/9605043.
+
+\bibitem{jacobson1995}
+Ted Jacobson.
+\newblock Thermodynamics of spacetime: The einstein equation of state.
+\newblock {\em Physical Review Letters}, 75(7):1260--1263, 1995.
+
+\bibitem{kim2000eraser}
+Yoon-Ho Kim, R.~Yu, S.~P. Kulik, Yanhua Shih, and Marlan~O. Scully.
+\newblock A delayed choice quantum eraser.
+\newblock {\em Physical Review Letters}, 84(1):1--5, 2000.
+
+\bibitem{shor1997}
+Peter~W. Shor.
+\newblock Polynomial-time algorithms for prime factorization and discrete
+  logarithms on a quantum computer.
+\newblock {\em SIAM Journal on Computing}, 26(5):1484--1509, 1997.
+\newblock Original FOCS 1994 version; arXiv:quant-ph/9508027.
+
+\bibitem{sun2025}
+Tai-Ping Sun et~al.
+\newblock Sparqsim: Simulating scalable quantum algorithms via sparse
+  representations, 2025.
+\newblock arXiv:2503.15118.
+
+\bibitem{susskind1994}
+Leonard Susskind.
+\newblock The world as a hologram.
+\newblock arXiv:hep-th/9409089, 1994.
+\newblock arXiv preprint.
+
+\bibitem{vonNeumann1955}
+John von Neumann.
+\newblock {\em Mathematical Foundations of Quantum Mechanics}.
+\newblock Princeton University Press, 1955.
+\newblock English translation of the 1932 German original; reprinted 1996.
+
+\bibitem{hadamardMatrixMathWorld}
+Eric~W. Weisstein.
+\newblock Hadamard matrix, 2002.
+\newblock From MathWorld---A Wolfram Resource; accessed via URL in
+  bibliography.
+
+\end{thebibliography}

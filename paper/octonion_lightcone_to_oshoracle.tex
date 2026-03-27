@@ -1,4 +1,4 @@
-% HQIV: from the octonionic light cone to digital quantum computing and the OSH oracle
+% HQIV: light-cone-derived auxiliary fields and sparse simulation
 % Companion narrative to Lean modules:
 %   Hqiv/Geometry/OctonionicLightCone.lean
 %   Hqiv/Algebra/OctonionBasics.lean
@@ -10,11 +10,12 @@
 \usepackage{microtype}
 \usepackage[hidelinks]{hyperref}
 \usepackage[margin=1in]{geometry}
+\setlength{\emergencystretch}{3em}
 
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
-\title{From the Octonionic Light Cone\\to Digital Quantum States and the OSH Oracle}
+\title{Light-Cone-Derived Auxiliary Fields Supply an Explicit Derived Interpretation of Quantum Superposition:\\Octonionic States, Lossless Bookkeeping, and Practical Sparse Simulation}
 \author{Steven Ettinger Jr}
 \date{\today}
 
@@ -22,24 +23,86 @@
 \maketitle
 
 \begin{abstract}
-This note is intentionally thin on prose: each block is a ``docstring'' (what the object \emph{means} in the formal layer) followed by the governing equations. It traces the discrete null lattice and octonion bookkeeping in \texttt{OctonionicLightCone}, the $\mathbb{R}^8$ gate scaffold in \texttt{OctonionBasics} / \texttt{DigitalGates}, and the horizon-causal sparse oracle layer in \texttt{OSHoracle}.
+This manuscript presents a Lean-aligned derivation showing that an auxiliary field and rapidity ladder induced directly from discrete null-lattice light-cone combinatorics supply an explicit, lossless interpretation of quantum superposition on an octonionic $\mathbb{R}^8$ carrier, while simultaneously reproducing all inner-product invariants of standard quantum mechanics and enabling an exact sparse horizon-causal update rule for efficient classical simulation in structured regimes. The construction is a representation-level reformulation that recovers the algebraic structure of quantum mechanics at the finite digital level and supplies a practical sparse-update pipeline; it does not claim new quantum algorithms or modifications to QM observables.
 \end{abstract}
 
 \medskip
 \noindent\textbf{Repository.} \url{https://github.com/disregardfiat/hqiv-lean}
+\par\noindent\textbf{Versioned environment.} Lean 4.28.0 development context; companion archive DOI: \url{https://doi.org/10.5281/zenodo.18899939}
+
+\noindent\textbf{Companion HQIV manuscript.} \cite{ettinger2026hqiv}
+
+%--------------------------------------------------------------------
+\section{Minimal light-cone axioms and the induced auxiliary-field bridge to digital quantum states}
+
+This manuscript is structured as a *directed derivation* from three core inputs, each mirrored by a dedicated Lean module:
+
+\paragraph{Motivation: why light-cone discretization and why octonions.}
+The starting point is an observer-centric past light-cone discretization because horizon thermodynamic and causal arguments naturally organize information by null-accessible shells \cite{jacobson1995,bombelli1987}. The shell-wise bookkeeping is then coupled to holographic-style information accounting \cite{susskind1994,bousso2002}. The octonionic factor $8$ is used because the carrier is explicitly $\mathbb{R}^8$ with seven imaginary directions supporting the non-associative division-algebra structure used in the gate scaffold; in this manuscript, $8$ is therefore not an arbitrary multiplier but the chosen algebraic carrier dimension \cite{baez2002octonions,freedman2019}. The companion HQIV line of work provides the broader geometric/physical context for this choice, including thermodynamic horizon-based inertia/GR-side derivations in companion materials \cite{ettinger2026hqiv,brodie2026}.
+
+\paragraph{Axiomatic representation stance.}
+In this work, the cosmic horizon (or, locally, an accelerated Rindler horizon) is treated as the natural infrared cutoff of the model. Under that stance, the detailed physical provenance of the "$3$D null-lattice + octonion-$8$" axiom is secondary to invariant recovery: any minimal combinatorial carrier that reproduces the light-cone mode count, the curvature-imprint exponent $\alpha=3/5$, and the auxiliary-field ladder $\phi(m)=2(m+1)$ will converge to the same invariant structure and sparse-update pipeline. This math-first reading is deliberate: the axioms are taken as the defining representation of the horizon-quantized informational vacuum (HQIV), while the companion manuscripts provide the broader geometric/thermodynamic reading for readers who prefer that direction of interpretation \cite{ettinger2026hqiv,brodie2026}.
+
+\paragraph{Axiom 1 (Lightcone with octonionic degrees of freedom).}
+At each discrete radial step $m$ on the observer past light-cone, the newly available horizon modes are governed by a single combinatorial rule:
+the $3$D null-lattice stars-and-bars count for $x+y+z=m$ is multiplied by the octonion factor $8$.
+In Lean, this appears as the light-cone mode axiom defining \texttt{available\_modes} and \texttt{new\_modes} in \texttt{Hqiv/Geometry/OctonionicLightCone}.
+After the fixed normalization conventions, this yields the working shell formulas used throughout the paper:
+\[
+  A(m) = 8\dbinom{m+2}{2} = 4(m+2)(m+1),
+\]
+and the per-shell incremental growth $\Delta A(m+1)=8(m+2)$.
+
+\paragraph{Axiom 2 (Monogamy / CKW baseline).}
+For three-party tangles, we start from the standard CKW-form monogamy constraint \cite{ckw2000}
+\[
+  \tau_{AB}+\tau_{AC}\le \tau_{A|BC},
+\]
+and then impose the HQIV discrete-light-cone correction by rescaling the effective pairwise budget with a shell factor derived from lightcone mode weights.
+In Lean, this correction is expressed via \texttt{etaMode} (mode correction) and the $\phi$-augmented variant via \texttt{phi\_of\_shell}, in \texttt{Hqiv/QuantumMechanics/MonogamyTangles}.
+\[
+  \eta_{\mathrm{mode}}(m)=\frac{\text{new\_modes}(m)}{\text{available\_modes}(\text{referenceM})},
+  \qquad
+  \eta_{\phi}(m)=\frac{\eta_{\mathrm{mode}}(m)}{\phi(m)},
+\]
+so the corrected CKW form is read as
+\[
+  \eta_{\phi}(m)\tau_{AB}+\eta_{\phi}(m)\tau_{AC}\le \eta_{\phi}(m)\tau_{A|BC}.
+\]
+The shell factor is natural in this construction because both mode growth and $\phi$-weight are derived from the same shell ladder, rather than introduced as independent fit parameters.
+
+\paragraph{Axiom 3 (Starting informational energy = 1).}
+Digital states live on a finite angular ladder with an octonion Euclidean inner product per ladder slot.
+The foundational normalization is that the informational-energy norm of a state equals one:
+\[
+  \|f\|^2 \;=\; \sum_{ij\in\mathcal{H}_L}\langle f(ij),f(ij)\rangle \;=\; 1.
+\]
+In Lean, this is encoded as the predicate \texttt{IsNormalized} in the
+\texttt{DiscreteQuantumState} module.
+This normalization is the condition that makes admissible digital evolutions behave as norm-preserving (unitary-style) operators on the finite model.
+
+\paragraph{Roadmap.}
+From these axioms, the derivation proceeds in the same order as the remaining sections:
+\begin{enumerate}
+  \item Lightcone mode axiom $\Rightarrow$ shell combinatorics $\Rightarrow$ curvature-imprint normalization and auxiliary-field/rapidity ladder.
+  \item Lightcone mode weights $\Rightarrow$ shell factors (including the monogamy correction $\eta$ and its $\phi$-augmented form).
+  \item Starting-energy normalization $\Rightarrow$ consistent superposition interpretation on the $\mathbb{R}^8$ octonionic carrier.
+  \item Octonion left-multiplication $\Rightarrow$ algebraic gate scaffolding.
+  \item Sparse horizon-causal register evolution $\Rightarrow$ expand/evolve/prune bookkeeping.
+\end{enumerate}
 
 %--------------------------------------------------------------------
 \section{Discrete null lattice and mode counting}
 
 \paragraph{Stars-and-bars on the $3$D null shell.}
-At integer shell $m\ge 0$, count nonnegative integer triples $(x,y,z)$ with $x+y+z=m$. The textbook stars-and-bars cardinality is $\binom{m+2}{2}$. The Lean development tracks the numerator $(m+2)(m+1)$ and absorbs the factor $\tfrac12$ in related normalisations.
+At integer shell $m\ge 0$, count nonnegative integer triples $(x,y,z)$ with $x+y+z=m$. The textbook stars-and-bars cardinality is $\dbinom{m+2}{2}$. The Lean development tracks the numerator $(m+2)(m+1)$ and absorbs the factor $\tfrac12$ in related normalisations.
 
 \begin{equation}
   N_{\mathrm{simp}}(m) \;=\; (m+2)(m+1).
 \end{equation}
 
 \paragraph{Cumulative shells.}
-Summing through shell $n$ satisfies a hockey-stick identity that packages the binomial $\binom{n+3}{3}$:
+Summing through shell $n$ satisfies a hockey-stick identity that packages the binomial $\dbinom{n+3}{3}$:
 
 \begin{equation}
   3\sum_{m=0}^{n} N_{\mathrm{simp}}(m) \;=\; (n+1)(n+2)(n+3),
@@ -51,7 +114,7 @@ Summing through shell $n$ satisfies a hockey-stick identity that packages the bi
 \section{Octonionic lift: available and new modes}
 
 \paragraph{HQIV light-cone axiom (combinatorial).}
-Newly available modes at shell $m$ combine the $3$D simplex count with an octonion factor $8$. Writing $C(m)=\binom{m+2}{2}=N_{\mathrm{simp}}(m)/2$,
+Newly available modes at shell $m$ combine the $3$D simplex count with an octonion factor $8$. Writing $C(m)=\dbinom{m+2}{2}=N_{\mathrm{simp}}(m)/2$,
 
 \begin{equation}
   A(m) \;=\; 8\,C(m) \;=\; 4\,(m+2)(m+1).
@@ -90,6 +153,7 @@ Six directions from a $3$D cube ($\pm$ along each axis), raised to the $7$ imagi
 \begin{equation}
   \mathcal{N}_{\mathrm{curv}} \;=\; 6^{7}\sqrt{3} \;=\; 279\,936\,\sqrt{3}.
 \end{equation}
+This can be read as ``direction count'' $\times$ ``octonion-imaginary lift'' $\times$ ``rapidity geometric scale'': $(6^7)\cdot\sqrt{3}$.
 
 \paragraph{Per-shell imprint.}
 \begin{equation}
@@ -116,6 +180,29 @@ Octonions are realised as vectors $x\in\mathbb{R}^8\cong\mathrm{Fin}\,8\to\mathb
 \paragraph{Norm preservation.}
 Each nontrivial imaginary left multiplier $L(e_i)$ preserves the Euclidean sum of squares; $L(e_0)$ is the identity. This is the analytic backbone for octonion-valued digital amplitudes.
 
+\paragraph{Non-associativity remark.}
+Octonion non-associativity does not obstruct the finite gate layer used here because updates are implemented through fixed left-multiplication linear maps (matrices) composed as linear operators on the state carrier. In other words, associativity is required at the level of operator composition, not at the raw octonion product level; this is why norm-preserving gate construction can remain well-defined in the present scaffold \cite{baez2002octonions,freedman2019}.
+
+\paragraph{Dependency boundary (important).}
+The matrix identities for left multiplication are algebraic inputs from the octonion/Fano representation and do not require an auxiliary-field hypothesis to be stated. In the Lean stack, this is the role of `OctonionLeftMultiplication` and `OctonionBasics`. However, the \emph{physical weighting} attached to those carriers in HQIV evolution---shell factors, effective energy scales, and rapidity-linked curvature bookkeeping---does depend on the same light-cone-derived ladder that fixes the auxiliary field.
+
+%--------------------------------------------------------------------
+\section{Auxiliary field and rapidity derivation bridge}
+
+\paragraph{Auxiliary field is derived, not fitted.}
+The auxiliary field is tied directly to the shell temperature ladder:
+\[
+  T(m)=\frac{T_{\mathrm{Pl}}}{m+1},\qquad
+  \phi(m)=\frac{2}{T(m)}=2(m+1),
+\]
+so $\phi$ is induced by the same discrete light-cone structure used for mode counting, rather than inserted as an independent parameter.
+
+\paragraph{Rapidity/geometry factor in the same chain.}
+The curvature-imprint normalization uses the formal geometric factor $6^7\sqrt{3}$, where $\sqrt{3}$ is the unit-cube half-diagonal (rapidity-lattice geometric contribution) and $6^7$ is the cube-direction/octet dimensional lift. This places auxiliary-field scaling and rapidity geometry in a single derivation path from the light-cone combinatorics.
+
+\paragraph{Why this matters for sparse horizon-causal updates.}
+Because carrier algebra (left multiplication), shell weighting ($\phi$ ladder), and curvature/rapidity normalization are sourced from one formal chain, sparse horizon-causal evolution is presented as exact model bookkeeping in the proved finite setting, not a heuristic shortcut.
+
 %--------------------------------------------------------------------
 \section{Digital quantum states on the angular ladder}
 
@@ -130,7 +217,7 @@ Fix cutoff $L$. Angular indices are pairs $(\ell,m)$ with $\ell\in\{0,\ldots,L\}
 The rational ladder weight mirrors the continuous shell factor $\phi(m)=2(m+1)$:
 
 \begin{equation}
-  \varphi_{\mathrm{rat}}(m) \;=\; 2(m+1)\in\mathbb{Q}.
+  \phi_{\mathrm{rat}}(m) \;=\; 2(m+1)\in\mathbb{Q}.
 \end{equation}
 
 \paragraph{State space and informational inner product.}
@@ -145,21 +232,39 @@ A digital state assigns an octonion $8$-vector to each harmonic slot:
 \paragraph{Normalisation.}
 $\|f\|^2=\langle\!\langle f,f\rangle\!\rangle$; ``physical'' digital kets satisfy $\|f\|^2=1$.
 
+\paragraph{Correspondence back to standard complex-Hilbert bookkeeping.}
+A practical embedding map is obtained by pairing real carrier components into complex amplitudes on each slot, e.g.
+\[
+  \Pi(f)(ij) = \bigl(f_0(ij)+i f_1(ij),\, f_2(ij)+i f_3(ij),\, f_4(ij)+i f_5(ij),\, f_6(ij)+i f_7(ij)\bigr)\in\mathbb{C}^4.
+\]
+Under this projection, the slotwise Euclidean norm equals the complex $\ell_2$ norm of the embedded amplitudes, so the global discrete norm induces standard finite-dimensional Hilbert bookkeeping. Mixed-state bookkeeping is then obtained in the usual way from projected pure states, $\rho=\sum_a p_a \left|\Pi(f_a)\right\rangle\!\left\langle\Pi(f_a)\right|$, so the finite octonionic carrier can be read as a real lift compatible with conventional density-operator practice \cite{vonNeumann1955,dirac1930}.
+
+\paragraph{Small global example (entangled two-slot state).}
+For two selected slots $s_0,s_1$, define projected amplitudes
+\[
+  \Pi(f)(s_0)=\frac{1}{\sqrt{2}}(1,0,0,0),\qquad
+  \Pi(f)(s_1)=\frac{1}{\sqrt{2}}(0,1,0,0),
+\]
+with all other slots zero. This is the finite-ladder analogue of a Bell-like superposition in the projected complex model; norm preservation under admissible gates follows from the same inner-product invariants stated above.
+
 %--------------------------------------------------------------------
 \section{Digital gates and time evolution}
 
 \paragraph{HQIV gate.}
-A digital gate is a bijection $U$ on $\mathcal{H}_L\to\mathbb{R}^8$ states that preserves $\langle\!\langle\cdot,\cdot\rangle\!\rangle$. Consequently it preserves $\|\cdot\|^2$.
+A digital gate is an inner-product-preserving bijection $U$ acting on digital states $f:\mathcal{H}_L\to\mathbb{R}^8$, meaning it preserves the discrete informational inner product $\langle\!\langle\cdot,\cdot\rangle\!\rangle$. In orthodox quantum mechanics, norm-preserving evolution is represented by unitary operators; in this finite real-carrier model, admissible gate maps play the same role \cite{vonNeumann1955,dirac1930}. Consequently it preserves $\|\cdot\|^2$.
+This operator-invariant requirement is also the guiding constraint in octonionic quantum-computing formalisms, where evolution must preserve the relevant octonion inner-product/norm structure \cite{freedman2019}.
 
 \paragraph{Examples in the scaffold.}
-Phase flips on one mode, swaps of modes sharing the same $\ell$ (so $\varphi_{\mathrm{rat}}$ weights match across the swap), octonion left actions that preserve Euclidean energy on each slot, and a finite $4$-point permutation modelling a CNOT-type swap on a binary sub-register.
+We illustrate the allowed gate primitives with four scaffold examples: phase flips on a single mode; swaps of modes sharing the same $\ell$ (so $\phi_{\mathrm{rat}}$ weighting is consistent across the swap); octonion left actions that preserve Euclidean octonion norm on each slot; and a finite $4$-point permutation representing a CNOT-type swap on a binary sub-register.
 
 \paragraph{Hadamard shell identity (rational, no $\sqrt{2}$).}
-For $v\in\mathbb{Q}^2$,
+On the two-dimensional rational subspace spanned by a pair of slots, a (conventionally unnormalized) Hadamard transform mixes amplitudes. Writing $v=(v_0,v_1)\in\mathbb{Q}^2$,
 
 \begin{equation}
   (v_0+v_1)^2 + (v_0-v_1)^2 \;=\; 2\,(v_0^2+v_1^2).
 \end{equation}
+
+This is the norm-preservation relation associated with the $2\times2$ Hadamard matrix orthogonality; we keep the "no $\sqrt{2}$" convention so all weights stay rational and the known factor of $2$ is tracked explicitly \cite{hadamardMatrixMathWorld}. Combined with the global normalization condition, this gives a finite-model superposition-mixing gate consistent with orthodox QM operator structure \cite{vonNeumann1955,dirac1930}.
 
 \paragraph{Finite digital evolution.}
 A list of gates $(U_1,\ldots,U_T)$ acts by composition (first in the list applied first):
@@ -175,7 +280,7 @@ A combinatorial analogue of an $\ell$-weighted moment uses the same octonion ene
 
 \begin{equation}
   \mathcal{L}[f] \;=\; \sum_{ij\in\mathcal{H}_L}
-    \ell(\ell+1)\,\varphi_{\mathrm{rat}}(\ell)\,\langle f(ij),f(ij)\rangle,
+    \ell(\ell+1)\,\phi_{\mathrm{rat}}(\ell)\,\langle f(ij),f(ij)\rangle,
   \qquad \ell=\ell(ij).
 \end{equation}
 Permutations that preserve $\ell$ label leave $\mathcal{L}$ invariant.
@@ -205,7 +310,26 @@ For measurement index $y$,
 The OFT gate wrapper is the identity on $\texttt{DiscreteState}\,L$ in the present scaffold; the analytic content is carried by $\omega_Q$ and the rational peak pattern $p_4$, used upstream in period-finding style oracles.
 
 %--------------------------------------------------------------------
-\section{OSHoracle: sparse, horizon-causal support}
+\section{Supplying an explicit derived interpretation of quantum superposition: sparse horizon-causal support pipeline}
+
+\paragraph{Demystifying the "oracle" language.}
+In this manuscript, the sparse horizon-causal update and pruning rule is a deterministic bookkeeping mechanism derived from the light-cone construction. It is not a quantum black-box oracle in the query-complexity sense, and it does not rely on measurement/collapse to justify simplification.
+
+\paragraph{Auxiliary-field demystification of superpositional oracles (main intent).}
+In algorithmic narratives, quantum "oracles" are often associated with opaque superpositional access. In this framework, the auxiliary field and rapidity-linked shell weights are derived from the same discrete light-cone bookkeeping that defines the digital state space. As a result, what would appear as oracle-like superposition is presented as a consequence of derived, lossless structure: dense admissible evolution and sparse-tracked evolution are connected by exact finite bookkeeping rather than heuristic compression. The sparse algorithmic form is therefore a by-product of demystifying superposition through the auxiliary-field/light-cone derivation.
+
+\paragraph{Bell/delayed-choice proof hooks from the AUX field module.}
+The Lean module \texttt{Hqiv/QuantumMechanics/AuxFieldBellDelayedChoice.lean} makes this demystification concrete in two algebraic proofs tied to the Bell and delayed-choice eraser experimental families \cite{aspect1982,kim2000eraser}. First, the AUX-scaled CHSH proxy is defined by
+\[
+  \mathrm{auxChsh}(m,S)=\frac{\phi(m)}{2}\,S,
+\]
+and with $\phi(m)=2(m+1)$ the closed form is $\mathrm{auxChsh}(m,S)=(m+1)S$ (\texttt{auxChsh\_closed\_form}). In particular, for baseline $S=2$, every shell $m\ge 1$ exceeds the local CHSH bound $2$ (\texttt{auxChsh\_violate\_local\_bound\_of\_one\_le}). Second, the delayed-choice eraser algebra is encoded by complementary coincidence channels and proves that singles are basis-independent after averaging (\texttt{singles\_independent\_of\_eraser\_choice}), while complementary channels carry opposite interference terms (\texttt{coincidence\_complementary}). In this manuscript's interpretation, these results support the claim that "oracle-like" superpositional behavior can be handled as explicit derived bookkeeping identities rather than opaque black-box postulates.
+
+\paragraph{Measurement/collapse and energy-balance theorems (new formal block).}
+The same module now includes a finite measurement block that separates what is forced conditionally from what is postulated. The linear-prediction theorem proves that a nontrivial two-component superposition does not map to a definite single-outcome state under linear calibrated prediction. Consequently, the collapse-requirement theorem shows that any definite-outcome post-state for nontrivial input must include an additional selection/collapse step (equivalently, nonlinearity beyond the linear calibrated map). On the energy side, the auxiliary-balance and redshift-balance theorems give explicit bookkeeping identities: apparent post-measurement deficits can be represented as auxiliary-channel transfer and/or redshift-channel accounting while retaining a closed conservation ledger in the model.
+
+\paragraph{Current Lean-provable answers to three open directions.}
+\textbf{Mixed states / density-operator direction:} in the current finite layer, convex-mixture closure is now formalized by dedicated two-component convex-mixture theorems for delayed-choice singles invariance and for $\eta_\phi$-corrected CKW closure at fixed shell. This is a concrete mixed-state-style bridge, though a full CPTP/density-operator sparse-pruning theory remains open. \textbf{Beyond $\eta$-corrected CKW:} these results establish closure properties but do not yet constitute a new octonionic entanglement monotone family. \textbf{Continuum/QFT limit:} the current Lean bridge is asymptotic/combinatorial via shell-to-continuum matching (e.g., continuity of the curvature-density field and the spherical-harmonic ratio limit); full renormalization/locality recovery is identified as the next theorem-development stage.
 
 \paragraph{Sparse register.}
 At cutoff $L$, a sparse snapshot is a finite list of pairs $(i,a)$ with $i\in\mathbb{N}$ and octonion amplitude $a\in\mathbb{R}^8$. Indices wrap modulo $(L+1)^2$, matching the cardinal of $\mathcal{H}_L$.
@@ -229,8 +353,8 @@ Colliding wrapped indices sum octonion amplitudes. Applying a digital gate means
 \paragraph{Flipped support and pruning.}
 Compare index multisets before/after; keep only indices that appear/disappear. If the evolved support lies inside the ``flipped'' index set, pruning does not change the sparse Euclidean energy computed from $\langle\cdot,\cdot\rangle$ on listed amplitudes.
 
-\paragraph{Practical little-$o$ bookkeeping (finite model).}
-With the ad hoc finite predicate $\mathrm{plo}(L,n)\equiv(n\le L)$, after one sparse gate step the pruned support length obeys
+\paragraph{Support-size complexity bound (finite model).}
+With the finite predicate $\mathrm{plo}(L,n)\equiv(n\le L)$, after one sparse gate step the pruned support length obeys
 
 \begin{equation}
   \bigl|\mathrm{prune}(\mathrm{flip}(R,U R))\bigr|
@@ -240,18 +364,78 @@ With the ad hoc finite predicate $\mathrm{plo}(L,n)\equiv(n\le L)$, after one sp
 so the pruned support remains $O(|R|)$ in this digital sense---a finite proxy for staying sub-exponential relative to exhaustive $2^L$ enumeration.
 
 %--------------------------------------------------------------------
-\section{Closing alignment}
+\section{Positioning against existing literature}
+
+\paragraph{Operator-theoretic equivalence (scope and limits).}
+The formal objects here preserve inner-product structure and norm under admissible gate maps, which is the key invariant expected in orthodox formulations of quantum mechanics \cite{vonNeumann1955,dirac1930}. In this sense, the digital octonion carrier is an equivalent representation layer for finite-state evolution, not a contradiction of the standard operator framework. Because the auxiliary field/rapidity factors are derived from the same light-cone ladder used to define the state space, the map between dense and sparse-tracked evolution is lossless in the proved finite setting.
+
+\paragraph{Relation to standard quantum algorithm primitives.}
+Period-structured interference terms and search-style gate scaffolding are aligned with the same high-level motifs used in Shor- and Grover-type analyses \cite{shor1997,grover1996}. At the representation level, a quantum gate is specified as a single unitary operation on the Hilbert state, while classical dense simulation must explicitly update all represented amplitudes and therefore scales with state size. The present manuscript does \emph{not} claim asymptotic improvement over those baselines in the fully general case; instead it supplies a Lean-grounded encoding in which sparse support transformations can be studied with explicit combinatorial control.
+
+\paragraph{Classical transistor advantage in prunable regimes.}
+The sparse horizon-causal path exploits deterministic support pruning in the formal sparse update chain (expand, reconstruct, evolve, flip, prune). This pruning mechanism is a classical representational advantage for selected workloads: when support remains structured and sparse, transistor-based execution can avoid dense-state work and reduce classical simulation cost relative to brute-force updates. The claim is domain-limited and empirical, but it identifies a concrete regime where practical simulation-cost reductions are possible without requiring quantum-hardware measurement cycles, where collapse constrains direct reuse of intermediate superpositions.
+
+\paragraph{Relation to octonionic quantum computing literature.}
+The octonion-valued state/gate perspective is conceptually consistent with prior octonionic quantum-computing proposals \cite{freedman2019}. Our emphasis differs by coupling the algebraic layer to a discrete shell ladder and to a sparse update pipeline intended for executable finite-model experiments.
+
+\paragraph{Sparse simulation context.}
+Recent sparse-simulation work indicates that support-aware representations can materially reduce simulation cost in favorable regimes \cite{sun2025}. The sparse horizon-causal update pipeline is positioned in that context as a formally constrained sparse dataflow with exact bookkeeping in the model; empirical benchmarking remains necessary only for performance scaling claims.
+
+%--------------------------------------------------------------------
+\section{Technical benchmark: Python baseline vs. sparse horizon-causal path}
+
+\paragraph{Goal.}
+Compare wall-clock runtime and peak memory for a matched finite workload executed via:
+\begin{enumerate}
+  \item a dense Python baseline (array-backed state update), and
+  \item a sparse horizon-causal path (expand, dense reconstruction, gate push-through, flip/prune).
+\end{enumerate}
+
+\paragraph{Protocol used in this study.}
+Using \texttt{scripts/benchmark\_protein\_osh\_vs\_dense.py}, we benchmarked matched workloads inspired by \texttt{AdditiveFieldAndTorque}: same shell map, additive-field kernel, torque-refresh cadence (\texttt{updateEvery=10}), and deterministic initial seeds. For each case, we ran a dense full-state update and a sparse horizon-causal update over identical step counts and reported median runtime across repeated trials.
+The per-step workload is protein-inspired mean-field energy bookkeeping with a causal-neighbor expansion update; it is therefore representative of sparse-support tracking workloads, not a universal proxy for all quantum-circuit families.
+
+\paragraph{Measured runtime results (median, ms).}
+\begin{center}
+\begin{tabular}{|r|r|r|r|r|r|r|}
+\hline
+$n_{\text{sites}}$ & steps & active frac & dense (ms) & sparse (ms) & speedup & final active \\
+\hline
+192 & 24 & 0.05 & 265.92 & 0.81 & 327.64$\times$ & 9 \\
+192 & 24 & 0.20 & 268.20 & 6.73 & 39.87$\times$ & 28 \\
+384 & 20 & 0.05 & 888.16 & 2.45 & 362.48$\times$ & 18 \\
+384 & 20 & 0.30 & 962.22 & 45.31 & 21.24$\times$ & 80 \\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Interpretation.}
+In these tested regimes, sparse horizon-causal bookkeeping is substantially faster than dense simulation, with advantage strongest when support remains sparse (small active fraction / small final active set). This result is computational and regime-dependent: it demonstrates practical simulation-cost reduction for structured sparse workloads, not a universal asymptotic speedup claim.
+Important open benchmarking items are: (i) scaling sweeps in harmonic cutoff $L$ and gate depth $T$, (ii) memory profile reporting alongside runtime, (iii) head-to-head comparison against optimized sparse simulators (decision-diagram, tensor-network, and stabilizer-specialized methods where applicable), and (iv) explicit edge-case reporting where support densifies and sparse overhead dominates.
+
+%--------------------------------------------------------------------
+\section{Closing alignment and honest conclusion}
 
 \paragraph{Bridge to lapse-corrected QM.}
-Casting the rational temperature weight recovers the auxiliary field shell factor used in continuum Schr\"odinger bookkeeping:
+Casting the rational temperature weight recovers the HQIV auxiliary-field shell factor used in Schr\"odinger-like continuum bookkeeping within this framework:
 
 \begin{equation}
-  \varphi_{\mathrm{rat}}(m) \;\text{ in }\mathbb{R}
+  \phi_{\mathrm{rat}}(m) \;\text{ in }\mathbb{R}
   \quad\text{matches}\quad
   \phi_{\mathrm{shell}}(m).
 \end{equation}
 
+\subsection{Recovery of standard QM and QFT}
+The present construction is scoped as a representation-level reformulation whose sole formal requirement is exact recovery of the algebraic structure and invariants of quantum mechanics (and, in the continuum limit, of quantum field theory) from the minimal light-cone axioms. At the finite digital level, admissible gates preserve the discrete informational inner product $\langle\!\langle\cdot,\cdot\rangle\!\rangle$ and the unit-norm condition $\|f\|^2 = 1$ (section 8), matching unitary evolution. The projection map $\Pi$ recovers complex Hilbert-space bookkeeping and standard density-operator practice on each slot. Mixed-state convex closure is already formalized via the lemmas \texttt{singles\_independent\_of\_eraser\_choice\_convex2} and \texttt{correctedCkwMonogamyPhi\_convex2} in the \texttt{AuxFieldBellDelayedChoice} module. In the continuum limit, shell-to-spherical-harmonic ratio and curvature-density matching lemmas in the \texttt{OctonionicLightCone} geometry module guarantee recovery of QFT dynamics away from the horizon. The cosmic horizon (or local Rindler horizons) supplies the natural infrared cutoff, with monogamy-pair shell factors carried by the same ladder bookkeeping; the derivation remains ultraviolet-finite by construction. Any bookkeeping resolution of known foundational questions (measurement/collapse, apparent energy deficits) is handled through the derived auxiliary-field and redshift channels in the new measurement block. The broader geometric and thermodynamic context appears in the companion HQIV manuscripts \cite{ettinger2026hqiv,brodie2026}; no modification of QM observables is claimed or required in this work.
+
 \paragraph{Monogamy hook.}
-Digital CKW steps reuse the $\eta$-mode monogamy rescaling lemmas: nonnegative tangle inputs stay in the corrected CKW cone when scaled by the mode-wise $\eta$ factors proved in the monogamy module.
+Digital CKW steps reuse the $\eta$-mode monogamy rescaling lemmas: nonnegative tangle inputs stay in the corrected CKW cone when scaled by the mode-wise $\eta$ factors proved in the monogamy module \cite{ckw2000}.
+
+\paragraph{Conclusion.}
+What is established in this work is a coherent and Lean-traceable formal pipeline from shell combinatorics to octonion-carried digital states and sparse update bookkeeping, with aux/field/rapidity terms derived from the same light-cone structure. Within that formal scope, the auxiliary-field/light-cone construction demystifies superposition-based "oracle" behavior as lossless derived bookkeeping; sparse horizon-causal updating is the by-product realization. In particular, the auxiliary field, often introduced as a calculational device in path-integral-style formulations, is treated here as a derived consequence of expanding light-cone shell structure. The method is therefore lossless (not heuristic) and provides a mathematical interpretation of superposition consistent with standard QM invariants. What remains open is not formal consistency but performance characterization: whether, and in which regimes, this sparse realization delivers practical runtime or memory advantages over dense baselines. The framework therefore recovers the algebraic structure of standard quantum mechanics while delivering a practical, classical sparse-simulation pipeline whose regime-dependent speedups are purely representational.
+
+\section*{References}
+\bibliographystyle{plain}
+\bibliography{octonion_lightcone_to_oshoracle_refs}
 
 \end{document}
