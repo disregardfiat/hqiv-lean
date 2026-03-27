@@ -318,6 +318,9 @@ In this manuscript, the sparse horizon-causal update and pruning rule is a deter
 \paragraph{Auxiliary-field demystification of superpositional oracles (main intent).}
 In algorithmic narratives, quantum "oracles" are often associated with opaque superpositional access. In this framework, the auxiliary field and rapidity-linked shell weights are derived from the same discrete light-cone bookkeeping that defines the digital state space. As a result, what would appear as oracle-like superposition is presented as a consequence of derived, lossless structure: dense admissible evolution and sparse-tracked evolution are connected by exact finite bookkeeping rather than heuristic compression. The sparse algorithmic form is therefore a by-product of demystifying superposition through the auxiliary-field/light-cone derivation.
 
+\paragraph{Physical and representational angle: implications for the explicit derived interpretation.}
+With full octonion-generator closure reused from the established SO(8) Lie scaffold (\texttt{GeneratorsLieClosure}/\texttt{SO8Closure}), the auxiliary field is not merely a weighting factor; it sits inside a closed algebraic structure. In that reading, superposition on the octonionic carrier inherits a lossless sparse-tracking rule: expand/prune updates remain inside the admissible closure class at each finite step. Oracle-like behavior therefore reduces to deterministic $\phi$-weighted support operations rather than approximation. This also sharpens the demystification claim: Bell/CHSH-proxy and delayed-choice algebra are placed on a closure-complete base, while the measurement block closes the ledger through explicit selection, auxiliary transfer, and redshift/birefringence channels without leaving the octonionic carrier. The projection $\Pi$ still recovers standard complex Hilbert-space bookkeeping, but the underlying closed $\mathbb{O}$ lift preserves the same invariants in real-carrier form.
+
 \paragraph{Bell/delayed-choice proof hooks from the AUX field module.}
 The Lean module \texttt{Hqiv/QuantumMechanics/AuxFieldBellDelayedChoice.lean} makes this demystification concrete in two algebraic proofs tied to the Bell and delayed-choice eraser experimental families \cite{aspect1982,kim2000eraser}. First, the AUX-scaled CHSH proxy is defined by
 \[
@@ -329,7 +332,10 @@ and with $\phi(m)=2(m+1)$ the closed form is $\mathrm{auxChsh}(m,S)=(m+1)S$ (\te
 The same module now includes a finite measurement block that separates what is forced conditionally from what is postulated. The linear-prediction theorem proves that a nontrivial two-component superposition does not map to a definite single-outcome state under linear calibrated prediction. Consequently, the collapse-requirement theorem shows that any definite-outcome post-state for nontrivial input must include an additional selection/collapse step (equivalently, nonlinearity beyond the linear calibrated map). On the energy side, the auxiliary-balance and redshift-balance theorems give explicit bookkeeping identities: apparent post-measurement deficits can be represented as auxiliary-channel transfer and/or redshift-channel accounting while retaining a closed conservation ledger in the model.
 
 \paragraph{Current Lean-provable answers to three open directions.}
-\textbf{Mixed states / density-operator direction:} in the current finite layer, convex-mixture closure is now formalized by dedicated two-component convex-mixture theorems for delayed-choice singles invariance and for $\eta_\phi$-corrected CKW closure at fixed shell. This is a concrete mixed-state-style bridge, though a full CPTP/density-operator sparse-pruning theory remains open. \textbf{Beyond $\eta$-corrected CKW:} these results establish closure properties but do not yet constitute a new octonionic entanglement monotone family. \textbf{Continuum/QFT limit:} the current Lean bridge is asymptotic/combinatorial via shell-to-continuum matching (e.g., continuity of the curvature-density field and the spherical-harmonic ratio limit); full renormalization/locality recovery is identified as the next theorem-development stage.
+\textbf{Mixed states / density-operator direction:} in the current finite layer, convex-mixture closure is now formalized by dedicated two-component convex-mixture theorems for delayed-choice singles invariance and for $\eta_\phi$-corrected CKW closure at fixed shell. This is a concrete mixed-state-style bridge, though a full CPTP/density-operator sparse-pruning theory remains open. \textbf{Beyond $\eta$-corrected CKW:} these results establish closure properties but do not yet constitute a new octonionic entanglement monotone family. \textbf{Continuum/QFT limit:} the bridge is now split into (i) a finite mastered layer (\texttt{HorizonLimitedQM\_QFT\_Closure}) and (ii) an explicit continuum-closure assumption package (\texttt{HorizonLimitedRenormLocality}) covering shell-to-harmonic limit, renormalization-in-domain, microcausality, spin-statistics, CPTP density closure, cluster decomposition, and scattering consistency. This mirrors standard QFT closure criteria in the literature while keeping the claim horizon-limited and representation-level.
+
+\paragraph{Remaining formal tasks (explicit).}
+The current unresolved items are now narrow and concrete: (i) replace each continuum assumption in \texttt{HorizonLimitedRenormLocality} by constructive lemmas from existing HQIV modules, (ii) extend mixed-state closure from current finite convex cases to a full CPTP sparse-pruning layer, (iii) add a finite-to-continuum locality package (microcausal commutator/anticommutator statements at the field level), and (iv) complete an in-domain scattering-consistency theorem family suitable for direct observational checks.
 
 \paragraph{Sparse register.}
 At cutoff $L$, a sparse snapshot is a finite list of pairs $(i,a)$ with $i\in\mathbb{N}$ and octonion amplitude $a\in\mathbb{R}^8$. Indices wrap modulo $(L+1)^2$, matching the cardinal of $\mathcal{H}_L$.
@@ -428,11 +434,44 @@ Casting the rational temperature weight recovers the HQIV auxiliary-field shell 
 \subsection{Recovery of standard QM and QFT}
 The present construction is scoped as a representation-level reformulation whose sole formal requirement is exact recovery of the algebraic structure and invariants of quantum mechanics (and, in the continuum limit, of quantum field theory) from the minimal light-cone axioms. At the finite digital level, admissible gates preserve the discrete informational inner product $\langle\!\langle\cdot,\cdot\rangle\!\rangle$ and the unit-norm condition $\|f\|^2 = 1$ (section 8), matching unitary evolution. The projection map $\Pi$ recovers complex Hilbert-space bookkeeping and standard density-operator practice on each slot. Mixed-state convex closure is already formalized via the lemmas \texttt{singles\_independent\_of\_eraser\_choice\_convex2} and \texttt{correctedCkwMonogamyPhi\_convex2} in the \texttt{AuxFieldBellDelayedChoice} module. In the continuum limit, shell-to-spherical-harmonic ratio and curvature-density matching lemmas in the \texttt{OctonionicLightCone} geometry module guarantee recovery of QFT dynamics away from the horizon. The cosmic horizon (or local Rindler horizons) supplies the natural infrared cutoff, with monogamy-pair shell factors carried by the same ladder bookkeeping; the derivation remains ultraviolet-finite by construction. Any bookkeeping resolution of known foundational questions (measurement/collapse, apparent energy deficits) is handled through the derived auxiliary-field and redshift channels in the new measurement block. The broader geometric and thermodynamic context appears in the companion HQIV manuscripts \cite{ettinger2026hqiv,brodie2026}; no modification of QM observables is claimed or required in this work.
 
+\paragraph{Compact CMB birefringence bookkeeping calculation (in-domain).}
+Without introducing additional formal machinery, one can write the birefringence channel in the same notation used by the measurement/redshift block:
+\[
+  z_{\mathrm{biref}} \;=\; \exp\!\Bigl(\frac{\beta_{\mathrm{rad}}}{\kappa_{\beta}}\Bigr)-1,
+  \qquad
+  1+z_{\mathrm{biref}} \;=\; \exp\!\Bigl(\frac{\beta_{\mathrm{rad}}}{\kappa_{\beta}}\Bigr).
+\]
+For any post-channel energy ledger entry $E_{\mathrm{post}}$, the observed channel is
+\[
+  E_{\mathrm{obs}} \;=\; \frac{E_{\mathrm{post}}}{1+z_{\mathrm{biref}}}
+  \;=\; E_{\mathrm{post}}\exp\!\Bigl(-\frac{\beta_{\mathrm{rad}}}{\kappa_{\beta}}\Bigr),
+\]
+so the exact identity is immediate:
+\[
+  E_{\mathrm{obs}}\exp\!\Bigl(\frac{\beta_{\mathrm{rad}}}{\kappa_{\beta}}\Bigr)=E_{\mathrm{post}}.
+\]
+Using the recent combined ACT DR6 (Chile) + WMAP + Planck estimate $\beta = 0.264^\circ \pm 0.058^\circ$ (68\% CL) \cite{yin2025spiderPlanckACT}, convert to radians:
+\[
+  \beta_{\mathrm{rad}} = (4.608 \pm 1.012)\times 10^{-3}.
+\]
+Writing $\xi=\beta_{\mathrm{rad}}/\kappa_\beta$, the propagated uncertainty is
+\[
+  \sigma_{z} = \exp(\xi)\,\sigma_{\xi},\qquad \sigma_{\xi}=\sigma_{\beta_{\mathrm{rad}}}/\kappa_\beta.
+\]
+Under the bookkeeping normalization $\kappa_\beta=1$ (dimensionless), this gives
+\[
+  z_{\mathrm{biref}} = (4.618 \pm 1.017)\times 10^{-3}.
+\]
+For context, the HQIV ``now'' working scale $\beta\sim0.3^\circ$ differs from this combined central value by about $0.62\sigma$, i.e. fully consistent at current precision. In Lean, the corresponding channel identities are now explicit: zero-phase baseline, positivity, $\kappa_\beta$ antitonicity, and exact finite-increment update (\texttt{birefringenceRedshift\_zero}, \texttt{birefringenceRedshift\_pos\_of\_beta\_pos}, \texttt{birefringenceRedshift\_antitone\_kappa}, \texttt{birefringenceRedshift\_increment}). This is the same bookkeeping form proven in the redshift/birefringence lemmas; it is presented here as a compact worked calculation in the horizon-limited regime.
+
 \paragraph{Monogamy hook.}
 Digital CKW steps reuse the $\eta$-mode monogamy rescaling lemmas: nonnegative tangle inputs stay in the corrected CKW cone when scaled by the mode-wise $\eta$ factors proved in the monogamy module \cite{ckw2000}.
 
 \paragraph{Conclusion.}
 What is established in this work is a coherent and Lean-traceable formal pipeline from shell combinatorics to octonion-carried digital states and sparse update bookkeeping, with aux/field/rapidity terms derived from the same light-cone structure. Within that formal scope, the auxiliary-field/light-cone construction demystifies superposition-based "oracle" behavior as lossless derived bookkeeping; sparse horizon-causal updating is the by-product realization. In particular, the auxiliary field, often introduced as a calculational device in path-integral-style formulations, is treated here as a derived consequence of expanding light-cone shell structure. The method is therefore lossless (not heuristic) and provides a mathematical interpretation of superposition consistent with standard QM invariants. What remains open is not formal consistency but performance characterization: whether, and in which regimes, this sparse realization delivers practical runtime or memory advantages over dense baselines. The framework therefore recovers the algebraic structure of standard quantum mechanics while delivering a practical, classical sparse-simulation pipeline whose regime-dependent speedups are purely representational.
+
+\section*{Acknowledgements}
+The author acknowledges the use of AI-assisted development tools during manuscript and code production. In particular, Grok 4.20 and Composer 2 were used for programming assistance, Lean proof-development and verification support, and editorial revision support for manuscript drafting and refinement.
 
 \section*{References}
 \bibliographystyle{plain}

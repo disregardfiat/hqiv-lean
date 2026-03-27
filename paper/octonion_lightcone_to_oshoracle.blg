@@ -3,44 +3,44 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: octonion_lightcone_to_oshoracle.aux
 The style file: plain.bst
 Database file #1: octonion_lightcone_to_oshoracle_refs.bib
-You've used 17 entries,
+You've used 18 entries,
             2118 wiz_defined-function locations,
-            605 strings with 6467 characters,
-and the built_in function-call counts, 5111 in all, are:
-= -- 515
-> -- 195
+            610 strings with 6744 characters,
+and the built_in function-call counts, 5453 in all, are:
+= -- 546
+> -- 223
 < -- 1
-+ -- 85
-- -- 62
-* -- 325
-:= -- 855
-add.period$ -- 58
-call.type$ -- 17
-change.case$ -- 80
++ -- 96
+- -- 72
+* -- 350
+:= -- 920
+add.period$ -- 62
+call.type$ -- 18
+change.case$ -- 88
 chr.to.int$ -- 0
-cite$ -- 17
-duplicate$ -- 181
-empty$ -- 439
-format.name$ -- 62
-if$ -- 1066
+cite$ -- 18
+duplicate$ -- 191
+empty$ -- 456
+format.name$ -- 72
+if$ -- 1131
 int.to.chr$ -- 0
-int.to.str$ -- 17
-missing$ -- 14
-newline$ -- 95
-num.names$ -- 34
-pop$ -- 91
+int.to.str$ -- 18
+missing$ -- 15
+newline$ -- 101
+num.names$ -- 36
+pop$ -- 98
 preamble$ -- 1
-purify$ -- 64
+purify$ -- 71
 quote$ -- 0
-skip$ -- 128
+skip$ -- 135
 stack$ -- 0
-substring$ -- 347
-swap$ -- 27
+substring$ -- 352
+swap$ -- 28
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 64
+type$ -- 68
 warning$ -- 0
-while$ -- 54
-width$ -- 19
-write$ -- 197
+while$ -- 56
+width$ -- 20
+write$ -- 209

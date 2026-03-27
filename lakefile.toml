@@ -21,6 +21,49 @@ name = "HQIVWitnesses"
 # Minimal witness build: only what `scripts/export_witnesses.lean` imports.
 globs = ["HQIVWitnesses", "Hqiv.Geometry.OctonionicLightCone", "Hqiv.Geometry.AuxiliaryField", "Hqiv.Physics.Baryogenesis", "Hqiv.Physics.FanoResonance", "Hqiv.Physics.DerivedGaugeAndLeptonSector", "Hqiv.Physics.DerivedNucleonMass", "Hqiv.Physics.QuarkMetaResonance"]
 
+[[lean_lib]]
+name = "HQIVSO8Closure"
+# Dedicated heavy closure pack: build once, then import interface module.
+globs = [
+  "HQIVSO8Closure",
+  "Hqiv.Generators",
+  "Hqiv.OctonionLeftMultiplication",
+  "Hqiv.GeneratorsFromAxioms",
+  "Hqiv.GeneratorsLieClosureData0",
+  "Hqiv.GeneratorsLieClosureData1",
+  "Hqiv.GeneratorsLieClosureData2",
+  "Hqiv.GeneratorsLieClosureData3",
+  "Hqiv.GeneratorsLieClosureData4",
+  "Hqiv.GeneratorsLieClosureData5",
+  "Hqiv.GeneratorsLieClosureData6",
+  "Hqiv.GeneratorsLieClosureData7",
+  "Hqiv.GeneratorsLieClosureData8",
+  "Hqiv.GeneratorsLieClosureData9",
+  "Hqiv.GeneratorsLieClosureData10",
+  "Hqiv.GeneratorsLieClosureData11",
+  "Hqiv.GeneratorsLieClosureData12",
+  "Hqiv.GeneratorsLieClosureData13",
+  "Hqiv.GeneratorsLieClosureData14",
+  "Hqiv.GeneratorsLieClosureData15",
+  "Hqiv.GeneratorsLieClosureData16",
+  "Hqiv.GeneratorsLieClosureData17",
+  "Hqiv.GeneratorsLieClosureData18",
+  "Hqiv.GeneratorsLieClosureData19",
+  "Hqiv.GeneratorsLieClosureData20",
+  "Hqiv.GeneratorsLieClosureData21",
+  "Hqiv.GeneratorsLieClosureData22",
+  "Hqiv.GeneratorsLieClosureData23",
+  "Hqiv.GeneratorsLieClosureData24",
+  "Hqiv.GeneratorsLieClosureData25",
+  "Hqiv.GeneratorsLieClosureData26",
+  "Hqiv.GeneratorsLieClosureData27",
+  "Hqiv.GeneratorsLieClosureData",
+  "Hqiv.So8CoordMatrix",
+  "Hqiv.GeneratorsLieClosure",
+  "Hqiv.SO8Closure",
+  "Hqiv.SO8ClosureInterface"
+]
+
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4.git"
