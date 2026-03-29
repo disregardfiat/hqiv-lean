@@ -24,9 +24,18 @@ over the index sets (O components, spacetime indices).
 1. **Potential** A : Fin 8 → Fin 4 → ℝ (gauge potential in O, one component per spacetime index).
 2. **Field strength from potential** F_a μ ν = A a ν - A a μ (discrete exterior derivative).
 3. **O-Maxwell Lagrangian** L_O = -(1/4) F² + J·A + φ-coupling; **action** S_O = sum over indices.
-4. **Euler–Lagrange:** δS_O/δA = 0 ⟺ emergent inhomogeneous O-Maxwell equation.
-5. **Gravitational action** S_grav (φ, ρ): constraint form of the Friedmann equation; S_grav = 0 ⟺ HQVM Friedmann.
-6. **Total action** S_total = S_O + S_grav (or separately stationary); same φ, α link both.
+4. **Arbitrary source** `L_O_source_general J_src`, `EL_O_general J_src`, `action_O_Maxwell_general J_src`
+   for any `J_src : Fin 8 → Fin 4 → ℝ` (default `J_O` recovers the earlier names).
+5. **Euler–Lagrange:** δS_O/δA = 0 ⟺ emergent inhomogeneous O-Maxwell equation (same `-4π J` slot as
+   `ModifiedMaxwell.emergentMaxwellInhomogeneous_O_general`).
+6. **Gravitational action** S_grav (φ, ρ): constraint form of the Friedmann equation; S_grav = 0 ⟺ HQVM Friedmann.
+7. **Total action** S_total = S_O + S_grav (or separately stationary); same φ, α link both.
+
+Plasma / collective sources: `Hqiv.Physics.ActionPlasmaBridge` instantiates `J_src := J_O_plasma j₀ coord`.
+
+Continuum scalar φ on the chart: `Hqiv.Physics.ContinuumOmaxwellClosure` replaces `grad_phi` in the
+Euler–Lagrange and φ–A coupling with `coordsGradientComponents φF c` at a basepoint, with const-field
+recovery theorems back to `EL_O_general` / `L_O_phi_coupling`.
 -/
 
 /-- **Gauge potential in O.** Component a (octonion index), spacetime index ν. -/
@@ -44,9 +53,13 @@ theorem F_from_A_antisymm (A : Fin 8 → Fin 4 → ℝ) (a : Fin 8) (μ ν : Fin
 noncomputable def L_O_kinetic (A : Fin 8 → Fin 4 → ℝ) : ℝ :=
   - (1/4) * ∑ a : Fin 8, ∑ μ : Fin 4, ∑ ν : Fin 4, (F_from_A A a μ ν)^2 / 2
 
-/-- **Source term** J·A = ∑_{a,ν} J_O a ν * A a ν. -/
+/-- **Source term** J·A = ∑_{a,ν} J_src a ν * A a ν (interaction between current and gauge potential). -/
+def L_O_source_general (J_src : Fin 8 → Fin 4 → ℝ) (A : Fin 8 → Fin 4 → ℝ) : ℝ :=
+  ∑ a : Fin 8, ∑ ν : Fin 4, J_src a ν * A a ν
+
+/-- **Source term** with the default phenomenological current `J_O`. -/
 def L_O_source (A : Fin 8 → Fin 4 → ℝ) : ℝ :=
-  ∑ a : Fin 8, ∑ ν : Fin 4, J_O a ν * A a ν
+  L_O_source_general J_O A
 
 /-- **Gradient of φ** (placeholder for discrete ∂φ/∂x^ν). -/
 def grad_phi (_ν : Fin 4) : ℝ := 0
@@ -55,26 +68,50 @@ def grad_phi (_ν : Fin 4) : ℝ := 0
 noncomputable def L_O_phi_coupling (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) : ℝ :=
   alpha * Real.log (φ_val + 1) * ∑ ν : Fin 4, grad_phi ν * A 0 ν
 
-/-- **O-Maxwell Lagrangian density** (scalar at one "point"; sum over O and spacetime). -/
+/-- **O-Maxwell Lagrangian density** for an explicit current `J_src`. -/
+noncomputable def L_O_Maxwell_general (J_src : Fin 8 → Fin 4 → ℝ) (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) : ℝ :=
+  L_O_kinetic A + 4 * Real.pi * L_O_source_general J_src A + L_O_phi_coupling A φ_val
+
+/-- **O-Maxwell Lagrangian** with default `J_O`. -/
 noncomputable def L_O_Maxwell (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) : ℝ :=
-  L_O_kinetic A + 4 * Real.pi * L_O_source A + L_O_phi_coupling A φ_val
+  L_O_Maxwell_general J_O A φ_val
 
 /-- **O-Maxwell action** S_O = L_O (integral replaced by single cell / sum). -/
-noncomputable def action_O_Maxwell (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) : ℝ :=
-  L_O_Maxwell A φ_val
+noncomputable def action_O_Maxwell_general (J_src : Fin 8 → Fin 4 → ℝ) (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) : ℝ :=
+  L_O_Maxwell_general J_src A φ_val
 
-/-- **Euler–Lagrange** from varying A(a,ν): δS_O/δA(a,ν). EL_O = 0 ⟺ div F = 4π J + φ term (emergent equation). -/
-noncomputable def EL_O (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) (a : Fin 8) (ν : Fin 4) : ℝ :=
-  (∑ μ : Fin 4, F_from_A A a μ ν) - 4 * Real.pi * J_O a ν
+/-- **O-Maxwell action** with default `J_O`. -/
+noncomputable def action_O_Maxwell (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) : ℝ :=
+  action_O_Maxwell_general J_O A φ_val
+
+/-- **Euler–Lagrange** from varying A(a,ν): same `-4π J_src` coupling as `emergentMaxwellInhomogeneous_O_general`. -/
+noncomputable def EL_O_general (J_src : Fin 8 → Fin 4 → ℝ) (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) (a : Fin 8) (ν : Fin 4) : ℝ :=
+  (∑ μ : Fin 4, F_from_A A a μ ν) - 4 * Real.pi * J_src a ν
   - (if a = 0 then alpha * Real.log (φ_val + 1) * grad_phi ν else 0)
 
-/-- **Equations from action:** EL_O = 0 is the emergent inhomogeneous O-Maxwell equation
-    (discrete div F - 4π J - φ term = 0). -/
-theorem action_O_Maxwell_EL_eq_emergent (a : Fin 8) (ν : Fin 4) (φ_val : ℝ) (_hφ : φ_val + 1 > 0)
+/-- **Euler–Lagrange** with default `J_O`. -/
+noncomputable def EL_O (A : Fin 8 → Fin 4 → ℝ) (φ_val : ℝ) (a : Fin 8) (ν : Fin 4) : ℝ :=
+  EL_O_general J_O A φ_val a ν
+
+/-- **Equations from action:** `EL_O_general J_src` is the discrete EL covector with source `J_src`. -/
+theorem action_O_Maxwell_EL_eq_emergent_general (J_src : Fin 8 → Fin 4 → ℝ) (a : Fin 8) (ν : Fin 4) (φ_val : ℝ)
+    (_hφ : φ_val + 1 > 0) (A : Fin 8 → Fin 4 → ℝ) :
+    EL_O_general J_src A φ_val a ν = (∑ μ : Fin 4, F_from_A A a μ ν) - 4 * Real.pi * J_src a ν -
+      (if a = 0 then alpha * Real.log (φ_val + 1) * grad_phi ν else 0) := by
+  unfold EL_O_general; rfl
+
+theorem action_O_Maxwell_EL_eq_emergent (a : Fin 8) (ν : Fin 4) (φ_val : ℝ) (hφ : φ_val + 1 > 0)
     (A : Fin 8 → Fin 4 → ℝ) :
     EL_O A φ_val a ν = (∑ μ : Fin 4, F_from_A A a μ ν) - 4 * Real.pi * J_O a ν -
-      (if a = 0 then alpha * Real.log (φ_val + 1) * grad_phi ν else 0) := by
-  unfold EL_O; rfl
+      (if a = 0 then alpha * Real.log (φ_val + 1) * grad_phi ν else 0) :=
+  action_O_Maxwell_EL_eq_emergent_general J_O a ν φ_val hφ A
+
+/-- **Superposition:** J·A part of the Lagrangian is linear in the current. -/
+theorem L_O_source_general_add_J (J₁ J₂ : Fin 8 → Fin 4 → ℝ) (A : Fin 8 → Fin 4 → ℝ) :
+    L_O_source_general (fun a ν => J₁ a ν + J₂ a ν) A =
+      L_O_source_general J₁ A + L_O_source_general J₂ A := by
+  unfold L_O_source_general
+  simp_rw [add_mul, Finset.sum_add_distrib]
 
 /-- **Gravitational action (HQVM):** constraint form of the Friedmann equation.
     S_grav(φ, ρ_m, ρ_r) = (3−γ)φ² - 8π G_eff(φ)(ρ_m + ρ_r). Stationarity S_grav = 0 ⟺ Friedmann. -/
@@ -88,10 +125,14 @@ theorem S_HQVM_grav_zero_iff_Friedmann (φ rho_m rho_r : ℝ) :
   rw [sub_eq_zero, HQVM_Friedmann_eq_def, H_of_phi_eq, rho_total_eq]
   constructor <;> intro h <;> norm_num at h ⊢ <;> exact h
 
-/-- **Total action (formal):** S_total = S_O + S_grav. Same φ and α in both sectors;
-    stationarity in A gives O-Maxwell, stationarity in φ (with S_grav = 0) gives Friedmann. -/
+/-- **Total action (formal):** S_total = S_O + S_grav with explicit current `J_src`. -/
+noncomputable def action_total_general (J_src : Fin 8 → Fin 4 → ℝ) (A : Fin 8 → Fin 4 → ℝ)
+    (φ_val rho_m rho_r : ℝ) : ℝ :=
+  action_O_Maxwell_general J_src A φ_val + S_HQVM_grav φ_val rho_m rho_r
+
+/-- **Total action** with default `J_O`. -/
 noncomputable def action_total (A : Fin 8 → Fin 4 → ℝ) (φ_val rho_m rho_r : ℝ) : ℝ :=
-  action_O_Maxwell A φ_val + S_HQVM_grav φ_val rho_m rho_r
+  action_total_general J_O A φ_val rho_m rho_r
 
 /-- **Derived from action:** The inhomogeneous O-Maxwell equation is the equation of motion
     from varying the O-Maxwell action (EL_O = 0). The HQVM Friedmann equation is the
@@ -101,7 +142,7 @@ theorem equations_from_action (φ rho_m rho_r : ℝ) (_hφ : 0 ≤ φ) :
     (∀ a ν, EL_O A_O (φ + 1) a ν = (∑ μ : Fin 4, F_from_A A_O a μ ν) - 4 * Real.pi * J_O a ν -
       (if a = 0 then alpha * Real.log (φ + 2) * grad_phi ν else 0)) := by
   refine ⟨S_HQVM_grav_zero_iff_Friedmann φ rho_m rho_r, fun a ν => ?_⟩
-  unfold EL_O A_O F_from_A J_O grad_phi
+  unfold EL_O EL_O_general A_O F_from_A J_O grad_phi
   rw [add_assoc]; norm_num
 
 end Hqiv

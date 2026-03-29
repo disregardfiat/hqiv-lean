@@ -22,8 +22,10 @@ This module provides:
   `δN` around `Φ = 0` with background `φ = H`, see `HQVM_lapse_increment_homogeneous` in
   `Hqiv.Geometry.HQVMPerturbations` (first-order piece `linearizedHQVM_lapse`, remainder `δφ δt`).
 
-The theory is built from **division math** (α = 3/5, γ = 2/5) and **monogamy**;
-the lapse formula encodes observer-centric time (wall-clock vs apparent age).
+The theory is built from the **canonical HQIV pair** (curvature imprint **α = 3/5**, monogamy
+**γ = 2/5** with **γ = 1 − α**); physical derivation of these as the *only* such constants in
+the companion program is in the companion HQIV manuscript and Brodie (2026). The lapse formula
+encodes observer-centric time (wall-clock vs apparent age).
 
 **√3 vs 2π:** The curvature norm (light-cone module) uses **√3** — a **spatial** factor
 (unit-cube half-diagonal, dimension length). The time phase here uses **2π** — an
@@ -46,8 +48,9 @@ We do not introduce free parameters. Each definition is **determined by** prior 
    So g_tt = -N² and the spatial coefficient is a²(1 - 2Φ) **from ADM** with
    conformal factor (1 - 2Φ). No choice — just writing the metric in this gauge.
 
-4. **γ:** From **entanglement monogamy** (metric sector); γ = 2/5. Proved equal to
-   the paper value; (3−γ) = 13/5 and α + γ = 1 from the lattice/monogamy split.
+4. **γ:** The **sole** HQIV monogamy coefficient, **γ := 1 − α**, proved **2/5** once α = 3/5
+   (`gamma_eq_2_5`). Same external provenance as α (companion HQIV + Brodie 2026). Then
+   (3−γ) = 13/5 and α + γ = 1 from the split.
 
 5. **G₀, H₀:** **Natural units** (c = ħ = 1, G₀ = H₀ = 1). Convention, not a free
    fit; we prove G_eff(1) = 1 when φ = H₀.
@@ -272,9 +275,9 @@ theorem HQVM_g_tt_neg_of_lapse_pos (Φ φ t : ℝ) (hN : 0 < HQVM_lapse Φ φ t)
     HQVM_g_tt (HQVM_lapse Φ φ t) < 0 :=
   HQVM_g_tt_neg (HQVM_lapse Φ φ t) (ne_of_gt hN)
 
-/-- **γ** (entanglement monogamy / overlap coefficient): defined as the **complement of α**
-in the unit horizon split, i.e. γ = 1 − α. So γ is **derived** from the same structural
-split that gives α from the lattice (α + γ = 1); no separate free parameter. -/
+/-- **γ** — the **only** HQIV monogamy / horizon-overlap coefficient: **complement of α** on the
+unit horizon split, γ = 1 − α. Provenance matches `alpha` (companion HQIV manuscript + Brodie 2026).
+No alternate `gamma` in the codebase. -/
 def gamma_HQIV : ℝ := 1 - alpha
 
 /-- **γ = 2/5** — derived from α = 3/5 and the split α + γ = 1 (so γ = 1 − 3/5 = 2/5). -/

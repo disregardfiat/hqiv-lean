@@ -20,6 +20,11 @@ This module packages an end-to-end "in-domain" closure layer:
 It is intentionally horizon-limited and representation-level, and provides
 fully normalized finite Born distributions plus finite stochastic-channel
 composition closure on top of the measurement ledger.
+
+The predicate `cptp_density_closure_finite_classical` packages functoriality of
+`pushDist` under `composeKernel`; it is proved by `cptp_density_closure_finite_classical_holds`
+and supplies the constructive CPTP-density slot in `HorizonLimitedRenormLocality`
+when merged via `horizonContinuumAxiomsCore_of_minimal`.
 -/
 
 /-- A horizon domain witness: finite shell cutoff and finite carrier cutoff. -/
@@ -219,12 +224,25 @@ theorem pushDist_compose {n m l : ℕ}
           rw [Finset.mul_sum]
 
 /--
-Master horizon-limited closure theorem (finite layer):
+Finite classical-Markov / CPTP-style composition closure on `DistN`:
+pushing a distribution through two kernels in sequence agrees with pushing through
+the composed kernel.
+-/
+def cptp_density_closure_finite_classical : Prop :=
+  ∀ {n m l : ℕ} (κ2 : StochasticKernel m l) (κ1 : StochasticKernel n m) (p : DistN n),
+    (pushDist κ2 (pushDist κ1 p)).prob = (pushDist (composeKernel κ2 κ1) p).prob
+
+theorem cptp_density_closure_finite_classical_holds : cptp_density_closure_finite_classical := by
+  intro n m l κ2 κ1 p
+  exact pushDist_compose κ2 κ1 p
+
+/--
+Horizon-limited closure theorem (finite layer):
 for any nonzero state, Born probabilities are normalized; any finite stochastic
 post-processing preserves normalization; and measurement energy bookkeeping is
 closed via auxiliary + birefringence/redshift channels.
 -/
-theorem horizon_masterpiece_finite_closure
+theorem horizon_finite_closure_theorem
     {n m : ℕ} (ψ : StateN n) (hψ : ∃ i : Fin n, ψ i ≠ 0)
     (κ : StochasticKernel n m) (i : Fin n) (betaRad kappaBeta : ℝ) :
     ((∑ j : Fin m, (pushDist κ (bornDistOfState ψ hψ)).prob j) = 1) ∧
@@ -236,5 +254,17 @@ theorem horizon_masterpiece_finite_closure
   refine ⟨?_, ?_⟩
   · exact (pushDist κ (bornDistOfState ψ hψ)).sum_one
   · exact horizon_measurement_observed_energy_closure i ψ betaRad kappaBeta
+
+@[deprecated "Use `horizon_finite_closure_theorem` instead" (since := "2026-03")]
+theorem horizon_masterpiece_finite_closure
+    {n m : ℕ} (ψ : StateN n) (hψ : ∃ i : Fin n, ψ i ≠ 0)
+    (κ : StochasticKernel n m) (i : Fin n) (betaRad kappaBeta : ℝ) :
+    ((∑ j : Fin m, (pushDist κ (bornDistOfState ψ hψ)).prob j) = 1) ∧
+    (normSq ψ
+      = redshiftedEnergyN (normSq (collapseTo i ψ))
+          (birefringenceRedshiftN betaRad kappaBeta)
+          * Real.exp (betaRad / kappaBeta)
+        + auxTransferForOutcome i ψ) :=
+  horizon_finite_closure_theorem ψ hψ κ i betaRad kappaBeta
 
 end Hqiv.QM

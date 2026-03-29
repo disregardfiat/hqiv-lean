@@ -1,5 +1,7 @@
 import Mathlib.Data.Complex.Basic
-import Hqiv.Algebra.SMEmbedding
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Tactic.NormNum
+import Hqiv.Algebra.OctonionSpinorCarrier
 
 /-!
 ## Spin–statistics from triality and null-lattice causality
@@ -66,8 +68,6 @@ structure SpinStatisticsData where
   /-- Spacelike separation relation on the lattice. -/
   spacelikeSep  : mode → mode → Prop
 
-/-- Convenience predicates for bosonic vs fermionic modes inside a
-`SpinStatisticsData` bundle. -/
 namespace SpinStatisticsData
 
 variable (D : SpinStatisticsData)
@@ -92,7 +92,7 @@ These are deliberately abstract; the goal for HQIV is to *realise* them from:
 * the Spin(8)/so(8) structure obtained from counting over O,
 * the null-lattice / monogamy geometry (HQVMetric, `Now`),
 * and the way triality maps pairs of spinor modes into bosonic observables. -/
-structure SpinStatisticsAxioms (D : SpinStatisticsData) : Prop where
+structure SpinStatisticsAxioms (D : SpinStatisticsData) : Type where
   /-- Phase picked up by a one-particle mode under a 2π rotation. -/
   twoPiPhase : D.mode → ℂ
 
@@ -172,18 +172,13 @@ Spin(8) data from the generator stack and the discrete null lattice.
 -/
 def SpinStatistics_from_triality_and_causality_statement : Prop :=
   ∃ D : SpinStatisticsData,
-    -- (1) Every mode is assigned a spin class.
     (∀ m : D.mode, D.spinClass m = SpinClass.integer ∨
                    D.spinClass m = SpinClass.halfInteger) ∧
-
-    -- (2) Axioms encoding triality, causality, and the 2π ↔ exchange link.
-    SpinStatisticsAxioms D ∧
-
-    -- (3) Spin–statistics conclusion: we can *derive* the sign rule.
-    ((∀ m : D.mode, isFermionic D m →
-        D.exchangePhase m m = (-1 : ℂ)) ∧
-     (∀ m : D.mode, isBosonic D m →
-        D.exchangePhase m m = (1 : ℂ)))
+    (∃ A : SpinStatisticsAxioms D,
+      (∀ m : D.mode, isFermionic D m →
+          D.exchangePhase m m = (-1 : ℂ)) ∧
+      (∀ m : D.mode, isBosonic D m →
+          D.exchangePhase m m = (1 : ℂ)))
 
 /-- **Abstract spin–statistics lemma.**
 
@@ -226,14 +221,14 @@ Modes are either:
 
 Spacelike separation is left abstract (always `True` in this minimal model),
 and exchange phases are assigned purely from the spin class. -/
-def D_HQIV : SpinStatisticsData :=
+noncomputable def D_HQIV : SpinStatisticsData :=
   { mode := Sum Hqiv.Algebra.OctonionSpinorCarrier Unit
     , spinClass := fun m =>
         match m with
         | Sum.inl _ => SpinClass.halfInteger
         | Sum.inr _ => SpinClass.integer
     , exchangePhase := fun m₁ m₂ =>
-        if h : m₁ = m₂ then
+        if _ : m₁ = m₂ then
           match m₁ with
           | Sum.inl _ => (-1 : ℂ)
           | Sum.inr _ => (1 : ℂ)
@@ -253,7 +248,7 @@ end D_HQIV
 
 /-- **Concrete axioms**: triality-style bilinear, locality, and phase link
 for the HQIV spin–statistics data `D_HQIV`. -/
-def A_HQIV : SpinStatisticsAxioms D_HQIV :=
+noncomputable def A_HQIV : SpinStatisticsAxioms D_HQIV :=
 by
   refine
     { twoPiPhase := ?twoPi
@@ -265,8 +260,10 @@ by
       , exchangePhase_bilinear := ?bilin
       , exchange_eq_twoPiPhase := ?link }
   · -- twoPiPhase
-    intro m
-    cases m <;> simp [D_HQIV]
+    exact fun m =>
+      match m with
+      | Sum.inl _ => (-1 : ℂ)
+      | Sum.inr _ => (1 : ℂ)
   · -- twoPiPhase_halfInteger: half-integer modes get −1.
     intro m hF
     cases m with
@@ -319,14 +316,11 @@ there exists a spin–statistics data bundle and corresponding axioms such
 that the spin–statistics sign rule holds. -/
 theorem HQIV_satisfies_SpinStatistics_from_triality_and_causality :
     SpinStatistics_from_triality_and_causality_statement := by
-  refine
-    ⟨D_HQIV, ?_, ?_, ?_⟩
+  refine ⟨D_HQIV, ?_, ?_⟩
   · -- (1) Every mode is labelled as integer or half-integer spin.
     intro m
     exact D_HQIV.spinClass_cases m
-  · -- (2) HQIV spin–statistics axioms for this data.
-    exact A_HQIV
-  · -- (3) Spin–statistics sign rule follows from the axioms.
+  · refine ⟨A_HQIV, ?_⟩
     exact spin_statistics_from_axioms D_HQIV A_HQIV
 
 /-!
@@ -372,8 +366,10 @@ theorem resonance_half_life_from_overlap_energy
 theorem resonance_lifetime_pos
     {ΔE : ℝ} (hΔ : 0 < ΔE) :
     0 < resonance_lifetime ΔE := by
-  unfold resonance_lifetime hbar_MeV_s
-  exact div_pos (by norm_num) hΔ
+  unfold resonance_lifetime
+  refine div_pos ?_ hΔ
+  unfold hbar_MeV_s
+  norm_num
 
 /-- If a weak-channel lifetime is bounded below by any quantity that already
     exceeds the resonance lifetime, then the weak channel is slower than the
@@ -382,8 +378,8 @@ theorem weak_channel_slower_than_resonance
     {ΔE lifetime_weak lower_bound : ℝ}
     (hres : resonance_lifetime ΔE < lower_bound)
     (hweak : lower_bound ≤ lifetime_weak) :
-    resonance_lifetime ΔE < lifetime_weak := by
-  linarith
+    resonance_lifetime ΔE < lifetime_weak :=
+  lt_of_lt_of_le hres hweak
 
 end Hqiv.Physics
 

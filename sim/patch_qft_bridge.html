@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HQIV — patch QFT bridge (finite shell / time / Minkowski)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0e1114;
+      --panel: #161b22;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #3fb950;
+      --warn: #d29922;
+      --border: #30363d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+    header {
+      padding: 1.5rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(165deg, #121820 0%, var(--bg) 55%);
+    }
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+    .sub { color: var(--muted); font-size: 0.9rem; max-width: 52rem; }
+    main { padding: 1.25rem 1.75rem 2.5rem; max-width: 52rem; }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 0.75rem;
+      font-weight: 600;
+    }
+    label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.2rem; }
+    input[type="number"] {
+      width: 100%;
+      max-width: 12rem;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.9rem;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 0.65rem; }
+    .field { flex: 1; min-width: 8rem; }
+    pre.out {
+      margin: 0.5rem 0 0;
+      padding: 0.65rem 0.75rem;
+      background: var(--bg);
+      border-radius: 6px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.78rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border: 1px solid var(--border);
+    }
+    .ok { color: var(--accent); }
+    .bad { color: #f85149; }
+    .grid-chk { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.35rem; }
+    .grid-chk label { display: flex; align-items: center; gap: 0.35rem; margin: 0; cursor: pointer; color: var(--text); font-size: 0.88rem; }
+    button {
+      margin-top: 0.5rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-family: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    button:hover { background: rgba(63, 185, 80, 0.12); }
+    footer { font-size: 0.75rem; color: var(--muted); margin-top: 1rem; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Patch QFT bridge — finite ladder &amp; Minkowski corners</h1>
+    <p class="sub">
+      Mirrors Lean: <code>Hqiv.Physics.LightConeMaxwellQFTBridge</code> (mode budget, time angle) and
+      <code>Hqiv.QuantumMechanics.PatchQFTBridge</code> (support-restricted net, <code>patchChartPoint</code>,
+      <code>patchEventChartFour</code> for labels <code>0…3</code> in <code>spacelikeRelationMinkowski</code>).
+      For exploration / viz — not a physics fitter.
+    </p>
+  </header>
+  <main>
+    <section>
+      <h2>Discrete mode budget</h2>
+      <div class="row">
+        <div class="field">
+          <label for="shellM">Shell index M (ℕ)</label>
+          <input id="shellM" type="number" min="0" step="1" value="4" />
+        </div>
+      </div>
+      <button type="button" id="btnModes">Compute</button>
+      <pre class="out" id="outModes"></pre>
+    </section>
+    <section>
+      <h2>Time angle → shell index (φ = φ<sub>shell</sub>(m), coeff 2)</h2>
+      <div class="row">
+        <div class="field">
+          <label for="shellMtheta">Observer shell m</label>
+          <input id="shellMtheta" type="number" min="0" step="1" value="4" />
+        </div>
+        <div class="field">
+          <label for="timeT">Coordinate time t</label>
+          <input id="timeT" type="number" step="any" value="1" />
+        </div>
+      </div>
+      <button type="button" id="btnTheta">Compute θ = φ(m)·t</button>
+      <pre class="out" id="outTheta"></pre>
+    </section>
+    <section>
+      <h2>Minkowski corners (Lean <code>patchChartPoint</code>)</h2>
+      <p style="margin:0 0 0.5rem; font-size:0.88rem; color:var(--muted);">
+        Index 0 → time axis; 1…3 → spatial at t = 0. η(z) = (z⁰)² − ‖z⃗‖².
+      </p>
+      <div class="row">
+        <div class="field">
+          <label for="ia">Corner i</label>
+          <input id="ia" type="number" min="0" max="3" step="1" value="1" />
+        </div>
+        <div class="field">
+          <label for="ja">Corner j</label>
+          <input id="ja" type="number" min="0" max="3" step="1" value="2" />
+        </div>
+      </div>
+      <button type="button" id="btnEta">Interval η(xᵢ − xⱼ)</button>
+      <pre class="out" id="outEta"></pre>
+    </section>
+    <section>
+      <h2>Spatial regions (for disjoint → spacelike pairs)</h2>
+      <p style="margin:0 0 0.35rem; font-size:0.88rem; color:var(--muted);">
+        Include only indices 1, 2, 3 in each region. Disjoint regions ⇒ spacelike separation between corners (Lean <code>regions_disjoint_spatial_spacelike</code>).
+      </p>
+      <div class="row">
+        <div>
+          <label>Region R</label>
+          <div class="grid-chk" id="regionR"></div>
+        </div>
+        <div>
+          <label>Region S</label>
+          <div class="grid-chk" id="regionS"></div>
+        </div>
+      </div>
+      <button type="button" id="btnRegions">Check disjoint &amp; spacelike</button>
+      <pre class="out" id="outRegions"></pre>
+    </section>
+    <footer>
+      Open <code>sim/patch_qft_bridge.html</code> locally. Constants match Lean: φ<sub>shell</sub>(m) = 2(m+1), mode budget = 4(m+2)(m+1).
+      <strong>Definite limit</strong> (photon / horizon angular refinement): <code>PhotonHorizonModeLimitValue = 4</code> — ratio to cumulative S² harmonics tends to neighbourhoods of 4 as shell <code>M → ∞</code> (<code>photonHorizonModeLimit_tendsto</code>).
+    </footer>
+  </main>
+  <script>
+(function () {
+  const phiCoeff = 2;
+
+  function availableModes(m) {
+    m = Math.max(0, Math.floor(Number(m)) || 0);
+    return 4 * (m + 2) * (m + 1);
+  }
+
+  function phiOfShell(m) {
+    m = Math.max(0, Math.floor(Number(m)) || 0);
+    return phiCoeff * (m + 1);
+  }
+
+  function shellIndexFromTheta(theta) {
+    const x = Math.max(0, theta / phiCoeff - 1);
+    return Math.floor(x);
+  }
+
+  function patchChartPoint(i) {
+    const v = [0, 0, 0, 0];
+    i = Math.max(0, Math.min(3, Math.floor(Number(i)) || 0));
+    if (i === 0) return [1, 0, 0, 0];
+    v[i] = 1;
+    return v;
+  }
+
+  function sub(a, b) {
+    return a.map((_, k) => a[k] - b[k]);
+  }
+
+  function minkowskiIntervalSq(z) {
+    return z[0] * z[0] - z[1] * z[1] - z[2] * z[2] - z[3] * z[3];
+  }
+
+  function fmtVec(v) {
+    return "(" + v.map((x) => x.toFixed(3)).join(", ") + ")";
+  }
+
+  document.getElementById("btnModes").addEventListener("click", () => {
+    const M = document.getElementById("shellM").value;
+    const am = availableModes(M);
+    const el = document.getElementById("outModes");
+    el.textContent =
+      "available_modes(" + M + ") = 4·(" + (+M + 2) + ")·(" + (+M + 1) + ") = " + am + "\n" +
+      "(matches Hqiv.available_modes / accessibleModeBudgetUpToShell)";
+  });
+
+  document.getElementById("btnTheta").addEventListener("click", () => {
+    const m = document.getElementById("shellMtheta").value;
+    const t = Number(document.getElementById("timeT").value);
+    const ph = phiOfShell(m);
+    const theta = ph * t;
+    const idx = shellIndexFromTheta(theta);
+    const budget = availableModes(idx);
+    const el = document.getElementById("outTheta");
+    el.textContent =
+      "φ_shell(" + m + ") = 2·(" + (+m + 1) + ") = " + ph + "\n" +
+      "θ = φ·t = " + theta + "\n" +
+      "shellIndexFromTimeAngle (floor max(0, θ/2 − 1)) = " + idx + "\n" +
+      "accessibleModeBudgetUpToShell(" + idx + ") = " + budget + "\n" +
+      "(at t = 1, index matches m — Lean accessibleModeBudgetUpToPhiTime_eq_accessibleModeBudgetUpToShell_unit)";
+  });
+
+  document.getElementById("btnEta").addEventListener("click", () => {
+    const ia = document.getElementById("ia").value;
+    const ja = document.getElementById("ja").value;
+    const xi = patchChartPoint(ia);
+    const xj = patchChartPoint(ja);
+    const sep = sub(xi, xj);
+    const eta = minkowskiIntervalSq(sep);
+    const el = document.getElementById("outEta");
+    el.textContent =
+      "x_" + ia + " = " + fmtVec(xi) + "\n" +
+      "x_" + ja + " = " + fmtVec(xj) + "\n" +
+      "Δ = " + fmtVec(sep) + "\n" +
+      "η(Δ) = " + eta.toFixed(6) + "  " +
+      (eta < 0 ? "(spacelike)" : eta > 0 ? "(timelike)" : "(null)");
+  });
+
+  const spatial = [1, 2, 3];
+  function buildRegion(id) {
+    const host = document.getElementById(id);
+    spatial.forEach((i) => {
+      const lab = document.createElement("label");
+      const inp = document.createElement("input");
+      inp.type = "checkbox";
+      inp.value = String(i);
+      inp.dataset.corner = String(i);
+      lab.appendChild(inp);
+      lab.appendChild(document.createTextNode(" corner " + i));
+      host.appendChild(lab);
+    });
+  }
+  buildRegion("regionR");
+  buildRegion("regionS");
+
+  document.getElementById("btnRegions").addEventListener("click", () => {
+    const r = new Set();
+    const s = new Set();
+    document.querySelectorAll("#regionR input:checked").forEach((c) => r.add(+c.value));
+    document.querySelectorAll("#regionS input:checked").forEach((c) => s.add(+c.value));
+    let disjoint = true;
+    for (const a of r) if (s.has(a)) disjoint = false;
+    let spacelike = true;
+    if (disjoint && r.size && s.size) {
+      for (const i of r) {
+        for (const j of s) {
+          const eta = minkowskiIntervalSq(sub(patchChartPoint(i), patchChartPoint(j)));
+          if (!(eta < 0)) spacelike = false;
+        }
+      }
+    } else {
+      spacelike = false;
+    }
+    const el = document.getElementById("outRegions");
+    el.textContent =
+      "R = {" + [...r].join(", ") + "}  S = {" + [...s].join(", ") + "}\n" +
+      "Disjoint: " + (disjoint ? "yes" : "no") + "\n" +
+      "All corner pairs spacelike (η < 0): " + (spacelike ? "yes" : "no") + "\n" +
+      "(requires disjoint non-empty spatial regions; cf. Lean regions_disjoint_spatial_spacelike)";
+  });
+
+  document.getElementById("btnModes").click();
+  document.getElementById("btnTheta").click();
+  document.getElementById("btnEta").click();
+})();
+  </script>
+</body>
+</html>

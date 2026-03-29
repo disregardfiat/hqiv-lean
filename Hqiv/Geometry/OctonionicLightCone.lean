@@ -234,7 +234,11 @@ theorem new_modes_succ (m : Nat) :
   push_cast
   ring
 
-/-- HQIV varying-G exponent α.
+/-- HQIV varying-G exponent α — the **only** curvature-imprint exponent used in this formalism.
+
+**Provenance:** the physical derivation that this exponent is \(3/5\) (and that it is the unique
+HQIV curvature imprint in the companion theory) is given in the companion HQIV manuscript and in
+Brodie (2026), not reproved here; Lean encodes the identification and proves `alpha_eq_3_5`.
 
 Same dimensionless index as in the Python curvature pipeline (`alpha = 0.60` in
 `discrete_baryogenesis_horizon.py` and `main.tex`), i.e. how \(G_\mathrm{eff}\)

@@ -22,8 +22,9 @@ structure, and resonance geometry (no external mass inputs in this module).
 
 **Neutrino anchor (same horizon language as quark top / `T_lockin`):**
 `T_lockin` multiplies the outer horizon area at `referenceM + 1` to form the vev;
-`M_Z` and then `m_nu_e_derived` follow, with sterile suppression from
-`outerHorizonSurface (referenceM + 2)`. See `m_nu_e_derived_eq_T_lockin_outer_surfaces`.
+`M_Z` and then `m_nu_e_derived` follow, with **outer-horizon suppression** from
+`outerHorizonSurface (referenceM + 2)` (`outerHorizonNeutrinoSuppression`). See
+`m_nu_e_derived_eq_T_lockin_outer_surfaces`.
 -/
 
 /-- Outer-horizon surface from lattice stars-and-bars leading term. -/
@@ -60,14 +61,14 @@ noncomputable def m_H_derived : ℝ := 2 * vacuumExpectationValue
 noncomputable def M_W_derived : ℝ := gaugeBosonMassFromVev su2CouplingDerived
 noncomputable def M_Z_derived : ℝ := gaugeBosonMassFromVev (su2CouplingDerived + u1CouplingDerived)
 
-/-- Sterile overlap suppression on the same outer-horizon shell family. -/
-noncomputable def sterileNeutrinoSuppression : ℝ :=
+/-- Small ν mass factor: `γ` over the next outer-horizon surface (`referenceM + 2`). -/
+noncomputable def outerHorizonNeutrinoSuppression : ℝ :=
   gammaDerived / outerHorizonSurface (referenceM + 2)
 
 noncomputable def m_nu_tree : ℝ := 0
-noncomputable def m_nu_e_derived : ℝ := sterileNeutrinoSuppression * M_Z_derived
-noncomputable def m_nu_mu_derived : ℝ := sterileNeutrinoSuppression * m_nu_e_derived
-noncomputable def m_nu_tau_derived : ℝ := sterileNeutrinoSuppression * m_nu_mu_derived
+noncomputable def m_nu_e_derived : ℝ := outerHorizonNeutrinoSuppression * M_Z_derived
+noncomputable def m_nu_mu_derived : ℝ := outerHorizonNeutrinoSuppression * m_nu_e_derived
+noncomputable def m_nu_tau_derived : ℝ := outerHorizonNeutrinoSuppression * m_nu_mu_derived
 
 theorem higgs_mass_from_outer_resonance :
     m_H_derived = 2 * vacuumExpectationValue := rfl
@@ -77,11 +78,11 @@ theorem w_and_z_masses_from_gauge_closure :
     M_Z_derived = gaugeBosonMassFromVev (su2CouplingDerived + u1CouplingDerived) := by
   exact ⟨rfl, rfl⟩
 
-theorem neutrino_masses_from_sterile_overlap :
+theorem neutrino_masses_from_outer_horizon :
     m_nu_tree = 0 ∧
-    m_nu_e_derived = sterileNeutrinoSuppression * M_Z_derived ∧
-    m_nu_mu_derived = sterileNeutrinoSuppression * m_nu_e_derived ∧
-    m_nu_tau_derived = sterileNeutrinoSuppression * m_nu_mu_derived := by
+    m_nu_e_derived = outerHorizonNeutrinoSuppression * M_Z_derived ∧
+    m_nu_mu_derived = outerHorizonNeutrinoSuppression * m_nu_e_derived ∧
+    m_nu_tau_derived = outerHorizonNeutrinoSuppression * m_nu_mu_derived := by
   exact ⟨rfl, rfl, rfl, rfl⟩
 
 theorem electroweakShell_eq_succ_reference : electroweakShell = referenceM + 1 := rfl
@@ -112,6 +113,6 @@ theorem m_nu_e_derived_eq_T_lockin_outer_surfaces :
       (gammaDerived / outerHorizonSurface (referenceM + 2)) *
         (su2CouplingDerived + u1CouplingDerived) *
           T_lockin * outerHorizonSurface (referenceM + 1) * (1 + gammaDerived) := by
-  simp [m_nu_e_derived, sterileNeutrinoSuppression, M_Z_derived, gaugeBosonMassFromVev,
+  simp [m_nu_e_derived, outerHorizonNeutrinoSuppression, M_Z_derived, gaugeBosonMassFromVev,
     vacuumExpectationValue, electroweakShell, mul_assoc, mul_left_comm, mul_comm]
 end Hqiv.Physics

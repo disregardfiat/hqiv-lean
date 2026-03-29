@@ -1,5 +1,6 @@
 import Hqiv.QuantumComputing.DigitalGates
 import Hqiv.QuantumComputing.OSHoracle
+import Hqiv.QuantumComputing.OSHoracleHQIVNative
 
 namespace Hqiv.QuantumComputing
 
@@ -27,9 +28,19 @@ def proteinSparseInit (p : Protein) : SparseRegister p.residues.length :=
 def proteinFoldingGate (p : Protein) : HQIVGate p.residues.length :=
   (proteinFoldingAnsatz p.residues.length #[]).headD HQIVGate.id
 
+/-- **HQIV-native gate:** π phase on `hqivHarmonicPivot` from `hqivPivotFromShells` (`referenceM` + Σ shells). -/
+def proteinNativeGate (p : Protein) (shells : List ℕ) (hl : shells.length = p.residues.length) :
+    HQIVGate p.residues.length :=
+  hqivNativePhaseGate p.residues.length shells hl
+
 /-- Gate-evolved sparse support used by the folding hook. -/
 noncomputable def proteinSparseEvolved (p : Protein) : SparseRegister p.residues.length :=
   applyGateSparse (proteinFoldingGate p) (proteinSparseInit p)
+
+/-- Gate-evolved sparse support with the **HQIV-native** phase gate (same OSHoracle cost as `proteinSparseEvolved`). -/
+noncomputable def proteinSparseEvolvedNative (p : Protein) (shells : List ℕ)
+    (hl : shells.length = p.residues.length) : SparseRegister p.residues.length :=
+  hqivNativeOracleSparseStep p.residues.length shells hl (proteinSparseInit p)
 
 /-- Pruned sparse support restricted to causally flipped kets. -/
 noncomputable def proteinSparsePruned (p : Protein) : SparseRegister p.residues.length :=
@@ -81,6 +92,11 @@ theorem proteinSparseEvolved_support_growth (p : Protein) :
     (L := p.residues.length)
     (g := proteinFoldingGate p)
     (r := proteinSparseInit p)).le
+
+theorem proteinSparseEvolvedNative_length (p : Protein) (shells : List ℕ)
+    (hl : shells.length = p.residues.length) :
+    (proteinSparseEvolvedNative p shells hl).length = 2 * (proteinSparseInit p).length :=
+  hqivNativeOracleSparseStep_length p.residues.length shells hl (proteinSparseInit p)
 
 #print residueAmplitude
 #print proteinFoldingAnsatz

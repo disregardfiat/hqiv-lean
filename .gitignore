@@ -17,3 +17,8 @@ HQIVGenerators/.lake/
 /Mathlib
 /Hqiv.Geometry.AuxiliaryField
 /Hqiv.Geometry.OctonionicLightCone
+
+# Archive and scratch — not part of default lake targets (see AGENTS/ASSUMPTIONS.md).
+archive/
+scratch/
+tmp_*.lean

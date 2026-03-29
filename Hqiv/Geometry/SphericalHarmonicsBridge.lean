@@ -41,7 +41,8 @@ in `m` with the **shift** `(m+2)(m+1)` versus `(m+1)²`, and an overall factor `
 * **64 real dof / one fermion generation (8×8):** the smallest `m` with
   `available_modes m ≥ 64` is `m = 3` (value `80`). This is a **pure capacity** statement
   on the ℝ mode count. It is **not** the τ birth index `m_tau = 274211` in
-  `GenerationResonance`, which anchors the lepton ladder via scaled cumulative simplex
+  the archived Planck-volume τ-shell model (`archive/abandoned/GenerationResonanceTauHighestShell.lean`),
+  which anchored the lepton ladder via scaled cumulative simplex
   volume and Planck-mass matching.
 
 * **Curvature ladder vs harmonic series:** discrete harmonic partial sums bound the curvature

@@ -5,6 +5,9 @@ import Mathlib.LinearAlgebra.Matrix.Defs
 import Mathlib.LinearAlgebra.Matrix.Notation
 import Mathlib.LinearAlgebra.LinearIndependent.Basic
 import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.LinearAlgebra.Matrix.SesquilinearForm
+import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+import Mathlib.LinearAlgebra.Dimension.StrongRankCondition
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.BigOperators.Fin
 import Hqiv.Generators
@@ -24,6 +27,17 @@ already shows the 28 so8Generators are a basis and closed under bracket; here we
 state and prove the abstract picture.
 
 **Reference:** HQIV preprint v2, Zenodo 10.5281/zenodo.18899939, Section 4.2–4.4.
+
+**Span vs skew-adjoint:** `g2Generator_mem_span_so8` and `phaseLiftDelta_mem_span_so8` are proved by
+identifying `Submodule.span ℝ (Set.range so8Generator)` with `Matrix.skewAdjointMatricesSubmodule (1 : Matrix …)`
+(the standard Euclidean `𝔰𝔬(8)` model: `Mᵀ = -M`).
+
+**Linear span of `G₂ ∪ {Δ}` vs `𝔰𝔬(8)`:** the **linear** span of at most **15** explicit matrices (`14` `g2Generator`
+values `+ Δ`) has `finrank ≤ 15`, whereas `span(so8Generator)` is **28**-dimensional.  So **no** linear equality
+`spanℝ(G₂ ∪ {Δ}) = spanℝ(so8Generator)` can hold, and some `so8Generator k` lie **outside** the linear span of
+`G₂ ∪ {Δ}` (`exists_so8Generator_not_mem_span_G2_union_Delta`).  The Lie-subalgebra **generated** by iterated
+brackets (as in `GeneratorsLieClosure`) is the correct notion for “closure”; that is **not** the same as
+`Submodule.span` of the bare generating set.
 -/
 
 open Matrix BigOperators
@@ -121,39 +135,148 @@ theorem so8_span_self (k : Fin 28) :
 /-- **G₂ generators as a set** (for reference). -/
 def G2_generators : Set (Matrix (Fin 8) (Fin 8) ℝ) := Set.range Hqiv.Algebra.g2Generator
 
-/-- **Each G₂ generator lies in span(so8).** (Coefficient data from script; antisymmetry gives G₂ ⊆ so(8).) -/
+/-! ### Skew-adjoint (`J = 1`) span = ℝ-span of the 28 `so8Generator` matrices -/
+
+/-- Skew-adjoint matrices for the Euclidean form `J = 1` — i.e. `𝔰𝔬(8) = { M | Mᵀ = -M }`. -/
+abbrev skewAdjointOne : Submodule ℝ (Matrix (Fin 8) (Fin 8) ℝ) :=
+  skewAdjointMatricesSubmodule (1 : Matrix (Fin 8) (Fin 8) ℝ)
+
+lemma mem_skewAdjointOne_iff (M : Matrix (Fin 8) (Fin 8) ℝ) :
+    M ∈ skewAdjointOne ↔ Mᵀ = -M := by
+  rw [mem_skewAdjointMatricesSubmodule, Matrix.IsSkewAdjoint, Matrix.IsAdjointPair]
+  simp only [Matrix.mul_one, Matrix.one_mul]
+
+lemma skewAdjointOne_diag_zero {M : Matrix (Fin 8) (Fin 8) ℝ} (h : Mᵀ = -M) (i : Fin 8) : M i i = 0 := by
+  have hii := congr_fun (congr_fun (Matrix.ext_iff.2 h) i) i
+  simp only [Matrix.transpose_apply, neg_apply] at hii
+  linarith
+
+lemma skewAdjointOne_entry_swap {M : Matrix (Fin 8) (Fin 8) ℝ} (h : Mᵀ = -M) (i j : Fin 8) :
+    M i j = -M j i := by
+  have := congr_fun (congr_fun (Matrix.ext_iff.2 h) j) i
+  simp only [Matrix.transpose_apply, neg_apply] at this
+  exact this.symm
+
+/-- Strict upper-triangle coordinates: injective on `skewAdjointOne` (dimension ≤ 28). -/
+def skewStrictUpperCoords : skewAdjointOne →ₗ[ℝ] ({ ij : Fin 8 × Fin 8 // ij.1 < ij.2 } → ℝ) where
+  toFun M := fun p => (M : Matrix (Fin 8) (Fin 8) ℝ) p.1.1 p.1.2
+  map_add' M N := by ext p; simp [Matrix.add_apply]
+  map_smul' r M := by ext p; simp [Matrix.smul_apply, RingHom.id_apply]
+
+lemma skewStrictUpperCoords_injective : Function.Injective skewStrictUpperCoords := by
+  intro M N hMN
+  apply Subtype.ext
+  apply Matrix.ext
+  intro i j
+  rcases lt_trichotomy i j with (hij | rfl | hji)
+  · exact congr_fun hMN ⟨⟨i, j⟩, hij⟩
+  · have hM := mem_skewAdjointOne_iff.1 M.property
+    have hN := mem_skewAdjointOne_iff.1 N.property
+    rw [← skewAdjointOne_diag_zero hM, ← skewAdjointOne_diag_zero hN]
+    rfl
+  · have hM := mem_skewAdjointOne_iff.1 M.property
+    have hN := mem_skewAdjointOne_iff.1 N.property
+    have hij' : j < i := hji
+    have eqM := skewAdjointOne_entry_swap hM i j
+    have eqN := skewAdjointOne_entry_swap hN i j
+    have hup := congr_fun hMN ⟨⟨j, i⟩, hij'⟩
+    dsimp [skewStrictUpperCoords] at hup
+    linarith [eqM, eqN, hup]
+
+lemma card_strict_upper_pairs_fin8 : Fintype.card { ij : Fin 8 × Fin 8 // ij.1 < ij.2 } = 28 := by
+  native_decide
+
+lemma finrank_skewAdjointOne_eq : Module.finrank ℝ skewAdjointOne = 28 := by
+  have hle :=
+    LinearMap.finrank_le_finrank_of_injective skewStrictUpperCoords skewStrictUpperCoords_injective
+  rw [Module.finrank_pi, card_strict_upper_pairs_fin8] at hle
+  have hge : 28 ≤ Module.finrank ℝ skewAdjointOne := by
+    rw [← so8_span_dim_eq_28]
+    refine Submodule.finrank_mono ?_
+    rw [Submodule.span_le]
+    intro M hM
+    obtain ⟨k, rfl⟩ := hM
+    rw [mem_skewAdjointOne_iff]
+    exact (add_eq_zero_iff_eq_neg.1 (Hqiv.so8Generator_antisymm k)).symm
+  exact le_antisymm hle hge
+
+lemma span_so8Generators_eq_skewAdjointOne :
+    Submodule.span ℝ (Set.range Hqiv.so8Generator) = skewAdjointOne :=
+  Submodule.eq_of_le_of_finrank_eq
+    (show Submodule.span ℝ (Set.range Hqiv.so8Generator) ≤ skewAdjointOne from by
+      rw [Submodule.span_le]
+      intro M hM
+      obtain ⟨k, rfl⟩ := hM
+      rw [mem_skewAdjointOne_iff]
+      exact (add_eq_zero_iff_eq_neg.1 (Hqiv.so8Generator_antisymm k)).symm)
+    (by rw [so8_span_dim_eq_28, finrank_skewAdjointOne_eq])
+
+/-- **Each G₂ generator lies in span(so8).** (antisymmetric ⇒ in the 28-dim skew subspace = span of generators). -/
 theorem g2Generator_mem_span_so8 (k : Fin 14) :
     Hqiv.Algebra.g2Generator k ∈ Submodule.span ℝ (Set.range Hqiv.so8Generator) := by
-  sorry
+  rw [span_so8Generators_eq_skewAdjointOne]
+  rw [mem_skewAdjointOne_iff]
+  exact (add_eq_zero_iff_eq_neg.1 (Hqiv.Algebra.g2_in_so8 k)).symm
 
-/-- **Δ lies in span(so8).** (Antisymmetric ⇒ Δ ∈ so(8) = span of 28 generators.) -/
+/-- **Δ lies in span(so8).** -/
 theorem phaseLiftDelta_mem_span_so8 :
     Hqiv.phaseLiftDelta ∈ Submodule.span ℝ (Set.range Hqiv.so8Generator) := by
-  sorry
+  rw [span_so8Generators_eq_skewAdjointOne]
+  rw [mem_skewAdjointOne_iff]
+  exact (add_eq_zero_iff_eq_neg.1 delta_in_so8).symm
 
-/-- **Each so(8) generator lies in span(G₂ ∪ {Δ}).** (Lie closure + dimension 28.) -/
-theorem so8Generator_mem_span_G2_Delta (k : Fin 28) :
-    Hqiv.so8Generator k ∈ Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta}) := by
-  sorry
+/-- **Linear containment:** `G₂ ∪ {Δ} ⊆ span(so8Generator)` (antisymmetry), hence the linear span of the
+left-hand side lies in the 28-dimensional `span(so8Generator)`. -/
+theorem span_G2_union_Delta_le_span_so8Generator :
+    Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta}) ≤
+      Submodule.span ℝ (Set.range Hqiv.so8Generator) := by
+  rw [Submodule.span_le]
+  intro M hM
+  rcases hM with (⟨k, rfl⟩ | rfl)
+  · exact g2Generator_mem_span_so8 k
+  · exact phaseLiftDelta_mem_span_so8
 
-/-- **Full closure:** span(G₂ ∪ {Δ}) = span(so8). Proved by le_antisymm: containment from
-  antisymmetry (G₂, Δ ∈ so(8)) and dimension 28; reverse containment from Lie closure. -/
-theorem G2_plus_Delta_closes_to_so8_full :
-    Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta}) =
-    Submodule.span ℝ (Set.range Hqiv.so8Generator) := by
-  le_antisymm
-  · intro M hM
-    cases hM with
-    | inl g =>
-      obtain ⟨k, rfl⟩ := g
-      exact g2Generator_mem_span_so8 k
-    | inr d =>
-      rw [Set.mem_singleton_iff] at d
-      rw [d]
-      exact phaseLiftDelta_mem_span_so8
-  · intro M hM
+/-- The generating set `G₂ ∪ {Δ}` is contained in a **finite** set of at most 15 explicit matrices. -/
+theorem finrank_span_G2_union_Delta_le_15 :
+    Module.finrank ℝ (Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta})) ≤ 15 := by
+  let F := Finset.univ.image Hqiv.Algebra.g2Generator ∪ Finset.singleton Hqiv.phaseLiftDelta
+  have hset : (G2_generators ∪ {Hqiv.phaseLiftDelta}) = (F : Set (Matrix (Fin 8) (Fin 8) ℝ)) := by
+    ext M
+    simp [G2_generators, F, Set.mem_union, Set.mem_range, Set.mem_singleton_iff, Finset.mem_coe,
+      Finset.mem_union, Finset.mem_image, Finset.mem_singleton, Finset.mem_univ]
+    constructor
+    · rintro (⟨k, rfl⟩ | rfl)
+      · left; exact Finset.mem_image.mpr ⟨k, Finset.mem_univ k, rfl⟩
+      · right; simp
+    · rintro (hM | hM)
+      · obtain ⟨k, _, hk⟩ := Finset.mem_image.mp hM
+        exact Or.inl ⟨k, hk⟩
+      · simp only [Finset.mem_singleton] at hM
+        rw [hM]
+        exact Or.inr rfl
+  rw [hset]
+  have hcard : F.card ≤ 15 := by
+    refine le_trans (Finset.card_union_le _ _) ?_
+    rw [Finset.card_singleton]
+    refine add_le_add_right ?_ 1
+    refine le_trans Finset.card_image_le ?_
+    simp [Fintype.card_fin]
+  exact (finrank_span_finset_le_card F).trans hcard
+
+/-- **Obstruction:** some standard `so8Generator` matrix lies **outside** the **linear** span of the
+15 explicit `G₂ ∪ {Δ}` matrices (dimension 28 vs ≤ 15).  Lie-generated closure is a different notion. -/
+theorem exists_so8Generator_not_mem_span_G2_union_Delta :
+    ∃ k : Fin 28, Hqiv.so8Generator k ∉ Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta}) := by
+  by_contra h
+  push_neg at h
+  have hsub : Submodule.span ℝ (Set.range Hqiv.so8Generator) ≤ Submodule.span ℝ (G2_generators ∪ {Hqiv.phaseLiftDelta}) := by
+    rw [Submodule.span_le]
+    intro M hM
     obtain ⟨k, rfl⟩ := hM
-    exact so8Generator_mem_span_G2_Delta k
+    exact h k
+  have hle := Submodule.finrank_mono hsub
+  rw [so8_span_dim_eq_28] at hle
+  linarith [finrank_span_G2_union_Delta_le_15]
 
 /-!
 ## Quadrant decomposition (Cayley–Dickson / Maxwell H block)

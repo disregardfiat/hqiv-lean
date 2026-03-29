@@ -2,7 +2,6 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.LinearAlgebra.Matrix.Defs
-import Hqiv.Algebra.SO8ClosureAbstract
 import Hqiv.Algebra.SMEmbedding
 import Hqiv.Algebra.Triality
 

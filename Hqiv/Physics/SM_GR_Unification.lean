@@ -1,6 +1,6 @@
 import Mathlib.Analysis.Calculus.Deriv.Slope
-import Mathlib.Analysis.Calculus.Deriv.Slope
 import Mathlib.Data.Real.Basic
+import Mathlib.Topology.Basic
 import Mathlib.Tactic
 import Hqiv.Conservations
 import Hqiv.Geometry.AuxiliaryField
@@ -13,13 +13,14 @@ import Hqiv.Physics.Action
 import Hqiv.Physics.Forces
 import Hqiv.Physics.GRFromMaxwell
 import Hqiv.Physics.ModifiedMaxwell
-import Hqiv.Physics.GenerationResonance
+import Hqiv.Physics.ChargedLeptonResonance
 import Hqiv.Physics.DerivedNucleonMass
 import Hqiv.Physics.Baryogenesis
 
 namespace Hqiv
 
 open scoped Topology
+open Filter
 open Hqiv.Physics
 
 /-!
@@ -110,6 +111,53 @@ theorem one_over_alpha_eff_pos (φ c : ℝ) (hφ : φ + 1 > 0)
   positivity
 
 /-!
+### Derived inverse α_EM from the discrete ladder (symbolic; matches paper O–Maxwell chain)
+
+The companion manuscript / HQIV paper fixes **α = 3/5** (`alpha_eq_3_5`), **α_GUT = 1/42**
+(`alpha_GUT_eq_1_42`), and evaluates the O–Maxwell correction at **φ(m) = 2(m+1)**
+(`phi_of_shell_closed_form`).  That yields a fully expanded rational–log expression in the
+shell index `m` and Fano normalization `c` — no further lattice parameters.
+
+The decimal `one_over_alpha_EM_at_MZ` below is still a **phenomenological witness** (paper-aligned
+`127.9`); proving `= one_over_alpha_EM_derived m c` for fixed integer `m` and `c = 1` would require
+numeric bounds on `Real.log`, and integer shells need not hit the experimental value exactly.
+Use `one_over_alpha_EM_derived_closed_form` as the formal derivation target.
+-/
+
+/-- Inverse fine-structure constant **derived** from the ladder: `one_over_alpha_eff` at `φ(m)`. -/
+noncomputable abbrev one_over_alpha_EM_derived (m : ℕ) (c : ℝ) : ℝ :=
+  one_over_alpha_eff (phi_of_shell m) c
+
+theorem one_over_alpha_EM_derived_closed_form (m : ℕ) (c : ℝ) :
+    one_over_alpha_EM_derived m c =
+      (42 : ℝ) * (1 + c * (3 / 5 : ℝ) * Real.log (2 * (m + 1 : ℝ) + 1)) := by
+  unfold one_over_alpha_EM_derived one_over_alpha_eff
+  have hφ : (phi_of_shell m : ℝ) + 1 = 2 * (m + 1 : ℝ) + 1 := by
+    rw [phi_of_shell_closed_form m]
+    unfold phiTemperatureCoeff
+    ring
+  simp_rw [one_over_alpha_bare_eq, alpha_eq_3_5, hφ]
+
+/-- Electroweak-scale shell for φ: `referenceM + 1` (same convention as `DerivedGaugeAndLeptonSector`). -/
+def electroweakPhiShell : ℕ := referenceM + 1
+
+theorem electroweakPhiShell_val : electroweakPhiShell = 5 := by
+  unfold electroweakPhiShell referenceM qcdShell stepsFromQCDToLockin latticeStepCount
+  norm_num
+
+/-- `1/α` from the ladder at the electroweak φ-shell, Fano coefficient `c`. -/
+noncomputable abbrev one_over_alpha_EM_derived_electroweak (c : ℝ) : ℝ :=
+  one_over_alpha_EM_derived electroweakPhiShell c
+
+theorem one_over_alpha_EM_derived_electroweak_closed (c : ℝ) :
+    one_over_alpha_EM_derived_electroweak c =
+      (42 : ℝ) * (1 + c * (3 / 5 : ℝ) * Real.log 13) := by
+  unfold one_over_alpha_EM_derived_electroweak
+  rw [one_over_alpha_EM_derived_closed_form electroweakPhiShell c]
+  simp_rw [electroweakPhiShell_val]
+  ring_nf
+
+/-!
 ## Part 2.5: Side-by-side — coupling evolution (quantum loops vs classical horizon correction)
 
 **Standard Model (quantum)**
@@ -173,8 +221,9 @@ Materials           | HQIVAtom.phi_local, phase diagrams                  | Modi
 /-!
 ## Part 4: Constants at "now" from O-Maxwell + lattice (no SM beta functions)
 
-**1/α_EM(M_Z) ≈ 127.9:** Derived above from 1/α_eff(φ) = (1/α_GUT)(1 + c·α·log(φ+1))
-evaluated at the "now" scale (φ fixed by lattice + curvature norm 6⁷√3). Witness: 127.9.
+**1/α_EM(M_Z) ≈ 127.9:** Symbolic form `one_over_alpha_EM_derived_closed_form` /
+`one_over_alpha_EM_derived_electroweak_closed`; the decimal below is the paper-aligned
+phenomenological witness (see module doc above `one_over_alpha_EM_derived`).
 
 **sin²θ_W(M_Z), α_s(M_Z):** Same pattern — Fano-plane structure picks the Weak and
 Strong directions (triality, lines orthogonal to the EM line); the modified O-Maxwell
@@ -195,7 +244,8 @@ noncomputable def M_GUT_over_M_Pl : ℝ := 1.2e16 / 1.2209e19
 /-- **Z mass scale (natural units):** M_Z in Planck units. Electroweak scale from the pipeline. -/
 noncomputable def M_Z_natural : ℝ := 91.1876 / 1.2209e19
 
-/-- **1/α_EM(M_Z) ≈ 127.9** — witness of O-Maxwell effective coupling at "now" (no beta function). -/
+/-- **1/α_EM(M_Z) ≈ 127.9** — paper-aligned witness at "now". The same functional form is
+`one_over_alpha_EM_derived` / `one_over_alpha_eff (phi_of_shell m)` (`one_over_alpha_EM_derived_closed_form`). -/
 noncomputable def one_over_alpha_EM_at_MZ : ℝ := 127.9
 
 /-- **α_EM(M_Z)** — inverse of the above. -/
@@ -230,7 +280,7 @@ scale is fixed by the electron witness.
 
 /-- The single local mass witness: electron mass in natural units. -/
 noncomputable def m_electron_natural : ℝ :=
-  m_tau_Pl * (1 / resonanceProduct .zero)
+  m_tau_Pl * (1 / resonanceProduct Hqiv.Algebra.rep8V)
 
 /-- The electron witness is positive. -/
 theorem m_electron_natural_pos : 0 < m_electron_natural := by
@@ -314,9 +364,9 @@ theorem electronShell_def : electronShell = shellIndexForTemperature electronTem
 
 /-- Recover the temperature from the electron shell anchor. -/
 theorem electronTemperature_from_shell :
-    electronTemperatureAnchor = 1 / (electronShell + 1) := by
+    electronTemperatureAnchor = (1.0 : ℝ) / (electronShell + 1.0) := by
   unfold electronShell electronTemperatureAnchor
-  simpa using shellIndexForTemperature_inv T_CMB_natural electronTemperatureAnchor_pos
+  exact shellIndexForTemperature_inv T_CMB_natural electronTemperatureAnchor_pos
 
 /-!
 **Lock-in horizon vs “now” (electron and ν anchors):** the quark top uses the same
@@ -324,14 +374,15 @@ discrete index `referenceM` as baryogenesis lock-in (`m_top_at_lockin`, `m_locki
 So `T_lockin` is the ladder temperature on that shell (`T_lockin = T m_top_at_lockin`).
 
 The **electron mass** in Planck units is not a separate mass-table input: it is
-`m_tau_Pl` divided by the two **geometric** `GenerationResonance` factors
-(`resonance_k_*` are exact ratios of detuned `(m+1)(m+2)` surfaces at `m_tau`, `m_mu`,
-`m_e`), with `m_tau_Pl` fixed by the cumulative lattice (`tau_birth_shell_located_by_planck_volume`). The
+`m_tau_Pl` divided by the two **geometric** `ChargedLeptonResonance` factors
+(`resonance_k_*` are exact ratios of detuned `(m+1)(m+2)` surfaces at the lock-in lepton shells
+`m_tau`, `m_mu`, `m_e` from `LeptonGenerationLockin`). The Planck-scale witness `m_tau_Pl` is a
+fixed decimal anchor (same combination as in the archived Planck-volume τ-shell model). The
 **observer-shell** anchor `electronTemperatureAnchor` uses `T_CMB_natural` only to
 place `φ(m)`–shape data at “now”; it is complementary to the lock-in identification
 above.
 
-**Sterile-overlap neutrinos** (`m_nu_e_derived`, …) are explicit products of `T_lockin`
+**Outer-horizon neutrinos** (`m_nu_e_derived`, …) are explicit products of `T_lockin`
 with `outerHorizonSurface` at `referenceM + 1` and `referenceM + 2`; see
 `Hqiv.Physics.m_nu_e_derived_eq_T_lockin_outer_surfaces`.
 -/
@@ -351,7 +402,6 @@ theorem m_electron_natural_eq_m_tau_Pl_over_resonance_ks :
   unfold m_electron_natural
   exact planck_electron_mass_from_tau_resonance
 
-/-- Integer shell displacement relative to the electron shell, by generation structure. -/
 /-- Generation index extracted from the already-proved triality structure. -/
 def smGenerationIndex : SMMassLabel → Hqiv.Algebra.So8RepIndex
   | .electron | .up | .down | .nu_e => Hqiv.Algebra.rep8V
@@ -405,8 +455,8 @@ noncomputable def phaseLiftCoeffReal (s : ℝ) : ℝ := phi_of_real_shell s / 6
 noncomputable def shellMassGeometryFactor (s : ℝ) : ℝ :=
   (phi_of_real_shell s / phiTemperatureCoeff) * shellShapeReal s * (1 + phaseLiftCoeffReal s)
 
-/-- The shell geometric factor is positive. -/
-theorem shellMassGeometryFactor_pos (s : ℝ) (hs : -1 < s) : 0 < shellMassGeometryFactor s := by
+/-- The shell geometric factor is positive (needs `0 ≤ s` so `s+1 ≥ 1` and logs are nonnegative). -/
+theorem shellMassGeometryFactor_pos (s : ℝ) (hs : 0 ≤ s) : 0 < shellMassGeometryFactor s := by
   unfold shellMassGeometryFactor
   have htemp : 0 < shellTemperatureFactor s := by
     unfold shellTemperatureFactor
@@ -443,8 +493,10 @@ noncomputable def electronGeometryFactor : ℝ := shellMassGeometryFactor (smMas
 /-- Electron shell geometric factor is positive. -/
 theorem electronGeometryFactor_pos : 0 < electronGeometryFactor := by
   unfold electronGeometryFactor
-  have hs : -1 < smMassShellReal .electron := by
-    unfold smMassShellReal electronShell smGenerationStep electronTemperatureAnchor shellIndexForTemperature T_CMB_natural
+  have hs : 0 ≤ smMassShellReal .electron := by
+    unfold smMassShellReal smGenerationOffset smGenerationIndex Hqiv.Algebra.rep8V electronShell
+      electronTemperatureAnchor T_CMB_natural
+    unfold shellIndexForTemperature
     norm_num
   exact shellMassGeometryFactor_pos _ hs
 
@@ -457,8 +509,8 @@ noncomputable def smMassFromGeometryLabel (label : SMMassLabel) : ℝ :=
   smMassFromGeometry (smGenerationIndex label)
 
 theorem smMassFromGeometry_electron :
-    smMassFromGeometry .zero = m_electron_natural := by
-  unfold m_electron_natural smMassFromGeometry
+    smMassFromGeometry Hqiv.Algebra.rep8V = m_electron_natural := by
+  unfold m_electron_natural smMassFromGeometry Hqiv.Algebra.rep8V
   rfl
 
 /-- The derived electron mass is positive. -/
@@ -493,8 +545,8 @@ theorem chargedLeptonElectronPrefactor_pos : 0 < chargedLeptonElectronPrefactor 
 
 theorem electron_mass_is_derived :
     smChargedLeptonMassFromGeometry .electron = m_electron_natural := by
-  unfold smChargedLeptonMassFromGeometry smMassFromGeometryLabel
-  simp [smGenerationIndex, smMassFromGeometry_electron, smMassFromGeometry]
+  unfold smChargedLeptonMassFromGeometry smMassFromGeometryLabel smGenerationIndex
+  exact smMassFromGeometry_electron
 
 /-- Charged lepton generation masses (Planck-unit). -/
 noncomputable def m_muon_natural : ℝ := smChargedLeptonMassFromGeometry .muon
@@ -515,7 +567,7 @@ noncomputable def m_nu_e_natural : ℝ := smMassFromGeometryLabel .nu_e
 noncomputable def m_nu_mu_natural : ℝ := smMassFromGeometryLabel .nu_mu
 noncomputable def m_nu_tau_natural : ℝ := smMassFromGeometryLabel .nu_tau
 
-/--- The defining equalities remain tautological by construction. -/
+/-- The defining equalities remain tautological by construction. -/
 theorem sm_masses_geometrically_derived :
     m_muon_natural = smChargedLeptonMassFromGeometry .muon ∧
     m_tau_natural = smChargedLeptonMassFromGeometry .tau ∧
@@ -528,7 +580,9 @@ theorem sm_masses_geometrically_derived :
     m_nu_e_natural = smMassFromGeometryLabel .nu_e ∧
     m_nu_mu_natural = smMassFromGeometryLabel .nu_mu ∧
     m_nu_tau_natural = smMassFromGeometryLabel .nu_tau := by
-  repeat' constructor <;> rfl
+  repeat' constructor <;> simp [m_muon_natural, m_tau_natural, m_up_quark_natural, m_down_quark_natural,
+    m_strange_quark_natural, m_charm_quark_natural, m_bottom_quark_natural, m_top_quark_natural,
+    m_nu_e_natural, m_nu_mu_natural, m_nu_tau_natural, smChargedLeptonMassFromGeometry]
 
 /-- Positive geometric weights imply positivity for charged leptons and quarks. -/
 theorem sm_mass_from_geometry_pos
@@ -542,11 +596,10 @@ theorem sm_mass_from_geometry_pos
     norm_num [m_tau_Pl]
   have hres : 0 < resonanceProduct (smGenerationIndex label) := by
     -- `smGenerationIndex label : Fin 3`: generations 0,1,2 use product `k_τμ·k_μe`, `k_τμ`, and `1`.
-    fin_cases (smGenerationIndex label)
-    · exact mul_pos resonance_k_tau_mu_pos resonance_k_mu_e_pos
-    · exact resonance_k_tau_mu_pos
-    · simp [resonanceProduct]
-      norm_num
+    match smGenerationIndex label with
+    | ⟨0, _⟩ => exact mul_pos resonance_k_tau_mu_pos resonance_k_mu_e_pos
+    | ⟨1, _⟩ => exact resonance_k_tau_mu_pos
+    | ⟨2, _⟩ => simp [resonanceProduct]
   -- `1 / x` is positive for `x > 0`.
   have hrecip : 0 < 1 / resonanceProduct (smGenerationIndex label) := by
     exact div_pos (show 1 > (0:ℝ) by norm_num) hres
@@ -557,36 +610,64 @@ theorem sm_mass_from_geometry_pos
 theorem charged_lepton_masses_pos :
     0 < m_muon_natural ∧ 0 < m_tau_natural := by
   constructor
-  ·
-    unfold m_muon_natural smChargedLeptonMassFromGeometry
-    have : 0 < smMassFromGeometryLabel .muon := sm_mass_from_geometry_pos .muon
-        (by
-          norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
-    simpa using this
-  ·
-    unfold m_tau_natural smChargedLeptonMassFromGeometry
-    have : 0 < smMassFromGeometryLabel .tau := sm_mass_from_geometry_pos .tau
-      (by norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
-    simpa using this
+  · unfold m_muon_natural smChargedLeptonMassFromGeometry
+    exact sm_mass_from_geometry_pos .muon
+      (by simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+        Hqiv.Algebra.ER])
+  · unfold m_tau_natural smChargedLeptonMassFromGeometry
+    exact sm_mass_from_geometry_pos .tau
+      (by simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+        Hqiv.Algebra.ER])
 
 /-- Quark masses are positive by geometric derivation. -/
 theorem quark_masses_pos :
     0 < m_up_quark_natural ∧ 0 < m_down_quark_natural ∧ 0 < m_strange_quark_natural ∧
     0 < m_charm_quark_natural ∧ 0 < m_bottom_quark_natural ∧ 0 < m_top_quark_natural := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
-  · exact sm_mass_from_geometry_pos .up (by norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
-  · exact sm_mass_from_geometry_pos .down (by norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
-  · exact sm_mass_from_geometry_pos .strange (by norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
-  · exact sm_mass_from_geometry_pos .charm (by norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
-  · exact sm_mass_from_geometry_pos .bottom (by norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
-  · exact sm_mass_from_geometry_pos .top (by norm_num [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue])
+  · exact sm_mass_from_geometry_pos .up
+      (by
+        simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+          Hqiv.Algebra.ConjUR]
+        norm_num)
+  · exact sm_mass_from_geometry_pos .down
+      (by
+        simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+          Hqiv.Algebra.ConjUR]
+        norm_num)
+  · exact sm_mass_from_geometry_pos .strange
+      (by
+        simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+          Hqiv.Algebra.ConjUR]
+        norm_num)
+  · exact sm_mass_from_geometry_pos .charm
+      (by
+        simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+          Hqiv.Algebra.ConjUR]
+        norm_num)
+  · exact sm_mass_from_geometry_pos .bottom
+      (by
+        simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+          Hqiv.Algebra.ConjUR]
+        norm_num)
+  · exact sm_mass_from_geometry_pos .top
+      (by
+        simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+          Hqiv.Algebra.ConjUR]
+        norm_num)
 
 /-- Neutrino masses are nonnegative from the neutral sector weight. -/
 theorem neutrino_masses_nonnegative :
     0 ≤ m_nu_e_natural ∧ 0 ≤ m_nu_mu_natural ∧ 0 ≤ m_nu_tau_natural := by
-  refine ⟨?_, ?_, ?_⟩ <;>
-    unfold m_nu_e_natural m_nu_mu_natural m_nu_tau_natural smMassFromGeometryLabel <;>
-  positivity
+  refine ⟨?_, ?_, ?_⟩
+  · exact le_of_lt (sm_mass_from_geometry_pos .nu_e
+      (by simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+        Hqiv.Algebra.NuR]))
+  · exact le_of_lt (sm_mass_from_geometry_pos .nu_mu
+      (by simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+        Hqiv.Algebra.NuR]))
+  · exact le_of_lt (sm_mass_from_geometry_pos .nu_tau
+      (by simp [smSectorMultiplicity, smHyperchargeWeight, Hqiv.Algebra.hyperchargeEigenvalue, Fintype.card_fin,
+        Hqiv.Algebra.NuR]))
 
 /-!
 ## Ladder: T_CMB → CMB birefringence → proton mass with error bars
@@ -619,20 +700,9 @@ noncomputable def T_CMB_K_central : ℝ := 2.7255
 /-- **T_CMB 1σ uncertainty (K)** — Planck 2018. -/
 noncomputable def T_CMB_K_uncertainty : ℝ := 0.0006
 
-/-- **Proton rest mass (MeV) central** — derived from internal resonance + EM block rule.
-
-In the full HQIV Python pipeline the scale is set by a **polarization-corrected**
-effective CMB temperature
-\[
-  T_\mathrm{eff} = T_\mathrm{CMB}\,\bigl(1 + \mathrm{BIREFRINGENCE\_SCALE}\cdot\beta_\mathrm{rad}\bigr),
-\]
-so that the small loss of photon energy into polarization (cosmic birefringence)
-is accounted for. A shift of order **T_CMB + O(0.3°)** in this effective
-temperature still matches Planck observations and produces the same
-first-principles proton mass; this Lean witness `m_proton_MeV_central` is
-understood to come from that T_eff ladder rather than from a bare, uncorrected
-T_CMB. -/
-/-- Proton mass (MeV) is the derived output of `Hqiv.Physics.DerivedNucleonMass`. -/
+/-- **Proton rest mass (MeV) central** — derived output of `Hqiv.Physics.DerivedNucleonMass`.
+In the Python pipeline the scale uses a polarization-corrected effective CMB temperature
+(birefringence); this witness follows that ladder rather than a bare uncorrected T_CMB. -/
 noncomputable def m_proton_MeV_central : ℝ := derivedProtonMass
 
 /-- Proton “lower bound” equals the derived central value (no catalogue interval). -/
@@ -801,7 +871,7 @@ theorem sm_constants_at_now_derived :
     sm_constants_now.m_nu_e = m_nu_e_natural ∧
     sm_constants_now.m_nu_mu = m_nu_mu_natural ∧
     sm_constants_now.m_nu_tau = m_nu_tau_natural := by
-  repeat' constructor <;> rfl
+  simp [sm_constants_now]
 
 /-- **Unification: same φ and α in gauge and GR** (from GRFromMaxwell). -/
 theorem unification_same_phi_alpha :
@@ -877,12 +947,6 @@ theorem inverseAlpha_phi_correction_scale_difference (φ₀ φ₁ c : ℝ) :
 /-- Standard **integrated one-loop** inverse coupling (textbook EFT; `μ, μ₀ > 0`). -/
 noncomputable def one_over_alpha_one_loop (α0 μ μ₀ b : ℝ) : ℝ :=
   1 / α0 + (b / (2 * Real.pi)) * (Real.log μ - Real.log μ₀)
-
-theorem one_over_alpha_one_loop_increment (α0 μ₀ μ₁ b : ℝ) :
-    one_over_alpha_one_loop α0 μ₁ b - one_over_alpha_one_loop α0 μ₀ b =
-      (b / (2 * Real.pi)) * (Real.log μ₁ - Real.log μ₀) := by
-  unfold one_over_alpha_one_loop
-  ring
 
 /-- HQIV increment in `1/α_eff` between two φ values. -/
 noncomputable def delta_one_over_alpha_HQIV (φ₀ φ₁ c : ℝ) : ℝ :=

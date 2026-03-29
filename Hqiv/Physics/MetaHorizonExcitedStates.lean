@@ -1,5 +1,6 @@
 import Hqiv.Geometry.OctonionicLightCone
 import Hqiv.Physics.Baryogenesis
+import Hqiv.Physics.FanoResonance
 import Hqiv.Physics.QuarkMetaResonance
 import Hqiv.Physics.DerivedNucleonMass
 import Hqiv.Algebra.Triality
@@ -11,6 +12,11 @@ open Hqiv.Algebra
 /-!
 Excited baryons are modeled as internal meta-horizon harmonics (radial/orbital)
 on the same drum-like surface that gives the nucleon ground state.
+
+**Rindler detuning (MeV):** `rindlerDetuningMeV` is **`rindlerDetuningShared`** from `FanoResonance`
+with dimensionless argument `2·(massMeV/10000)`, so it expands to `1 + γ·(massMeV/10000)` with
+`γ = gamma_HQIV` — the same monogamy coefficient as elsewhere, not a separate numeric convention.
+(Distinct name from `ChargedLeptonResonance.rindlerDetuning`, which takes the **shell index** as `ℝ`.)
 -/
 
 /-- Internal surface term inherited from the lattice shell geometry. -/
@@ -35,8 +41,19 @@ def orbitalHarmonic (ℓ : ℕ) : ℝ :=
 /-- Shared ground-state internal binding on the lock-in shell (MeV). -/
 def baseQCD_binding : ℝ := protonMassFromMetaHarmonics_MeV
 
-/-- Internal Rindler detuning for precision wiggle room. -/
-def rindlerDetuning (massMeV : ℝ) : ℝ := 1 + (2 / 5) * massMeV / 10000
+/-- Internal Rindler detuning on a **MeV** input: `rindlerDetuningShared (2·massMeV/10000) = 1 + γ·massMeV/10000`. -/
+noncomputable def rindlerDetuningMeV (massMeV : ℝ) : ℝ :=
+  rindlerDetuningShared (2 * massMeV / 10000)
+
+theorem rindlerDetuningMeV_eq_gamma_mass_over_10k (massMeV : ℝ) :
+    rindlerDetuningMeV massMeV = 1 + gamma_HQIV * massMeV / 10000 := by
+  unfold rindlerDetuningMeV rindlerDetuningShared c_rindler_shared
+  ring
+
+theorem rindlerDetuningMeV_eq_two_fifths_mass_over_10k (massMeV : ℝ) :
+    rindlerDetuningMeV massMeV = 1 + (2 / 5) * massMeV / 10000 := by
+  rw [rindlerDetuningMeV_eq_gamma_mass_over_10k, gamma_eq_2_5]
+  ring
 
 /-- Total mode mass for low-lying internal radial/orbital harmonics (MeV). -/
 def totalModeMass (n ℓ : ℕ) : ℝ :=

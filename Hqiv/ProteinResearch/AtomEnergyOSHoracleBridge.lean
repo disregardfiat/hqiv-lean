@@ -1,5 +1,7 @@
 import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Data.List.Range
 import Mathlib.Data.Matrix.Basic
+import Mathlib.Data.Fintype.BigOperators
 import Mathlib.LinearAlgebra.Matrix.Trace
 import Mathlib.Tactic
 
@@ -82,12 +84,7 @@ theorem atomBindingGroundMatrix_isDiagonal (shell : Fin n → ℕ) (Z : Fin n �
 /-- Standard basis octonions are **unit norm** in `octonionInner`. -/
 theorem octonionBasis_unit (i : Fin 8) :
     octonionInner (octonionBasis i) (octonionBasis i) = 1 := by
-  simp [octonionInner, octonionBasis]
-  rw [Finset.sum_eq_single i]
-  · simp
-  · intro j _ hij
-    simp [octonionBasis, if_neg hij]
-  · exact Finset.mem_univ i
+  fin_cases i <;> simp [octonionInner, octonionBasis]
 
 /-- Site carrier in the octonion basis: shell index picks an imaginary direction modulo 8. -/
 def siteOctonionCarrier (shellAtSite : ℕ) : OctonionVec :=
@@ -100,17 +97,17 @@ theorem siteOctonionCarrier_unit (s : ℕ) :
 
 /-- Sum of per-ket norms along `List.range n`; each term is 1 regardless of `shells.getD`. -/
 theorem sum_sparse_octonion_norm_range (shells : List ℕ) (n : ℕ) :
-    (List.range n).map (fun i =>
-        octonionInner (siteOctonionCarrier (shells.getD i 0)) (siteOctonionCarrier (shells.getD i 0)))
-      |>.sum
+    List.sum
+        ((List.range n).map (fun i =>
+          octonionInner (siteOctonionCarrier (shells.getD i 0)) (siteOctonionCarrier (shells.getD i 0))))
       = (n : ℝ) := by
   induction n with
   | zero =>
       simp
   | succ k ih =>
-      rw [Nat.succ_eq_add_one, List.range_succ, List.map_append, List.sum_append, List.map_singleton,
-        List.sum_singleton]
-      rw [ih, siteOctonionCarrier_unit]
+      have hk : k + 1 = Nat.succ k := (Nat.succ_eq_add_one k).symm
+      rw [hk, List.range_succ, List.map_append, List.sum_append, List.map_singleton, List.sum_singleton]
+      rw [siteOctonionCarrier_unit, ih]
       simp [Nat.cast_succ]
 
 /-- Build an OSHoracle sparse register: one ket per list position, wrapped index, octonion carrier. -/
@@ -129,7 +126,7 @@ theorem sparseRegisterOfShells_normSq (L : ℕ) (shells : List ℕ) :
 
 /-- Sum of lattice energies along the same site indices as `sparseRegisterOfShells`. -/
 noncomputable def listLatticeEnergySum (shells : List ℕ) : ℝ :=
-  (List.range shells.length).map (fun i => latticeFullModeEnergy (shells.getD i 0)) |>.sum
+  List.sum ((List.range shells.length).map (fun i => latticeFullModeEnergy (shells.getD i 0)))
 
 /-!
 ## Cast alignment: rational φ matrix shadow vs real ladder

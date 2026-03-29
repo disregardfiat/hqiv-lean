@@ -1,7 +1,10 @@
--- Root: core geometry (dynamic Ω_k) + SO(8) closure (from package HQIVGenerators) + downstream.
+-- Root: core geometry + Generators/FromAxioms + SM/triality algebra (matrix Lie closure: `lake build HQIVSO8Closure`).
 import Hqiv.Geometry.OctonionicLightCone
 import Hqiv.Geometry.AuxiliaryField
+import Hqiv.Geometry.ContinuumSpacetimeChart
+import Hqiv.Geometry.ContinuumMetricGradient
 import Hqiv.Geometry.HQVMetric
+import Hqiv.Geometry.AlphaGammaForcedByLattice
 import Hqiv.Geometry.HQVMetricAnalytic
 import Hqiv.Geometry.HQVMPerturbations
 import Hqiv.Geometry.HQVMCLASSBridge
@@ -10,7 +13,6 @@ import Hqiv.Geometry.HQVMDiscretePoisson
 import Hqiv.Geometry.HQVMGlobalLocalDictionary
 import Hqiv.Geometry.HQVMConsistency
 import Hqiv.Geometry.Now
-import Hqiv.SO8Closure
 import Hqiv.Conservations
 import Hqiv.Physics.Baryogenesis
 import Hqiv.Physics.ModifiedMaxwell
@@ -18,22 +20,39 @@ import Hqiv.Physics.SchematicPlasmaCurrent
 import Hqiv.Physics.GRFromMaxwell
 import Hqiv.Physics.Forces
 import Hqiv.Physics.Action
+import Hqiv.Physics.ActionPlasmaBridge
+import Hqiv.Physics.ContinuumOmaxwellClosure
+import Hqiv.Physics.LightConeMaxwellQFTBridge
+import Hqiv.Physics.CMBBirefringenceFirstPrinciples
+import Hqiv.Physics.HarmonicLadderMass
+import Hqiv.Physics.ComptonHorizonPhase
+import Hqiv.Physics.GlobalDetuning
+import Hqiv.Physics.LeptonResonanceGlobalDetuning
+import Hqiv.Physics.QuarkLadderGlobalDetuning
+import Hqiv.Physics.HarmonicLadderGlobalDetuning
 import Hqiv.Physics.CovariantSolution
 import Hqiv.Physics.SM_GR_Unification
+import Hqiv.Physics.LeptonGenerationLockin
+import Hqiv.Physics.SurfaceWaveSelfClock
 import Hqiv.Physics.NuclearAndAtomicSpectra
 import Hqiv.ProteinResearch.ProteinAutoprocessing
 import Hqiv.ProteinResearch.ProteinQuantumExploration
 import Hqiv.ProteinResearch.AtomEnergyOSHoracleBridge
+import Hqiv.ProteinResearch.ProteinFoldingQuantumChemistry
+import Hqiv.ProteinResearch.ProteinQCRefinement
 import Hqiv.ProteinResearch.AdditiveFieldAndTorque
 import Hqiv.Physics.ForceCarrierWhip
 import Hqiv.QuantumMechanics.Schrodinger
 import Hqiv.QuantumMechanics.UncertaintyPrinciple
 import Hqiv.QuantumMechanics.AuxFieldBellDelayedChoice
+import Hqiv.QuantumMechanics.BornRuleFirstPrinciples
+import Hqiv.QuantumMechanics.BornGleasonDecisionScaffold
 import Hqiv.QuantumOptics.HorizonQED
 import Hqiv.QuantumComputing.DiscreteQuantumState
 import Hqiv.QuantumComputing.DigitalGates
 import Hqiv.QuantumComputing.DiscreteSchrodinger
 import Hqiv.QuantumComputing.DigitalQuantumSimulation
+import Hqiv.QuantumComputing.SparseSimulationDensityCrossover
 import Hqiv.QuantumComputing.EntanglementMeasures
 import Hqiv.QuantumComputing.OctonionicFT
 import Hqiv.QuantumComputing.OSHoracle
@@ -42,7 +61,6 @@ import Hqiv.QuantumComputing.ProteinFoldingHook
 import Hqiv.Algebra.OctonionBasics
 import Hqiv.Algebra.G2Embedding
 import Hqiv.Algebra.PhaseLiftDelta
-import Hqiv.Algebra.SO8ClosureAbstract
 import Hqiv.Algebra.Triality
 import Hqiv.Algebra.SMEmbedding
 import Hqiv.Algebra.AnomalyCancellation

@@ -32,7 +32,7 @@ def Θ_local (_ρ T : ℝ) : ℝ := T
 noncomputable def discreteMode (d : ℝ) : Nat := Int.toNat ⌊d⌋
 
 /-- Strain energy proxy from the `1/d` localization scaling (for `d > 0`). -/
-def E_strain (d : ℝ) : ℝ :=
+noncomputable def E_strain (d : ℝ) : ℝ :=
   if h : 0 < d then 1 / d else 0
 
 /-- Activation barrier proxy scaled by HQIV metric constants and shell field. -/

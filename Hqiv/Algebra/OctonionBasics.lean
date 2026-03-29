@@ -86,4 +86,33 @@ theorem leftMulByBasis_e0 (y : OctonionVec) : leftMulByBasis 0 y = y := by
   · intro x _ hne; simp only [hne.symm, ite_false, zero_mul]
   · intro h; exact absurd (Finset.mem_univ k) h
 
+/-- Multiplying by a **basis** vector matches `leftMulByBasis` (Fano multiplication table). -/
+theorem leftMulVec_octonionBasis (i : Fin 8) (y : OctonionVec) :
+    leftMulVec (octonionBasis i) y = leftMulByBasis i y := by
+  funext l
+  simp only [leftMulVec, leftMulByBasis]
+  refine Finset.sum_congr rfl ?_
+  intro j _
+  congr 1
+  rw [Finset.sum_eq_single i]
+  · simp [octonionBasis]
+  · intro k _ hk
+    have h0 : (octonionBasis i) k = (0 : ℝ) := by
+      simp [octonionBasis, if_neg hk]
+    rw [h0, mul_zero]
+  · intro hi
+    exact absurd (Finset.mem_univ i) hi
+
+/-- Octonion associator \((xy)z - x(yz)\), measuring non-associativity (vorticity surrogate). -/
+def octonionAssociator (x y z : OctonionVec) : OctonionVec :=
+  leftMulVec (leftMulVec x y) z - leftMulVec x (leftMulVec y z)
+
+/-- Squared Euclidean norm \(\sum_i a_i^2\) of the associator. -/
+noncomputable def octonionAssociatorNormSq (x y z : OctonionVec) : ℝ :=
+  ∑ i : Fin 8, (octonionAssociator x y z i) ^ 2
+
+/-- Map associator energy to \([0,1]\) for scattering-style witnesses (`a/(a+1)`). -/
+noncomputable def scatteringAmpFromAssociator (x y z : OctonionVec) : ℝ :=
+  octonionAssociatorNormSq x y z / (octonionAssociatorNormSq x y z + 1)
+
 end Hqiv.Algebra

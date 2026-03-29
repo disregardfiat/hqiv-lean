@@ -1,0 +1,360 @@
+import Mathlib.Order.Filter.Basic
+import Mathlib.Algebra.Order.Field.Basic
+import Mathlib.Data.Fin.VecNotation
+import Mathlib.Data.Real.Basic
+import Mathlib.Tactic
+import Hqiv.Geometry.SphericalHarmonicsBridge
+import Hqiv.Algebra.OctonionBasics
+
+namespace Hqiv.QM
+
+open scoped Topology
+open Filter Topology
+open Matrix
+open Hqiv.Algebra
+
+/-!
+# Continuum many-body QFT in the horizon-limited domain (scaffold)
+
+This module is a **lightweight entry point** that (i) documents the formal path
+toward continuum many-body QFT inside HQIV and (ii) re-proves the first
+**concrete** large-shell bridge from the discrete light-cone ladder to spherical-harmonic
+mode counting (`SphericalHarmonicsBridge`).
+
+## Full many-body QFT (eventual target)
+
+A complete horizon-limited many-body QFT layer would add, beyond the finite QM
+closure in `HorizonLimitedQM_QFT_Closure`, items such as: smeared fields / net
+algebras, vacuum and multi-particle states, microcausality, renormalized
+correlators, cluster decomposition, and scattering—packaged in practice by the
+`HorizonContinuumAxiomsMinimal` bundle in `HorizonLimitedRenormLocality` (import
+that module for `HorizonContinuumClosureStatementCoreHQIV` and
+`horizon_qm_qft_full_package_minimal_HQIV`).
+
+Related HQIV modules already in the library:
+
+* `Hqiv.Physics.SpinStatistics` — spin–statistics chain (abstract + HQIV instance).
+* `Hqiv.Geometry.AuxiliaryFieldSmeared` — discrete horizon smearing of `phi_of_shell` + Jensen
+  regularization lemma (`phi_of_smeared_temperature_le_smeared_auxField`).
+* `Hqiv.QuantumOptics.HorizonQED` — discrete shell QED scaffolding (not full Fock).
+* `Hqiv.QuantumMechanics.HorizonLimitedRenormLocality` — continuum assumption bundle +
+  finite+CPTP+spin closure theorems (**heavy** import chain).
+* `Hqiv.Physics.LightConeMaxwellQFTBridge` — single import hub pairing continuum O–Maxwell (`Fin 4 → ℝ`)
+  with this scaffold + `HorizonContinuumAxiomsMinimal` (`LightConeFunctionalBridge`).
+
+## Proof-obligation checklist (informal)
+
+The five `Prop` fields of `HorizonContinuumAxiomsMinimal` are the remaining
+**lemma gaps** toward closing the continuum story: shell/harmonic limit,
+renormalization-in-domain, microcausality, cluster decomposition, scattering
+consistency. The inductive type `ContinuumManyBodyLemmaGap` mirrors that list for
+grepability and planning.
+-/
+
+/-- Checklist mirroring `HorizonContinuumAxiomsMinimal` (see `HorizonLimitedRenormLocality`). -/
+inductive ContinuumManyBodyLemmaGap : Type
+  | shellToHarmonicLimit
+  | renormalizationInDomain
+  | microcausalityInDomain
+  | clusterDecompositionInDomain
+  | scatteringConsistencyInDomain
+
+/-!
+## First concrete bridge (combinatorial ↔ harmonic counting)
+
+This is a **proved** `Tendsto` statement—not yet an operator-level
+`shell_to_harmonic_limit`, but the standard HQIV discrete-vs-$S^2$ asymptotic match.
+-/
+
+/-- Light-cone combinatorial capacity vs cumulative $S^2$ harmonic degeneracy
+tends to the octonion factor `4` as shell index $m\to\infty$. -/
+theorem continuum_shell_harmonic_ratio_limit :
+    Filter.Tendsto
+      (fun m : ℕ => Hqiv.available_modes m / Hqiv.sphericalHarmonicCumulativeCount m)
+      Filter.atTop
+      (nhds (4 : ℝ)) :=
+  Hqiv.tendsto_available_modes_div_sphericalHarmonicCumulative
+
+/-!
+## Structured proposition targets (next-step formalization)
+
+These definitions make the five continuum obligations explicit as
+Lean-readable proposition schemas. They are still lightweight and do not yet
+instantiate full Wightman/Haag-Kastler objects.
+
+**Minkowski microcausality:** `minkowskiIntervalSq`, `spacelikeRelationMinkowski`, and
+`microcausality_in_domain_minkowski_scaffold` supply a chart-quantified η-spacelike predicate
+(signature $(+,{-},{-},{-})$); the commutator surrogate can be identically zero **or** the
+**interval-max** kernel `commutatorKernelIntervalMax` (`max 0 η`), which is microcausal and
+**positive on timelike pairs** (`commutatorKernelIntervalMax_nontrivial`). Operator-valued hooks:
+`IntervalMaxOperatorCommutator` / `PatchIntervalMaxSmeared` (Pauli carrier, patch smearing).
+-/
+
+/-- Shell-to-harmonic continuum matching target used in the current HQIV bridge. -/
+def ShellToHarmonicLimit : Prop :=
+  Filter.Tendsto
+    (fun m : ℕ => Hqiv.available_modes m / Hqiv.sphericalHarmonicCumulativeCount m)
+    Filter.atTop
+    (nhds (4 : ℝ))
+
+/-- Proved shell-to-harmonic limit from the geometry bridge. -/
+theorem shell_to_harmonic_limit_holds : ShellToHarmonicLimit :=
+  continuum_shell_harmonic_ratio_limit
+
+/-- Minimal abstract index type for spacetime-localized observables/channels. -/
+abbrev EventLabel := ℕ
+
+/-- Abstract commutator surrogate. In a full field model this would be operator-valued. -/
+abbrev CommutatorKernel := EventLabel → EventLabel → ℝ
+
+/-- Abstract spacelike-separation relation on event labels. -/
+abbrev SpacelikeRelation := EventLabel → EventLabel → Prop
+
+/-- Microcausality schema: spacelike-separated events have vanishing commutator kernel. -/
+def MicrocausalityStatement (comm : CommutatorKernel) (spacelike : SpacelikeRelation) : Prop :=
+  ∀ x y, spacelike x y → comm x y = 0
+
+/-- Vanishing commutator surrogate (any spacelike relation). -/
+def commutatorKernelZero : CommutatorKernel :=
+  fun _ _ => (0 : ℝ)
+
+/-- Degenerate “all pairs spacelike” relation (schema-only; not Minkowski causality). -/
+def spacelikeRelationAll : SpacelikeRelation :=
+  fun _ _ => True
+
+theorem microcausality_zero_comm_allSpacelike_holds :
+    MicrocausalityStatement commutatorKernelZero spacelikeRelationAll :=
+  fun _ _ _ => rfl
+
+/-!
+### Minkowski spacelike relation (chart-level; signature $(+,{-},{-},{-})$)
+
+Index `0` is the time coordinate. This upgrades the **causal predicate** in the
+microcausality schema from the degenerate `spacelikeRelationAll` to genuine
+η-spacelike separation. The commutator surrogate remains identically zero
+(`commutatorKernelZero`), so the proof is still `rfl` — the progress is **structural**:
+future operator-valued kernels can reuse the same `SpacelikeRelation` without changing
+the formal hook.
+-/
+
+/-- Minkowski four-vector (continuum chart point). Convention: `v 0` is time. -/
+abbrev SpacetimeChart := Fin 4 → ℝ
+
+/-- Squared interval $\eta(z,z) = z^0^2 - z^1^2 - z^2^2 - z^3^2$ (units where $c=1$). -/
+def minkowskiIntervalSq (z : SpacetimeChart) : ℝ :=
+  z 0 * z 0 - z 1 * z 1 - z 2 * z 2 - z 3 * z 3
+
+/-- Separation four-vector $x - y$. -/
+def minkowskiSep (x y : SpacetimeChart) : SpacetimeChart :=
+  fun i => x i - y i
+
+/-- Strict spacelike separation: $\eta(x-y,x-y) < 0$ (same as Minkowski “spacelike”). -/
+def minkowskiSpacelikeSep (x y : SpacetimeChart) : Prop :=
+  minkowskiIntervalSq (minkowskiSep x y) < 0
+
+/-- Same-time events with nonzero spatial separation are spacelike (standard fact). -/
+theorem minkowski_spacelike_of_same_time {x y : SpacetimeChart}
+    (ht : x 0 = y 0)
+    (h : 0 < (x 1 - y 1) ^ 2 + (x 2 - y 2) ^ 2 + (x 3 - y 3) ^ 2) :
+    minkowskiSpacelikeSep x y := by
+  dsimp [minkowskiSpacelikeSep, minkowskiIntervalSq, minkowskiSep]
+  have z0 : x 0 - y 0 = 0 := sub_eq_zero.mpr ht
+  simp_rw [z0]
+  nlinarith [h, sq_nonneg (x 1 - y 1), sq_nonneg (x 2 - y 2), sq_nonneg (x 3 - y 3)]
+
+/-- Assigns each abstract event label a point in Minkowski space. -/
+abbrev EventChart := EventLabel → SpacetimeChart
+
+/-- Spacelike pairs **pulled back** along a chart: labels are spacelike iff their coordinates are. -/
+def spacelikeRelationMinkowski (chart : EventChart) : SpacelikeRelation :=
+  fun x y => minkowskiSpacelikeSep (chart x) (chart y)
+
+theorem microcausality_zero_comm_minkowskiChart (chart : EventChart) :
+    MicrocausalityStatement commutatorKernelZero (spacelikeRelationMinkowski chart) :=
+  fun _ _ _ => rfl
+
+/-- Chart-universal Minkowski microcausality (still with the zero commutator surrogate). -/
+def microcausality_in_domain_minkowski_scaffold : Prop :=
+  ∀ chart : EventChart, MicrocausalityStatement commutatorKernelZero (spacelikeRelationMinkowski chart)
+
+theorem microcausality_in_domain_minkowski_scaffold_holds :
+    microcausality_in_domain_minkowski_scaffold :=
+  fun chart => microcausality_zero_comm_minkowskiChart chart
+
+/-!
+### Nontrivial commutator surrogate (positive on timelike pairs; still microcausal)
+
+Take the **positive part** of the squared interval,
+`max 0 (η(z,z))` with `z = x - y` in chart.  Then:
+
+* If `η < 0` (spacelike), the kernel is `0` — **microcausality** holds for
+  `spacelikeRelationMinkowski`.
+* If `η > 0` (timelike), the kernel is strictly positive — **not** identically zero.
+
+This is still a **scalar surrogate**, not an operator commutator, but it is the natural
+next formal step toward nontrivial locality.
+-/
+
+/-- `max 0 (η(z,z))` along the chart separation; vanishes exactly when `η ≤ 0`. -/
+noncomputable def commutatorKernelIntervalMax (chart : EventChart) : CommutatorKernel :=
+  fun x y =>
+    max (0 : ℝ) (minkowskiIntervalSq (minkowskiSep (chart x) (chart y)))
+
+theorem microcausality_intervalMax_minkowski (chart : EventChart) :
+    MicrocausalityStatement (commutatorKernelIntervalMax chart) (spacelikeRelationMinkowski chart) := by
+  intro x y hsp
+  unfold commutatorKernelIntervalMax spacelikeRelationMinkowski minkowskiSpacelikeSep at *
+  have hη : minkowskiIntervalSq (minkowskiSep (chart x) (chart y)) < 0 := hsp
+  rw [max_eq_left (le_of_lt hη)]
+
+/-- Chart-universal statement: interval-max kernel is microcausal w.r.t. Minkowski spacelike. -/
+def microcausality_in_domain_minkowski_interval_scaffold : Prop :=
+  ∀ chart : EventChart, MicrocausalityStatement (commutatorKernelIntervalMax chart)
+    (spacelikeRelationMinkowski chart)
+
+theorem microcausality_in_domain_minkowski_interval_scaffold_holds :
+    microcausality_in_domain_minkowski_interval_scaffold :=
+  fun chart => microcausality_intervalMax_minkowski chart
+
+/-- Example chart: events `0` and `1` lie on the time axis with nonzero separation (timelike). -/
+noncomputable def chartTimelikeExample : EventChart
+  | 0 => ![1, 0, 0, 0]
+  | 1 => ![0, 0, 0, 0]
+  | _ => ![0, 0, 0, 0]
+
+theorem chartTimelikeExample_interval_sq :
+    minkowskiIntervalSq (minkowskiSep (chartTimelikeExample 0) (chartTimelikeExample 1)) = 1 := by
+  have hsep :
+      minkowskiSep (chartTimelikeExample 0) (chartTimelikeExample 1) = ![1, 0, 0, 0] := by
+    funext i
+    fin_cases i <;> simp [chartTimelikeExample, minkowskiSep, Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.head_cons]
+  rw [hsep]
+  simp [minkowskiIntervalSq, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+
+theorem chartTimelikeExample_not_spacelike : ¬ spacelikeRelationMinkowski chartTimelikeExample 0 1 := by
+  intro h
+  unfold spacelikeRelationMinkowski minkowskiSpacelikeSep at h
+  rw [chartTimelikeExample_interval_sq] at h
+  linarith
+
+theorem chartTimelikeExample_comm_ne_zero :
+    commutatorKernelIntervalMax chartTimelikeExample 0 1 ≠ 0 := by
+  unfold commutatorKernelIntervalMax
+  rw [chartTimelikeExample_interval_sq]
+  norm_num
+
+/-- **Domain witness:** some chart has a **nonzero** `commutatorKernelIntervalMax` (timelike pair, η > 0). -/
+theorem commutatorKernelIntervalMax_exists_ne_zero :
+    ∃ ch : EventChart, ∃ x y : EventLabel, commutatorKernelIntervalMax ch x y ≠ 0 :=
+  ⟨chartTimelikeExample, 0, 1, chartTimelikeExample_comm_ne_zero⟩
+
+/-- Interval-max microcausality **holds** on all charts, **and** some chart has a **nonzero** surrogate on a pair (timelike / η > 0 domain). -/
+theorem microcausality_intervalMax_scaffold_and_surrogate_nonzero :
+    microcausality_in_domain_minkowski_interval_scaffold ∧
+      (∃ ch : EventChart, ∃ x y : EventLabel, commutatorKernelIntervalMax ch x y ≠ 0) :=
+  ⟨microcausality_in_domain_minkowski_interval_scaffold_holds, commutatorKernelIntervalMax_exists_ne_zero⟩
+
+/-- There exist a chart and labels that are **not** spacelike but have **nonzero** interval-max commutator. -/
+theorem commutatorKernelIntervalMax_nontrivial :
+    ∃ ch : EventChart, ∃ x y : EventLabel,
+      ¬ spacelikeRelationMinkowski ch x y ∧ commutatorKernelIntervalMax ch x y ≠ 0 :=
+  ⟨chartTimelikeExample, 0, 1, chartTimelikeExample_not_spacelike, chartTimelikeExample_comm_ne_zero⟩
+
+/-- Simple two-point correlation surrogate. -/
+abbrev CorrelationKernel := EventLabel → EventLabel → ℝ
+
+/-- Cluster-decomposition schema (lightweight surrogate): nearest-neighbor shift
+correlation tends to zero at large label. -/
+def ClusterDecompositionStatement (corr : CorrelationKernel) : Prop :=
+  Filter.Tendsto (fun n : ℕ => corr n (n + 1)) Filter.atTop (nhds 0)
+
+/-- Scattering consistency schema (lightweight surrogate): channel outputs lie in
+`[0,1]`, matching probability-style consistency constraints. -/
+def ScatteringConsistencyStatement (S : ℕ → ℝ) : Prop :=
+  ∀ n, 0 ≤ S n ∧ S n ≤ 1
+
+/-- Placeholder renormalization slot. Replace with constructive scale-flow lemmas. -/
+def RenormalizationInDomainStatement : Prop := True
+
+/-- Constructive witness for the renorm slot until scale-flow lemmas exist. -/
+theorem renormalization_in_domain_trivial_holds : RenormalizationInDomainStatement :=
+  trivial
+
+/-- Zero two-point kernel: cluster surrogate `corr n (n+1)` is identically `0`. -/
+noncomputable def clusterCorrelationZero : CorrelationKernel :=
+  fun _ _ => (0 : ℝ)
+
+theorem cluster_decomposition_zero_kernel_holds :
+    ClusterDecompositionStatement clusterCorrelationZero := by
+  dsimp [ClusterDecompositionStatement, clusterCorrelationZero]
+  exact tendsto_const_nhds (f := atTop) (x := (0 : ℝ))
+
+/-- Trivial scattering channel: all outputs are `0` (valid probability-style surrogate). -/
+noncomputable def scatteringChannelZero : ℕ → ℝ := fun _ => (0 : ℝ)
+
+theorem scattering_consistency_zero_channel_holds :
+    ScatteringConsistencyStatement scatteringChannelZero := by
+  intro n
+  simp [scatteringChannelZero, zero_le_one]
+
+/-- Unit scattering surrogate (identity lossless channel in `[0,1]`). -/
+noncomputable def scatteringChannelUnit : ℕ → ℝ := fun _ => (1 : ℝ)
+
+theorem scattering_consistency_unit_channel_holds :
+    ScatteringConsistencyStatement scatteringChannelUnit := by
+  intro n
+  exact ⟨zero_le_one, le_rfl⟩
+
+/-- Associator/vorticity scattering channel: `‖[e₁,e₂,e₄]‖² / (‖·‖²+1)` in `[0,1]` (non-zero generically). -/
+noncomputable def scatteringChannelAssociatorVorticity : ℕ → ℝ :=
+  fun _ => scatteringAmpFromAssociator e1 e2 e4
+
+theorem scatteringAmpFromAssociator_mem_unit (x y z : OctonionVec) :
+    0 ≤ scatteringAmpFromAssociator x y z ∧ scatteringAmpFromAssociator x y z ≤ 1 := by
+  have ha : 0 ≤ octonionAssociatorNormSq x y z := by
+    unfold octonionAssociatorNormSq
+    exact Finset.sum_nonneg (fun i _ => sq_nonneg _)
+  have hden : 0 < octonionAssociatorNormSq x y z + 1 := by
+    have h1 : (1 : ℝ) ≤ octonionAssociatorNormSq x y z + 1 := by linarith [ha]
+    exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) h1
+  unfold scatteringAmpFromAssociator
+  refine ⟨div_nonneg ha (le_of_lt hden), ?_⟩
+  rw [div_le_one hden]
+  linarith [ha]
+
+theorem scattering_consistency_associatorVorticity_holds :
+    ScatteringConsistencyStatement scatteringChannelAssociatorVorticity := by
+  intro n
+  simpa [scatteringChannelAssociatorVorticity] using scatteringAmpFromAssociator_mem_unit e1 e2 e4
+
+/-- Compact structured bundle mirroring the five continuum obligations. -/
+structure ContinuumManyBodyAxioms where
+  shell_to_harmonic_limit : ShellToHarmonicLimit
+  renormalization_in_domain : RenormalizationInDomainStatement
+  microcausality_in_domain : Prop
+  cluster_decomposition_in_domain : Prop
+  scattering_consistency_in_domain : Prop
+
+/-- A concrete worked instance: shell/harmonic limit discharged constructively;
+remaining slots filled by simple witness kernels to keep the scaffold executable. -/
+def continuum_many_body_axioms_worked_example : ContinuumManyBodyAxioms :=
+  { shell_to_harmonic_limit := shell_to_harmonic_limit_holds
+    renormalization_in_domain := renormalization_in_domain_trivial_holds
+    microcausality_in_domain := MicrocausalityStatement commutatorKernelZero spacelikeRelationAll
+    cluster_decomposition_in_domain := ClusterDecompositionStatement clusterCorrelationZero
+    scattering_consistency_in_domain := ScatteringConsistencyStatement scatteringChannelZero }
+
+theorem continuum_many_body_axioms_worked_example_micro_holds :
+    continuum_many_body_axioms_worked_example.microcausality_in_domain :=
+  microcausality_zero_comm_allSpacelike_holds
+
+theorem continuum_many_body_axioms_worked_example_cluster_holds :
+    continuum_many_body_axioms_worked_example.cluster_decomposition_in_domain :=
+  cluster_decomposition_zero_kernel_holds
+
+theorem continuum_many_body_axioms_worked_example_scattering_holds :
+    continuum_many_body_axioms_worked_example.scattering_consistency_in_domain :=
+  scattering_consistency_zero_channel_holds
+
+end Hqiv.QM

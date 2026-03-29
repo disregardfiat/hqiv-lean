@@ -12,7 +12,7 @@ namespace Hqiv.Physics
 # Quark meta-horizon resonance ladder
 
 This module encodes a single three-harmonic internal ladder for quarks (generation index `Fin 3`,
-defeq to `Hqiv.Algebra.So8RepIndex` used in `GenerationResonance` / `SM_GR_Unification`):
+defeq to `Hqiv.Algebra.So8RepIndex` used in `ChargedLeptonResonance` / `SM_GR_Unification`):
 
 * **Lock-in narrative:** the top quark birth shell index is `referenceM` (`m_top_at_lockin`),
   aligned with baryogenesis lock-in (`T_lockin`).
@@ -25,7 +25,7 @@ defeq to `Hqiv.Algebra.So8RepIndex` used in `GenerationResonance` / `SM_GR_Unifi
 
 Up/down split: hypercharge sign metadata on the Fano axes (`upResonanceAxis` / `downResonanceAxis`).
 
-Lepton-side lock-in alignment lives in `GenerationResonance` / `SM_GR_Unification`; ν from
+Lepton-side lock-in alignment lives in `ChargedLeptonResonance` / `SM_GR_Unification`; ν from
 `DerivedGaugeAndLeptonSector`.
 
 **Integration (plasma / inertia):** collective plasmas and lapse- or φ-modified inertia are
@@ -155,10 +155,10 @@ theorem two_octave_drops_to_light_quarks :
       resonanceK_internal_down]
     field_simp
 
-/-- Relative tolerance aligned with `GenerationResonance.relTol` (`1/500`). -/
+/-- Relative tolerance aligned with `ChargedLeptonResonance.relTol` (`1/500`). -/
 noncomputable def quarkPDG_relTol : ℝ := 1 / 500
 
-/-- Squared relative-error bound (no `abs`), same shape as `GenerationResonance.approxRel`. -/
+/-- Squared relative-error bound (no `abs`), same shape as `ChargedLeptonResonance.approxRel`. -/
 def quarkPDGApprox (a b : ℝ) : Prop :=
   (a - b) ^ 2 ≤ quarkPDG_relTol ^ 2 * b ^ 2
 

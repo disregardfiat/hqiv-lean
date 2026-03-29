@@ -25,12 +25,15 @@ Maxwell's 3D equations** by holding one axis fixed.
 
 - **Proven:** O → H reduction to classic Maxwell when φ constant and metric flat;
   charge_conservation_O (with placeholder div_μ); flat limit instance.
-- **Placeholder (API only):** grad_φ, div_μ, g_rr, J_O return constants; real
-  manifold versions will use these parameter names. 3D div E / curl B terms TBD.
+- **Placeholder (API only):** `grad_φ`, `div_μ`, `g_rr`, `J_O` return constants; continuum
+  calculus on the same `Fin 4` index convention lives in `Hqiv.Geometry.ContinuumSpacetimeChart`
+  (`coordsGradientComponents`, `coordsDivergence`). The **φ-gradient slot** is wired to
+  `coordsGradientComponents` in `Hqiv.Physics.ContinuumOmaxwellClosure` (`emergentMaxwellInhomogeneous_O_coordsField`,
+  matching `EL_O_general_coordsField` / `L_O_phi_coupling_coords` on the action side). 3D div E / curl B terms TBD.
 
 **Plasma-facing note:** `J_O` is the natural hook for collective currents; filling
 it in (and the manifold placeholders) is how dense plasma couples back to the same
-φ ladder used in fermion mass ladders (`GenerationResonance`, `QuarkMetaResonance`).
+φ ladder used in fermion mass ladders (`ChargedLeptonResonance`, `QuarkMetaResonance`).
 See README “Roadmap: plasmas, modified inertia, and fermion ladders”.
 -/
 

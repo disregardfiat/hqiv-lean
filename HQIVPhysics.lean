@@ -14,6 +14,10 @@ import Hqiv.Geometry.HQVMConsistency
 import Hqiv.Geometry.Now
 import Hqiv.Conservations
 import Hqiv.Physics.Baryogenesis
+import Hqiv.Physics.GlobalDetuning
+import Hqiv.Physics.LeptonResonanceGlobalDetuning
+import Hqiv.Physics.QuarkLadderGlobalDetuning
+import Hqiv.Physics.HarmonicLadderGlobalDetuning
 import Hqiv.Physics.ModifiedMaxwell
 import Hqiv.Physics.SchematicPlasmaCurrent
 import Hqiv.Physics.GRFromMaxwell

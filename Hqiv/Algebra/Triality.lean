@@ -2,8 +2,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Card
 import Mathlib.LinearAlgebra.Matrix.Defs
-import Hqiv.Generators
-import Hqiv.Algebra.SO8ClosureAbstract
+import Hqiv.GeneratorsFromAxioms
 
 /-!
 # Triality automorphism of Spin(8)
@@ -24,7 +23,7 @@ def trialityOrder : ℕ := 3
 
 /-- **The three 8-dimensional irreducible representations of Spin(8)** (D₄):
   index 0 = 8v (vector), 1 = 8s⁺ (positive-chirality spinor), 2 = 8s⁻ (negative-chirality spinor). -/
-def So8RepIndex := Fin 3
+abbrev So8RepIndex := Fin 3
 
 /-- **8v** — vector representation. -/
 def rep8V : So8RepIndex := 0

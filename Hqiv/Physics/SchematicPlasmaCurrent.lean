@@ -25,9 +25,11 @@ and `HQVMPerturbations`) when comparing to non-relativistic limits—**not** pro
 action term in Lean.
 
 **Linearised scalar bookkeeping:** `linearisedScalarPerturbation` is the same product with
-`φ = phi_of_T Θ` (temperature ladder). It is **not** equal to the emergent O-Maxwell RHS
-(`-4π J` from `emergentMaxwellInhomogeneous_O_general`): that would require an action-derived
-identification. What we *can* prove today is (i) vanishing at `j₀ = 0`, (ii) repackaging as
+`φ = phi_of_T Θ` (temperature ladder). It is **not** identified with the lapse-weighted O-Maxwell
+RHS without extra dynamics, but the **same** plasma current `J_O_plasma` now couples to `A` in
+`L_O_source_general` and appears as `-4π J` in `EL_O_general` — see `ActionPlasmaBridge`.
+
+What we *can* prove here is (i) vanishing at `j₀ = 0`, (ii) repackaging as
 `HQVM_lapse_phiT * plasma`, and (iii) under `grad_φ = 0`, the skeleton source for uniform proxy
 `coord ν = t` is `-4π * schematicPlasmaScalar j₀ t` (`emergentMaxwell_plasma_uniform_t_flat_phi`).
 -/

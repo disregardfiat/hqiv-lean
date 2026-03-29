@@ -10,14 +10,22 @@ open Hqiv
 /-!
 # AUX field, Bell structure, and delayed-choice eraser
 
-This module gives a compact Lean formalization of two statements:
+This module gives a compact Lean formalization of two families of statements:
 
-1. AUX scaling can push a CHSH-style correlator beyond the local bound.
-2. A delayed-choice eraser can reshuffle coincidence channels while leaving
-   singles rates unchanged (no-signaling style statement).
+1. **AUX-scaled CHSH bookkeeping.** The definition `auxChsh` multiplies a real
+   parameter `S` (a CHSH-style correlator proxy) by the shell factor `(m+1)` once
+   `phi_of_shell` is expanded. The lemma `auxChsh_violate_local_bound_of_one_le`
+   compares `auxChsh m 2` to the *fixed* constant `chshLocalBound = 2` and shows
+   strict inequality for `m ≥ 1`. This is **algebra** about the chosen scaled
+   variable; it is **not** a claim that the physical CHSH inequality is violated
+   at the *unscaled* experimental scale. A fair classical comparison for the
+   scaled quantity `(m+1)S` would use a scaled bound `2(m+1)` when `|S| ≤ 2`.
 
-The setup stays algebraic and proof-oriented, so it can be reused as a
-foundation for more detailed probability/amplitude models.
+2. **Delayed-choice eraser identities.** Complementary coincidence channels and
+   singles averaging (no-signaling style algebra).
+
+The setup stays algebraic and proof-oriented for reuse in richer probability
+models.
 -/
 
 /-- Local hidden-variable CHSH bound (normalized form). -/

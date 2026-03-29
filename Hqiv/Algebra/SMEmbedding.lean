@@ -3,10 +3,11 @@ import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Card
 import Mathlib.Data.Complex.Basic
 import Mathlib.LinearAlgebra.Matrix.Defs
+import Mathlib.Data.Matrix.Mul
 import Hqiv.Generators
 import Hqiv.GeneratorsFromAxioms
 import Hqiv.Algebra.G2Embedding
-import Hqiv.Algebra.SO8ClosureAbstract
+import Hqiv.Algebra.OctonionSpinorCarrier
 import Hqiv.Algebra.Triality
 import Hqiv.Algebra.PhaseLiftDelta
 import Hqiv.Physics.Forces
@@ -26,9 +27,31 @@ embedding G₂ ⊃ SU(3)_c × SU(2)_L × U(1)_Y yields the Standard Model quantu
 4. Chirality + right-handed neutrino singlet.
 
 **Reference:** HQIV preprint v2, Zenodo 10.5281/zenodo.18899939, Section 4.4.
+
+## Harmonic ladder vs triality (do not conflate)
+
+In HQIV, the **discrete null-cone / harmonic ladder** (`Hqiv.Geometry.OctonionicLightCone`,
+`phi_of_shell`, mode capacity, and the shell–harmonic continuum bridge in
+`SphericalHarmonicsBridge` / `ContinuumManyBodyQFTScaffold`) is where the **mass–shell
+structure** and ladder-based predictions are anchored. **Triality** in this algebra layer
+only supplies a **Spin(8) representation fact**: three inequivalent 8-dimensional irreps
+(`Triality`, `So8RepIndex`) — see `three_generations_from_triality_reps`. That counting lemma
+does **not** establish mass spectra, generation hierarchies, or excited-state physics; treating
+it as a substitute for the ladder would invert the epistemic order HQIV uses for masses.
+
+This file stays at **single-generation SM quantum numbers** on one 8s copy (SU(2)ₗ, Y,
+branching). It does **not** import shell index `m` or the ladder — for **import hygiene** and
+to keep SO(8) closure separate from geometry-only builds — not because the ladder is secondary
+for phenomenology. `PhaseLiftDelta.phaseLiftCoeff` already uses `phi_of_shell m` elsewhere;
+wiring `m` to generation labels or excitation towers belongs in a dedicated bridge, not here.
+
+For the Lean-packaged **mass/coupling chain** (φ ladder → `one_over_alpha_eff` → `alphaEffAtShell` →
+binding ∝ α²), see `Hqiv.Physics.HarmonicLadderMass`.
 -/
 
 namespace Hqiv.Algebra
+
+open Matrix
 
 /-!
 ## Basic definitions (unchanged)
@@ -40,15 +63,6 @@ def smChiralGenerationDim : ℕ := 16
 /-- **One real 8s (octonion spinor)** carries the left-handed SM content. -/
 def octonionSpinorDim : ℕ := 8
 
-/-- **Carrier of the 8s representation:** ℝ⁸ as the space of real octonion spinors. -/
-def OctonionSpinorCarrier := Fin 8 → ℝ
-
-instance : AddCommGroup OctonionSpinorCarrier := Pi.addCommGroup
-instance : Module ℝ OctonionSpinorCarrier := Pi.module _ _ _
-
-/-- **Basis index set for 8s has cardinality 8.** -/
-theorem octonionSpinorCarrier_dim : Fintype.card (Fin 8) = 8 := Fintype.card_fin 8
-
 /-- **so(8) acts on 8s** by the defining representation: M • v = M.mulVec v. -/
 def so8ActOn8s (M : Matrix (Fin 8) (Fin 8) ℝ) (v : OctonionSpinorCarrier) : OctonionSpinorCarrier :=
   M.mulVec v
@@ -56,14 +70,22 @@ def so8ActOn8s (M : Matrix (Fin 8) (Fin 8) ℝ) (v : OctonionSpinorCarrier) : Oc
 /-- **Action is linear in the vector.** -/
 theorem so8ActOn8s_linear (M : Matrix (Fin 8) (Fin 8) ℝ) (a b : ℝ) (x y : OctonionSpinorCarrier) :
     so8ActOn8s M (fun i => a * x i + b * y i) = fun i => a * so8ActOn8s M x i + b * so8ActOn8s M y i := by
-  unfold so8ActOn8s; ext i
-  simp only [mulVec, dotProduct, Finset.sum_add_distrib, Finset.mul_sum]
-  congr 1; exact Finset.sum_congr rfl (fun j _ => by ring)
+  unfold so8ActOn8s
+  have hv :
+      (fun i : Fin 8 => a * x i + b * y i) = a • x + b • y := by
+    funext i
+    simp [smul_eq_mul]
+  rw [hv, mulVec_add, mulVec_smul, mulVec_smul]
+  funext i
+  simp [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
 
 theorem G2_contains_SM_subgroup : True := trivial
 def hyperchargeBlockCorrect : Prop := True
 theorem one_generation_from_8s : octonionSpinorDim = 8 ∧ smChiralGenerationDim = 16 := by constructor <;> rfl
-theorem three_generations_from_triality_reps : Fintype.card So8RepIndex = 3 := Triality.card_so8_eight_dim_irreps
+
+/-- Spin(8) has three 8-dim irreps related by triality (`So8RepIndex` has cardinality 3).
+    This is **representation counting**, not the harmonic ladder and **not** a mass theorem. -/
+theorem three_generations_from_triality_reps : Fintype.card So8RepIndex = 3 := card_so8_eight_dim_irreps
 
 /-!
 ## Gap 1: Explicit SU(2)_L generators inside so(8)
@@ -86,14 +108,13 @@ theorem su2_generators_in_so8 :
     (su2_L_gen_1 + su2_L_gen_1ᵀ = 0) ∧ (su2_L_gen_2 + su2_L_gen_2ᵀ = 0) ∧ (su2_L_gen_3 + su2_L_gen_3ᵀ = 0) := by
   unfold su2_L_gen_1 su2_L_gen_2 su2_L_gen_3
   refine ⟨g2_in_so8 0, g2_in_so8 1, ?_⟩
-  rw [Matrix.transpose_neg, neg_add_cancel]
+  rw [Matrix.transpose_neg, ← neg_add, neg_eq_zero]
   exact lieBracket_skew_of_skew (g2Generator 0) (g2Generator 1) (g2_in_so8 0) (g2_in_so8 1)
 
 /-- **Lie bracket [T₁, T₂] = -T₃** (su(2) relation; by definition of T₃). -/
 theorem su2_bracket_12 : Hqiv.lieBracket su2_L_gen_1 su2_L_gen_2 = -su2_L_gen_3 := by
   unfold su2_L_gen_3
   rw [neg_neg]
-  rfl
 
 /-- **SU(2)_L generators act on the 8s spinor** (left-handed carrier). -/
 theorem su2_act_on_8s (a : Fin 3) (v : OctonionSpinorCarrier) :
@@ -141,10 +162,14 @@ def hyperchargeEigenvalue (i : Fin 8) : ℚ :=
 def chargeFromY (i : Fin 8) (t3 : ℚ) : ℚ := t3 + hyperchargeEigenvalue i
 
 /-- **ν_R has Y = 0** (singlet): component 7. -/
-theorem nu_R_hypercharge_zero : hyperchargeEigenvalue 7 = 0 := rfl
+theorem nu_R_hypercharge_zero : hyperchargeEigenvalue 7 = 0 := by
+  unfold hyperchargeEigenvalue
+  simp
 
 /-- **Q = T₃ + Y/2** for the right-handed neutrino (component 7): Q = 0 + 0 = 0. -/
-theorem nu_R_electric_charge_zero : chargeFromY 7 0 = 0 := by unfold chargeFromY hyperchargeEigenvalue; norm_num
+theorem nu_R_electric_charge_zero : chargeFromY 7 0 = 0 := by
+  unfold chargeFromY hyperchargeEigenvalue
+  simp
 
 /-- **Full SM charge table (witness):** Q_L gets ±1/2 + 1/6, u_R gets 0 + (-2/3), d_R gets 0 + 1/3, etc. -/
 theorem hypercharge_assignments_correct :
@@ -152,8 +177,8 @@ theorem hypercharge_assignments_correct :
     hyperchargeEigenvalue 2 = -2/3 ∧ hyperchargeEigenvalue 3 = 1/3 ∧
     hyperchargeEigenvalue 4 = -1/2 ∧ hyperchargeEigenvalue 5 = -1/2 ∧
     hyperchargeEigenvalue 6 = 1 ∧ hyperchargeEigenvalue 7 = 0 := by
-  unfold hyperchargeEigenvalue
-  norm_num
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  all_goals simp [hyperchargeEigenvalue]
 
 /-!
 ## Gap 3: Full branching rules of 8s under G₂ ⊃ SM
@@ -162,17 +187,17 @@ theorem hypercharge_assignments_correct :
 -/
 
 /-- **Quark doublet left (3,2,+1/6):** 3×2 = 6 components (indices 0,1 for first doublet; repeat for colours). -/
-def QuarkDoubletL : Type := Fin 6
+abbrev QuarkDoubletL := Fin 6
 /-- **u_R (3̄,1,–2/3):** 3 components. -/
-def ConjUR : Type := Fin 3
+abbrev ConjUR := Fin 3
 /-- **d_R (3̄,1,+1/3):** 3 components. -/
-def ConjDR : Type := Fin 3
+abbrev ConjDR := Fin 3
 /-- **Lepton doublet (1,2,–1/2):** 2 components. -/
-def LeptonDoubletL : Type := Fin 2
+abbrev LeptonDoubletL := Fin 2
 /-- **e_R (1,1,+1):** 1 component. -/
-def ER : Type := Fin 1
+abbrev ER := Fin 1
 /-- **ν_R (1,1,0):** 1 component. -/
-def NuR : Type := Fin 1
+abbrev NuR := Fin 1
 
 /-- **Total dimension of the branching summands:** 6+3+3+2+1+1 = 16 (8 left + 8 right in one generation). -/
 theorem branching_sum_dim : 6 + 3 + 3 + 2 + 1 + 1 = 16 := rfl
@@ -199,7 +224,7 @@ theorem branching_rules_8s :
     Fintype.card (Fin 8) = 8 ∧
     (6 + 3 + 3 + 2 + 1 + 1 = 16) ∧
     Fintype.card So8RepIndex = 3 := by
-  refine ⟨Fintype.card_fin 8, rfl, Triality.card_so8_eight_dim_irreps⟩
+  refine ⟨Fintype.card_fin 8, rfl, card_so8_eight_dim_irreps⟩
 
 /-!
 ## Gap 4: Chirality + right-handed neutrino singlet
@@ -211,7 +236,7 @@ Full 16 Weyl components per generation with correct L/R assignments; singlet wit
 def leftHandedIndices : Finset (Fin 8) := Finset.univ
 
 /-- **Right-handed component indices** (in 8c): also 8; total 16 per generation. -/
-def rightHandedIndices : Type := Fin 8
+abbrev rightHandedIndices := Fin 8
 
 /-- **Total Weyl components per generation:** 8 left + 8 right = 16. -/
 theorem chirality_total_16 : Fintype.card (Fin 8) + Fintype.card (Fin 8) = smChiralGenerationDim := by
@@ -227,14 +252,16 @@ theorem chirality_and_nu_R :
     hyperchargeEigenvalue nu_R_singlet_index = 0 ∧
     nu_R_singlet_index = 7 ∧
     Fintype.card (Fin 8) = 8 := by
-  unfold nu_R_singlet_index hyperchargeEigenvalue
-  norm_num
+  refine ⟨?_, ?_, ?_⟩
+  · simpa [nu_R_singlet_index] using nu_R_hypercharge_zero
+  · rfl
+  · exact Fintype.card_fin 8
 
 /-- **SM quantum numbers for one generation (witness):** 8 left + 8 right, ν_R at index 7 with Y=0. -/
 theorem sm_quantum_numbers_one_generation :
     smChiralGenerationDim = 16 ∧ octonionSpinorDim = 8 ∧
     hyperchargeEigenvalue 7 = 0 ∧ Fintype.card So8RepIndex = 3 := by
-  refine ⟨rfl, rfl, rfl, Triality.card_so8_eight_dim_irreps⟩
+  refine ⟨rfl, rfl, rfl, card_so8_eight_dim_irreps⟩
 
 #check su2_bracket_12
 #check hypercharge_assignments_correct
